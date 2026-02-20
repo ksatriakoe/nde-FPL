@@ -5,10 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/fpl-api': {
+      '/api/fpl': {
         target: 'https://fantasy.premierleague.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/fpl-api/, '/api'),
+        rewrite: (path) => path.replace(/^\/api\/fpl/, '/api'),
       },
     },
   },

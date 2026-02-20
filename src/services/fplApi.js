@@ -1,4 +1,4 @@
-const BASE = '/fpl-api'
+const BASE = '/api/fpl'
 
 export async function fetchBootstrap() {
     const res = await fetch(`${BASE}/bootstrap-static/`)
