@@ -1,0 +1,232 @@
+.page {
+    animation: fadeIn 0.4s ease;
+}
+
+.controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.searchInput {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+    border-color: var(--accent-primary);
+}
+
+.searchInput::placeholder {
+    color: var(--text-muted);
+}
+
+.filterBtn {
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.filterBtn:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.filterBtnActive {
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--accent-primary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    font-weight: 500;
+    background: rgba(55, 239, 186, 0.1);
+    color: var(--accent-primary);
+}
+
+.select {
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-family: inherit;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    padding: 0.65rem 0.5rem;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid var(--border-color);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.table th:hover {
+    color: var(--accent-primary);
+}
+
+.sortIcon {
+    margin-left: 0.3rem;
+    font-size: 0.65rem;
+}
+
+.table td {
+    padding: 0.55rem 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.table tr:hover td {
+    background: var(--bg-card-hover);
+}
+
+.playerCell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.playerName {
+    font-weight: 600;
+}
+
+.playerTeam {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.posTag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.posGKP {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(234, 179, 8, 0.15);
+    color: var(--yellow);
+}
+
+.posDEF {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--green);
+}
+
+.posMID {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--blue);
+}
+
+.posFWD {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--red);
+}
+
+.form {
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+.formHigh {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--green);
+}
+
+.formMid {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--yellow);
+}
+
+.formLow {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--red);
+}
+
+.teamBadge {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.paginationRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.pageBtn {
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: inherit;
+}
+
+.pageBtn:hover {
+    border-color: var(--accent-primary);
+}
+
+.pageBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

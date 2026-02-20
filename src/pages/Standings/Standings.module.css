@@ -1,0 +1,170 @@
+.page {
+    animation: fadeIn 0.4s ease;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1.5rem;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    padding: 0.7rem 0.6rem;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table td {
+    padding: 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem;
+}
+
+.table tr:hover td {
+    background: var(--bg-card-hover);
+}
+
+.posCol {
+    font-weight: 800;
+    font-size: 0.9rem;
+    width: 36px;
+    text-align: center;
+}
+
+.champZone {
+    border-left: 3px solid var(--blue);
+}
+
+.europaZone {
+    border-left: 3px solid var(--yellow);
+}
+
+.confZone {
+    border-left: 3px solid var(--green);
+}
+
+.relegationZone {
+    border-left: 3px solid var(--red);
+}
+
+.teamCell {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.badge {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.teamName {
+    font-weight: 600;
+}
+
+.formDots {
+    display: flex;
+    gap: 3px;
+}
+
+.formDot {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.formW {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: var(--green);
+}
+
+.formD {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--yellow);
+    color: var(--bg-primary);
+}
+
+.formL {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: var(--red);
+}
+
+.pts {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--accent-primary);
+}
+
+.gd {
+    font-weight: 600;
+}
+
+.gdPos {
+    font-weight: 600;
+    color: var(--green);
+}
+
+.gdNeg {
+    font-weight: 600;
+    color: var(--red);
+}
+
+.legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}

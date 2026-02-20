@@ -1,0 +1,106 @@
+.page {
+    animation: fadeIn 0.4s ease;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.gwRange {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gwRange label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.gwRange select {
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.fixtureTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    display: block;
+}
+
+.fixtureTable th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    padding: 0.5rem 0.3rem;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    min-width: 50px;
+}
+
+.fixtureTable th:first-child {
+    text-align: left;
+    min-width: 100px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.fixtureTable td {
+    padding: 0.4rem 0.3rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 0.72rem;
+}
+
+.fixtureTable td:first-child {
+    text-align: left;
+    font-weight: 700;
+    position: sticky;
+    left: 0;
+    background: var(--bg-primary);
+    z-index: 1;
+}
+
+.fixtureTable tr:hover td {
+    background: var(--bg-card);
+}
+
+.fixtureTable tr:hover td:first-child {
+    background: var(--bg-card);
+}
+
+.fdrCell {
+    border-radius: 4px;
+    padding: 0.3rem 0.25rem !important;
+    color: var(--bg-primary);
+    font-weight: 700;
+}
+
+.teamRow {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.teamBadgeSmall {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
