@@ -1,26 +1,30 @@
-const BASE = '/api/fpl'
+const isDev = import.meta.env.DEV
+
+function apiUrl(path) {
+    if (isDev) {
+        return `/api/fpl/${path}`
+    }
+    return `/api/${path}`
+}
 
 export async function fetchBootstrap() {
-    const res = await fetch(`${BASE}/bootstrap-static/`)
+    const url = isDev ? '/api/fpl/bootstrap-static/' : '/api/bootstrap-static'
+    const res = await fetch(url)
     if (!res.ok) throw new Error('Failed to fetch bootstrap data')
     return res.json()
 }
 
 export async function fetchFixtures() {
-    const res = await fetch(`${BASE}/fixtures/`)
+    const url = isDev ? '/api/fpl/fixtures/' : '/api/fixtures'
+    const res = await fetch(url)
     if (!res.ok) throw new Error('Failed to fetch fixtures')
     return res.json()
 }
 
 export async function fetchLive(gw) {
-    const res = await fetch(`${BASE}/event/${gw}/live/`)
+    const url = isDev ? `/api/fpl/event/${gw}/live/` : `/api/live?gw=${gw}`
+    const res = await fetch(url)
     if (!res.ok) throw new Error('Failed to fetch live data')
-    return res.json()
-}
-
-export async function fetchPlayerSummary(playerId) {
-    const res = await fetch(`${BASE}/element-summary/${playerId}/`)
-    if (!res.ok) throw new Error('Failed to fetch player summary')
     return res.json()
 }
 
