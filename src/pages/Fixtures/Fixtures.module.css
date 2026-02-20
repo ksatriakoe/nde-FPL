@@ -183,6 +183,8 @@
 
     .fixtureTable {
         font-size: 0.7rem;
+        width: auto;
+        min-width: max-content;
     }
 
     .fixtureTable th {
