@@ -3,26 +3,40 @@ import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getDifficultyColor } from '../../services/fplApi'
 import styles from './Fixtures.module.css'
 
+const FILTER_OPTIONS = [
+    { label: 'All Fixtures', value: 'all' },
+    { label: 'Next 2 GWs', value: 2 },
+    { label: 'Next 3 GWs', value: 3 },
+    { label: 'Next 4 GWs', value: 4 },
+    { label: 'Next 5 GWs', value: 5 },
+    { label: 'Next 6 GWs', value: 6 },
+    { label: 'Next 8 GWs', value: 8 },
+    { label: 'Custom Range', value: 'custom' },
+]
+
 export default function Fixtures() {
     const { fixtures, teams, currentGw, loading } = useFpl()
-    const startGwDefault = currentGw?.id || 1
-    const [startGw, setStartGw] = useState(startGwDefault)
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+    const gwStart = currentGw?.id || 1
+
+    const [filter, setFilter] = useState(6)
+    const [customFrom, setCustomFrom] = useState(gwStart)
+    const [customTo, setCustomTo] = useState(38)
     const [dropdownOpen, setDropdownOpen] = useState(false)
+    const [fromOpen, setFromOpen] = useState(false)
+    const [toOpen, setToOpen] = useState(false)
     const dropdownRef = useRef(null)
-    const span = isMobile ? 2 : 6
+    const fromRef = useRef(null)
+    const toRef = useRef(null)
 
     useEffect(() => {
-        function handleResize() { setIsMobile(window.innerWidth <= 768) }
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
+        if (gwStart > 1) setCustomFrom(gwStart)
+    }, [gwStart])
 
     useEffect(() => {
         function handleClick(e) {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-                setDropdownOpen(false)
-            }
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false)
+            if (fromRef.current && !fromRef.current.contains(e.target)) setFromOpen(false)
+            if (toRef.current && !toRef.current.contains(e.target)) setToOpen(false)
         }
         document.addEventListener('mousedown', handleClick)
         return () => document.removeEventListener('mousedown', handleClick)
@@ -30,9 +44,17 @@ export default function Fixtures() {
 
     const gwRange = useMemo(() => {
         const gws = []
-        for (let i = startGw; i < startGw + span && i <= 38; i++) gws.push(i)
+        if (filter === 'custom') {
+            for (let i = customFrom; i <= customTo && i <= 38; i++) gws.push(i)
+        } else if (filter === 'all') {
+            for (let i = gwStart; i <= 38; i++) gws.push(i)
+        } else {
+            for (let i = gwStart; i < gwStart + filter && i <= 38; i++) gws.push(i)
+        }
         return gws
-    }, [startGw, span])
+    }, [filter, gwStart, customFrom, customTo])
+
+    const selectedLabel = FILTER_OPTIONS.find(o => o.value === filter)?.label || ''
 
     const teamFixtures = useMemo(() => {
         if (!fixtures || !teams.length) return []
@@ -73,23 +95,68 @@ export default function Fixtures() {
             <div className={styles.controls}>
                 <div className={styles.customSelect} ref={dropdownRef}>
                     <button className={styles.selectBtn} onClick={() => setDropdownOpen(!dropdownOpen)}>
-                        <span>From GW{startGw}</span>
+                        <span>{selectedLabel}</span>
                         <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${dropdownOpen ? styles.selectArrowOpen : ''}`} />
                     </button>
                     {dropdownOpen && (
                         <div className={styles.selectDropdown}>
-                            {Array.from({ length: 38 }, (_, i) => i + 1).map(g => (
+                            {FILTER_OPTIONS.map(opt => (
                                 <div
-                                    key={g}
-                                    className={`${styles.selectOption} ${g === startGw ? styles.selectOptionActive : ''}`}
-                                    onClick={() => { setStartGw(g); setDropdownOpen(false) }}
+                                    key={opt.value}
+                                    className={`${styles.selectOption} ${filter === opt.value ? styles.selectOptionActive : ''}`}
+                                    onClick={() => { setFilter(opt.value); setDropdownOpen(false) }}
                                 >
-                                    GW{g}
+                                    {opt.label}
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
+
+                {filter === 'custom' && (
+                    <div className={styles.customRange}>
+                        <span className={styles.rangeLabel}>GW</span>
+                        <div className={styles.customSelect} ref={fromRef}>
+                            <button className={styles.selectBtn} onClick={() => setFromOpen(!fromOpen)}>
+                                <span>{customFrom}</span>
+                                <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${fromOpen ? styles.selectArrowOpen : ''}`} />
+                            </button>
+                            {fromOpen && (
+                                <div className={styles.selectDropdown}>
+                                    {Array.from({ length: 38 - gwStart + 1 }, (_, i) => gwStart + i).map(g => (
+                                        <div
+                                            key={g}
+                                            className={`${styles.selectOption} ${g === customFrom ? styles.selectOptionActive : ''}`}
+                                            onClick={() => { setCustomFrom(g); if (g >= customTo) setCustomTo(Math.min(g + 1, 38)); setFromOpen(false) }}
+                                        >
+                                            {g}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <span className={styles.rangeSep}>—</span>
+                        <div className={styles.customSelect} ref={toRef}>
+                            <button className={styles.selectBtn} onClick={() => setToOpen(!toOpen)}>
+                                <span>{customTo}</span>
+                                <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${toOpen ? styles.selectArrowOpen : ''}`} />
+                            </button>
+                            {toOpen && (
+                                <div className={styles.selectDropdown}>
+                                    {Array.from({ length: 38 - customFrom }, (_, i) => customFrom + 1 + i).map(g => (
+                                        <div
+                                            key={g}
+                                            className={`${styles.selectOption} ${g === customTo ? styles.selectOptionActive : ''}`}
+                                            onClick={() => { setCustomTo(g); if (g < customFrom) setCustomFrom(g); setToOpen(false) }}
+                                        >
+                                            {g}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className={styles.tableWrapper}>

@@ -10,6 +10,34 @@
     flex-wrap: wrap;
 }
 
+.customRange {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.rangeLabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.rangeSelect {
+    padding: 0.4rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #0F1626;
+    color: #E6EDF5;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rangeSep {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
 .customSelect {
     position: relative;
 }
