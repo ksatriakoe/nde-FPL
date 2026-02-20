@@ -12,21 +12,19 @@
 }
 
 .statCard {
-    background: var(--bg-card);
+    background: #0F1626;
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 1.25rem;
-    transition: all 0.2s ease;
 }
 
 .statCard:hover {
-    border-color: var(--border-light);
-    transform: translateY(-2px);
+    border-color: var(--border-color);
 }
 
 .statLabel {
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -36,7 +34,7 @@
 .statValue {
     font-size: 1.75rem;
     font-weight: 800;
-    color: var(--text-primary);
+    color: #ffffff;
 }
 
 .statSub {
@@ -47,8 +45,8 @@
 
 /* Countdown */
 .countdown {
-    background: linear-gradient(135deg, rgba(55, 239, 186, 0.06) 0%, rgba(99, 102, 241, 0.06) 100%);
-    border: 1px solid rgba(55, 239, 186, 0.15);
+    background: #0F1626;
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 1.5rem;
     text-align: center;
@@ -78,10 +76,7 @@
 .timeValue {
     font-size: 2.5rem;
     font-weight: 800;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #22D3EE;
     line-height: 1;
 }
 
@@ -115,7 +110,7 @@
 }
 
 .quickCard {
-    background: var(--bg-card);
+    background: #0F1626;
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 1.25rem;
@@ -157,7 +152,7 @@
 }
 
 .topRank:nth-child(1) {
-    background: rgba(55, 239, 186, 0.15);
+    background: rgba(34, 211, 238, 0.15);
     color: var(--accent-primary);
 }
 

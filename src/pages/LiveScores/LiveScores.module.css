@@ -10,7 +10,7 @@
 }
 
 .matchCard {
-    background: var(--bg-card);
+    background: #0F1626;
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     overflow: hidden;
@@ -18,8 +18,7 @@
 }
 
 .matchCard:hover {
-    border-color: var(--border-light);
-    transform: translateY(-2px);
+    border-color: var(--border-color);
 }
 
 .matchHeader {
@@ -27,9 +26,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.6rem 1rem;
-    background: var(--bg-input);
+    background: #16213A;
     font-size: 0.7rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
@@ -83,7 +82,7 @@
     gap: 0.6rem;
     flex: 1;
     justify-content: flex-end;
-    flex-direction: row-reverse;
+    text-align: right;
 }
 
 .teamBadge {
@@ -121,21 +120,50 @@
     font-weight: 500;
 }
 
-.matchStats {
+.matchStatsRow {
     display: flex;
-    gap: 0.5rem;
     padding: 0.6rem 1rem;
     border-top: 1px solid var(--border-color);
-    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.statsHome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: flex-start;
+}
+
+.statsAway {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: flex-end;
+}
+
+.statsDivider {
+    width: 1px;
+    background: var(--border-color);
 }
 
 .statBadge {
     font-size: 0.7rem;
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    background: rgba(55, 239, 186, 0.08);
-    color: var(--accent-primary);
+    background: none;
+    color: #E6EDF5;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.statIcon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
 }
 
 .gwSelector {
@@ -145,20 +173,29 @@
 }
 
 .gwBtn {
-    padding: 0.4rem 1rem;
+    padding: 0.5rem 0.7rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    background: var(--bg-card);
-    color: var(--text-primary);
-    font-weight: 600;
+    background: #0F1626;
     cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s ease;
 }
 
 .gwBtn:hover {
-    border-color: var(--accent-primary);
-    background: rgba(55, 239, 186, 0.05);
+    opacity: 0.7;
+}
+
+.gwBtn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.gwArrow {
+    width: 16px;
+    height: 16px;
 }
 
 .gwLabel {

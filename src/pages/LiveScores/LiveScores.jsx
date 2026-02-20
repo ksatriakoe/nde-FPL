@@ -4,7 +4,7 @@ import { getTeamBadgeUrl } from '../../services/fplApi'
 import styles from './LiveScores.module.css'
 
 export default function LiveScores() {
-    const { fixtures, teams, currentGw, events, loading } = useFpl()
+    const { fixtures, teams, players, currentGw, events, loading } = useFpl()
     const [selectedGw, setSelectedGw] = useState(null)
 
     const gw = selectedGw || currentGw?.id || 1
@@ -17,6 +17,7 @@ export default function LiveScores() {
     }, [fixtures, gw])
 
     const getTeamInfo = (id) => teams.find(t => t.id === id)
+    const getPlayer = (id) => players.find(p => p.id === id)
 
     if (loading) {
         return (
@@ -37,11 +38,11 @@ export default function LiveScores() {
 
             <div className={styles.gwSelector}>
                 <button className={styles.gwBtn} onClick={() => setSelectedGw(Math.max(1, gw - 1))} disabled={gw <= 1}>
-                    ◀
+                    <img src="/left.svg" alt="Previous" className={styles.gwArrow} />
                 </button>
                 <span className={styles.gwLabel}>Gameweek {gw}</span>
                 <button className={styles.gwBtn} onClick={() => setSelectedGw(Math.min(38, gw + 1))} disabled={gw >= 38}>
-                    ▶
+                    <img src="/right.svg" alt="Next" className={styles.gwArrow} />
                 </button>
             </div>
 
@@ -90,6 +91,7 @@ export default function LiveScores() {
                                     )}
                                 </div>
                                 <div className={styles.teamAway}>
+                                    <span className={styles.teamName}>{away?.short_name || '?'}</span>
                                     {away && (
                                         <img
                                             src={getTeamBadgeUrl(away.code)}
@@ -97,31 +99,49 @@ export default function LiveScores() {
                                             className={styles.teamBadge}
                                         />
                                     )}
-                                    <span className={styles.teamName}>{away?.short_name || '?'}</span>
                                 </div>
                             </div>
-                            {(isFinished || isLive) && fix.stats && fix.stats.length > 0 && (
-                                <div className={styles.matchStats}>
-                                    {fix.stats.map((stat, idx) => {
-                                        const total = [...(stat.h || []), ...(stat.a || [])]
-                                        if (total.length === 0) return null
-                                        return total.map((s, j) => {
-                                            const p = teams.length > 0 ? s.element : null
-                                            return (
-                                                <span key={`${idx}-${j}`} className={styles.statBadge}>
-                                                    {stat.identifier === 'goals_scored' ? '⚽' :
-                                                        stat.identifier === 'assists' ? '🅰️' :
-                                                            stat.identifier === 'yellow_cards' ? '🟨' :
-                                                                stat.identifier === 'red_cards' ? '🟥' :
-                                                                    stat.identifier === 'saves' ? '🧤' :
-                                                                        stat.identifier === 'bonus' ? '⭐' : '•'}
-                                                    {' '}{stat.identifier.replace(/_/g, ' ')} ({s.value})
+                            {(isFinished || isLive) && fix.stats && fix.stats.length > 0 && (() => {
+                                const iconMap = {
+                                    goals_scored: '/goal.svg',
+                                    assists: '/assist.svg',
+                                    yellow_cards: '/yellow-card.svg',
+                                    red_cards: '/red-card.svg',
+                                    bonus: '/star.svg',
+                                }
+                                const homeStats = []
+                                const awayStats = []
+                                fix.stats.forEach((stat, idx) => {
+                                    const iconSrc = iconMap[stat.identifier]
+                                    if (!iconSrc) return
+                                        ; (stat.h || []).forEach((s, j) => {
+                                            const player = getPlayer(s.element)
+                                            homeStats.push(
+                                                <span key={`h-${idx}-${j}`} className={styles.statBadge}>
+                                                    <img src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
+                                                    {player?.web_name || 'Unknown'}
                                                 </span>
                                             )
                                         })
-                                    }).flat().filter(Boolean).slice(0, 6)}
-                                </div>
-                            )}
+                                        ; (stat.a || []).forEach((s, j) => {
+                                            const player = getPlayer(s.element)
+                                            awayStats.push(
+                                                <span key={`a-${idx}-${j}`} className={styles.statBadge}>
+                                                    {player?.web_name || 'Unknown'}
+                                                    <img src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
+                                                </span>
+                                            )
+                                        })
+                                })
+                                if (homeStats.length === 0 && awayStats.length === 0) return null
+                                return (
+                                    <div className={styles.matchStatsRow}>
+                                        <div className={styles.statsHome}>{homeStats}</div>
+                                        <div className={styles.statsDivider} />
+                                        <div className={styles.statsAway}>{awayStats}</div>
+                                    </div>
+                                )
+                            })()}
                         </div>
                     )
                 })}

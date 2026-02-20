@@ -98,7 +98,7 @@ export default function Dashboard() {
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Total Managers</div>
                     <div className={styles.statValue}>{totalManagers}</div>
-                    <div className={styles.statSub}>playing worldwide</div>
+                    <div className={styles.statSub}>Playing Worldwide</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Current GW</div>
@@ -108,12 +108,12 @@ export default function Dashboard() {
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Average Score</div>
                     <div className={styles.statValue}>{avgScore}</div>
-                    <div className={styles.statSub}>GW{currentGw?.id} average</div>
+                    <div className={styles.statSub}>GW{currentGw?.id} Average</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Highest Score</div>
                     <div className={styles.statValue}>{highestScore}</div>
-                    <div className={styles.statSub}>GW{currentGw?.id} best</div>
+                    <div className={styles.statSub}>GW{currentGw?.id} Best</div>
                 </div>
             </div>
 

@@ -10,25 +10,77 @@
     flex-wrap: wrap;
 }
 
-.gwRange {
+.customSelect {
+    position: relative;
+}
+
+.selectBtn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-.gwRange label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.gwRange select {
-    padding: 0.4rem 0.75rem;
+    padding: 0.5rem 0.85rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    background: var(--bg-card);
-    color: var(--text-primary);
+    background: #0F1626;
+    color: #E6EDF5;
     font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.selectBtn:hover {
+    border-color: var(--border-light);
+}
+
+.selectArrow {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+}
+
+.selectArrowOpen {
+    transform: rotate(180deg);
+}
+
+.selectDropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    z-index: 10;
+}
+
+.selectOption {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.selectOption:hover {
+    background: #16213A;
+    color: #E6EDF5;
+}
+
+.selectOptionActive {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 75vh;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
 }
 
 .fixtureTable {
@@ -36,8 +88,6 @@
     border-collapse: separate;
     border-spacing: 0;
     font-size: 0.8rem;
-    overflow-x: auto;
-    display: block;
 }
 
 .fixtureTable th {
@@ -47,10 +97,11 @@
     padding: 0.5rem 0.3rem;
     font-weight: 700;
     font-size: 0.7rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     text-align: center;
     border-bottom: 1px solid var(--border-color);
     min-width: 50px;
+    z-index: 3;
 }
 
 .fixtureTable th:first-child {
@@ -58,7 +109,7 @@
     min-width: 100px;
     position: sticky;
     left: 0;
-    z-index: 2;
+    z-index: 4;
 }
 
 .fixtureTable td {
@@ -78,18 +129,10 @@
     z-index: 1;
 }
 
-.fixtureTable tr:hover td {
-    background: var(--bg-card);
-}
-
-.fixtureTable tr:hover td:first-child {
-    background: var(--bg-card);
-}
-
 .fdrCell {
     border-radius: 4px;
     padding: 0.3rem 0.25rem !important;
-    color: var(--bg-primary);
+    color: #fff;
     font-weight: 700;
 }
 
@@ -103,4 +146,39 @@
     width: 20px;
     height: 20px;
     object-fit: contain;
+}
+
+@media (max-width: 768px) {
+    .tableWrapper {
+        max-height: 65vh;
+    }
+
+    .fixtureTable {
+        font-size: 0.7rem;
+    }
+
+    .fixtureTable th {
+        font-size: 0.6rem;
+        padding: 0.4rem 0.2rem;
+        min-width: 42px;
+    }
+
+    .fixtureTable td {
+        font-size: 0.62rem;
+        padding: 0.3rem 0.2rem;
+    }
+
+    .fixtureTable th:first-child {
+        min-width: 70px;
+    }
+
+    .teamBadgeSmall {
+        width: 16px;
+        height: 16px;
+    }
+
+    .fdrCell {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.15rem !important;
+    }
 }

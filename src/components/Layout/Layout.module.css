@@ -105,7 +105,7 @@
     width: 100%;
     text-align: left;
     text-decoration: none;
-    background: rgba(55, 239, 186, 0.08);
+    background: rgba(34, 211, 238, 0.08);
     color: var(--accent-primary);
     font-weight: 600;
 }
@@ -129,7 +129,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 2rem;
-    background: rgba(10, 14, 23, 0.8);
+    background: rgba(7, 11, 20, 0.8);
     backdrop-filter: blur(12px);
     position: sticky;
     top: 0;
@@ -177,6 +177,7 @@
 .content {
     padding: 2rem;
     max-width: 1400px;
+    margin: 0 auto;
 }
 
 .premiumBadge {

@@ -2,38 +2,42 @@
 
 :root {
   /* Base Colors */
-  --bg-primary: #0a0e17;
-  --bg-secondary: #111827;
-  --bg-card: #1a2235;
-  --bg-card-hover: #1f2a40;
-  --bg-input: #151d2e;
+  --bg-primary: #070B14;
+  --bg-secondary: #0F1626;
+  --bg-card: #16213A;
+  --bg-card-hover: #1c2a4a;
+  --bg-input: #0F1626;
 
   /* Accent */
-  --accent-primary: #37efba;
-  --accent-secondary: #6366f1;
-  --accent-purple: #8b5cf6;
-  --accent-gradient: linear-gradient(135deg, #37efba 0%, #6366f1 100%);
+  --accent-primary: #22D3EE;
+  --accent-secondary: #8B5CF6;
+  --accent-purple: #8B5CF6;
+  --accent-gradient: linear-gradient(135deg, #22D3EE 0%, #8B5CF6 100%);
+
+  /* Button */
+  --btn-primary: #1D4ED8;
+  --btn-hover: #2563EB;
 
   /* Text */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
+  --text-primary: #E6EDF5;
+  --text-secondary: #94A3B8;
   --text-muted: #475569;
 
   /* Borders */
-  --border-color: #1e293b;
-  --border-light: #334155;
+  --border-color: #16213A;
+  --border-light: #1D4ED8;
 
   /* FDR Colors */
-  --fdr-easy: #00ff87;
-  --fdr-medium: #ebcc00;
-  --fdr-hard: #ff5a5f;
-  --fdr-very-hard: #8b0000;
+  --fdr-easy: #10B981;
+  --fdr-medium: #22D3EE;
+  --fdr-hard: #4F46E5;
+  --fdr-very-hard: #F43F5E;
 
   /* Status */
-  --green: #22c55e;
-  --red: #ef4444;
-  --yellow: #eab308;
-  --blue: #3b82f6;
+  --green: #10B981;
+  --red: #F43F5E;
+  --yellow: #22D3EE;
+  --blue: #1D4ED8;
 
   /* Sizing */
   --sidebar-width: 240px;
@@ -88,10 +92,7 @@ a {
 .page-title {
   font-size: 1.75rem;
   font-weight: 800;
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #E6EDF5;
   margin-bottom: 1.5rem;
 }
 
@@ -114,13 +115,25 @@ a {
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fade-in {
@@ -128,6 +141,13 @@ a {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
