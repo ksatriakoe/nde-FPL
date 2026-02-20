@@ -104,11 +104,13 @@
 
 .tableWrapper {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: auto;
     max-height: 75vh;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
+    -webkit-overflow-scrolling: touch;
 }
 
 .fixtureTable {
@@ -177,8 +179,13 @@
 }
 
 @media (max-width: 768px) {
+    .page {
+        overflow-x: hidden;
+    }
+
     .tableWrapper {
         max-height: 65vh;
+        max-width: calc(100vw - 2rem);
     }
 
     .fixtureTable {
