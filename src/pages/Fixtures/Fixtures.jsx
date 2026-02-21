@@ -21,6 +21,7 @@ export default function Fixtures() {
     const [filter, setFilter] = useState(6)
     const [customFrom, setCustomFrom] = useState(gwStart)
     const [customTo, setCustomTo] = useState(38)
+    const [venueFilter, setVenueFilter] = useState('all')
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const [fromOpen, setFromOpen] = useState(false)
     const [toOpen, setToOpen] = useState(false)
@@ -73,11 +74,16 @@ export default function Fixtures() {
                         isHome,
                         difficulty: isHome ? m.team_h_difficulty : m.team_a_difficulty,
                     }
+                }).filter(m => {
+                    if (venueFilter === 'home') return m.isHome
+                    if (venueFilter === 'away') return !m.isHome
+                    return true
                 })
+                row[`gw${gw}_total`] = matches.length
             })
             return row
         }).sort((a, b) => a.team.name.localeCompare(b.team.name))
-    }, [fixtures, teams, gwRange])
+    }, [fixtures, teams, gwRange, venueFilter])
 
     if (loading) {
         return (
@@ -157,6 +163,17 @@ export default function Fixtures() {
                         </div>
                     </div>
                 )}
+                <div className={styles.venueFilter}>
+                    {['all', 'home', 'away'].map(v => (
+                        <button
+                            key={v}
+                            className={venueFilter === v ? styles.venueActive : styles.venueBtn}
+                            onClick={() => setVenueFilter(v)}
+                        >
+                            {v === 'all' ? 'All' : v === 'home' ? 'Home' : 'Away'}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className={styles.tableWrapper}>
@@ -182,11 +199,23 @@ export default function Fixtures() {
                                 </td>
                                 {gwRange.map(gw => {
                                     const matches = row[`gw${gw}`] || []
+                                    const totalMatches = row[`gw${gw}_total`] || 0
+                                    const isDGW = totalMatches >= 2
+                                    const isBGW = totalMatches === 0
                                     if (matches.length === 0) {
-                                        return <td key={gw} style={{ color: 'var(--text-muted)' }}>-</td>
+                                        return (
+                                            <td key={gw}>
+                                                {isBGW ? (
+                                                    <span className={styles.bgwBadge}>BGW</span>
+                                                ) : (
+                                                    <span style={{ color: 'var(--text-muted)' }}>-</span>
+                                                )}
+                                            </td>
+                                        )
                                     }
                                     return (
                                         <td key={gw}>
+                                            {isDGW && <span className={styles.dgwBadge}>DGW</span>}
                                             {matches.map((m, i) => (
                                                 <div
                                                     key={i}

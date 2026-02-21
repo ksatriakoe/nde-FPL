@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import LiveScores from './pages/LiveScores/LiveScores'
 import Fixtures from './pages/Fixtures/Fixtures'
 import Players from './pages/Players/Players'
+import PlayerDetail from './pages/Players/PlayerDetail'
 import PriceChanges from './pages/PriceChanges/PriceChanges'
 import Standings from './pages/Standings/Standings'
 
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/live" element={<LiveScores />} />
             <Route path="/fixtures" element={<Fixtures />} />
             <Route path="/players" element={<Players />} />
+            <Route path="/players/:id" element={<PlayerDetail />} />
             <Route path="/price-changes" element={<PriceChanges />} />
             <Route path="/standings" element={<Standings />} />
           </Route>

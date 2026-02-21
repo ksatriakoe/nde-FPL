@@ -178,6 +178,56 @@
     object-fit: contain;
 }
 
+.venueFilter {
+    display: flex;
+    gap: 2px;
+    background: #0F1626;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    padding: 2px;
+}
+
+.venueBtn {
+    padding: 0.35rem 0.75rem;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.venueBtn:hover {
+    color: var(--text-primary);
+}
+
+.venueActive {
+    composes: venueBtn;
+    background: var(--btn-primary);
+    color: #fff;
+}
+
+.bgwBadge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: rgba(71, 85, 105, 0.2);
+    padding: 0.15rem 0.35rem;
+    border-radius: 3px;
+    letter-spacing: 0.03em;
+}
+
+.dgwBadge {
+    display: block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #F59E0B;
+    margin-bottom: 2px;
+    letter-spacing: 0.03em;
+}
+
 @media (max-width: 768px) {
     .page {
         overflow-x: hidden;

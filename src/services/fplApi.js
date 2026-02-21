@@ -28,6 +28,13 @@ export async function fetchLive(gw) {
     return res.json()
 }
 
+export async function fetchPlayerSummary(playerId) {
+    const url = isDev ? `/api/fpl/element-summary/${playerId}/` : `/api/element-summary?id=${playerId}`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Failed to fetch player summary')
+    return res.json()
+}
+
 export function getTeamBadgeUrl(teamCode) {
     return `https://resources.premierleague.com/premierleague/badges/70/t${teamCode}.png`
 }
