@@ -103,45 +103,49 @@ export default function Players() {
             <h1 className="page-title">Player Stats</h1>
 
             <div className={styles.controls}>
-                <input
-                    className={styles.searchInput}
-                    placeholder="Search player..."
-                    value={search}
-                    onChange={e => { setSearch(e.target.value); setPage(0) }}
-                />
-                {['ALL', 'GKP', 'DEF', 'MID', 'FWD'].map(pos => (
-                    <button
-                        key={pos}
-                        className={posFilter === pos ? styles.filterBtnActive : styles.filterBtn}
-                        onClick={() => { setPosFilter(pos); setPage(0) }}
-                    >
-                        {pos}
-                    </button>
-                ))}
-                <div className={styles.customSelect} ref={teamDropdownRef}>
-                    <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
-                        <span>{selectedTeamLabel}</span>
-                        <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${teamDropdownOpen ? styles.selectArrowOpen : ''}`} />
-                    </button>
-                    {teamDropdownOpen && (
-                        <div className={styles.selectDropdown}>
-                            <div
-                                className={`${styles.selectOption} ${teamFilter === 'ALL' ? styles.selectOptionActive : ''}`}
-                                onClick={() => { setTeamFilter('ALL'); setPage(0); setTeamDropdownOpen(false) }}
-                            >
-                                All Teams
-                            </div>
-                            {sortedTeams.map(t => (
+                <div className={styles.searchRow}>
+                    <input
+                        className={styles.searchInput}
+                        placeholder="Search player..."
+                        value={search}
+                        onChange={e => { setSearch(e.target.value); setPage(0) }}
+                    />
+                </div>
+                <div className={styles.filterRow}>
+                    {['ALL', 'GKP', 'DEF', 'MID', 'FWD'].map(pos => (
+                        <button
+                            key={pos}
+                            className={posFilter === pos ? styles.filterBtnActive : styles.filterBtn}
+                            onClick={() => { setPosFilter(pos); setPage(0) }}
+                        >
+                            {pos}
+                        </button>
+                    ))}
+                    <div className={styles.customSelect} ref={teamDropdownRef}>
+                        <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
+                            <span>{selectedTeamLabel}</span>
+                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${teamDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                        </button>
+                        {teamDropdownOpen && (
+                            <div className={styles.selectDropdown}>
                                 <div
-                                    key={t.id}
-                                    className={`${styles.selectOption} ${teamFilter === String(t.id) ? styles.selectOptionActive : ''}`}
-                                    onClick={() => { setTeamFilter(String(t.id)); setPage(0); setTeamDropdownOpen(false) }}
+                                    className={`${styles.selectOption} ${teamFilter === 'ALL' ? styles.selectOptionActive : ''}`}
+                                    onClick={() => { setTeamFilter('ALL'); setPage(0); setTeamDropdownOpen(false) }}
                                 >
-                                    {t.name}
+                                    All Teams
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                                {sortedTeams.map(t => (
+                                    <div
+                                        key={t.id}
+                                        className={`${styles.selectOption} ${teamFilter === String(t.id) ? styles.selectOptionActive : ''}`}
+                                        onClick={() => { setTeamFilter(String(t.id)); setPage(0); setTeamDropdownOpen(false) }}
+                                    >
+                                        {t.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -196,9 +200,15 @@ export default function Players() {
             <div className={styles.paginationRow}>
                 <span>{filtered.length} players found</span>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <button className={styles.pageBtn} onClick={() => setPage(p => p - 1)} disabled={page === 0}>◀ Prev</button>
+                    <button className={styles.pageBtn} onClick={() => setPage(p => p - 1)} disabled={page === 0}>
+                        <img src="/left.svg" alt="" className={styles.pageArrow} />
+                        Prev
+                    </button>
                     <span>Page {page + 1} of {totalPages}</span>
-                    <button className={styles.pageBtn} onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}>Next ▶</button>
+                    <button className={styles.pageBtn} onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}>
+                        Next
+                        <img src="/right.svg" alt="" className={styles.pageArrow} />
+                    </button>
                 </div>
             </div>
         </div>
