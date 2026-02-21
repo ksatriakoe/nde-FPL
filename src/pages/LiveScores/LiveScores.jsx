@@ -116,19 +116,25 @@ export default function LiveScores() {
                                     if (!iconSrc) return
                                         ; (stat.h || []).forEach((s, j) => {
                                             const player = getPlayer(s.element)
+                                            const count = s.value || 1
                                             homeStats.push(
                                                 <span key={`h-${idx}-${j}`} className={styles.statBadge}>
-                                                    <img src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
+                                                    {Array.from({ length: count }, (_, k) => (
+                                                        <img key={k} src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
+                                                    ))}
                                                     {player?.web_name || 'Unknown'}
                                                 </span>
                                             )
                                         })
                                         ; (stat.a || []).forEach((s, j) => {
                                             const player = getPlayer(s.element)
+                                            const count = s.value || 1
                                             awayStats.push(
                                                 <span key={`a-${idx}-${j}`} className={styles.statBadge}>
                                                     {player?.web_name || 'Unknown'}
-                                                    <img src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
+                                                    {Array.from({ length: count }, (_, k) => (
+                                                        <img key={k} src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
+                                                    ))}
                                                 </span>
                                             )
                                         })

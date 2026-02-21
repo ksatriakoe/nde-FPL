@@ -103,7 +103,7 @@ export default function Dashboard() {
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Current GW</div>
                     <div className={styles.statValue}>{gw?.id || '-'}</div>
-                    <div className={styles.statSub}>{currentGw?.finished === false ? '🔴 In Progress' : <><img src="/check.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} />Finished</>}</div>
+                    <div className={styles.statSub}>{currentGw?.finished === false ? <><img src="/circle-red.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} />In Progress</> : <><img src="/check.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} />Finished</>}</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Average Score</div>
