@@ -5,12 +5,12 @@ import styles from './Layout.module.css'
 
 const navItems = [
     { label: 'Free', section: true },
-    { to: '/', icon: '⚡', label: 'Dashboard' },
-    { to: '/live', icon: '🔴', label: 'Live Scores' },
-    { to: '/fixtures', icon: '📅', label: 'Fixtures' },
-    { to: '/players', icon: '👤', label: 'Players' },
-    { to: '/price-changes', icon: '💰', label: 'Price Changes' },
-    { to: '/standings', icon: '🏆', label: 'Standings' },
+    { to: '/', icon: <img src="/dashboard.svg" alt="" className="nav-svg-icon" />, label: 'Dashboard' },
+    { to: '/live', icon: <img src="/circle-menu.svg" alt="" className="nav-svg-icon" />, label: 'Live Scores' },
+    { to: '/fixtures', icon: <img src="/calender.svg" alt="" className="nav-svg-icon" />, label: 'Fixtures' },
+    { to: '/players', icon: <img src="/player.svg" alt="" className="nav-svg-icon" />, label: 'Players' },
+    { to: '/price-changes', icon: <img src="/money.svg" alt="" className="nav-svg-icon" />, label: 'Price Changes' },
+    { to: '/standings', icon: <img src="/trophy.svg" alt="" className="nav-svg-icon" />, label: 'Standings' },
     { label: 'Premium', section: true, premium: true },
     { to: '#', icon: '🤖', label: 'AI Picks', locked: true },
     { to: '#', icon: '📊', label: 'Analytics', locked: true },

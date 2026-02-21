@@ -143,12 +143,14 @@
 }
 
 .gwBadge {
-    background: var(--accent-gradient);
-    color: var(--bg-primary);
+    background: #0F1626;
+    color: #F59E0B;
     font-weight: 700;
     font-size: 0.75rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 20px;
+    padding: 0.3rem 0.85rem;
+    border-radius: 6px;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    letter-spacing: 0.04em;
 }
 
 .headerRight {

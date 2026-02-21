@@ -151,3 +151,10 @@ a {
     opacity: 0.5;
   }
 }
+
+.nav-svg-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  vertical-align: middle;
+}

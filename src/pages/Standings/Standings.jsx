@@ -68,58 +68,60 @@ export default function Standings() {
         <div className={styles.page}>
             <h1 className="page-title">Premier League Standings</h1>
 
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Team</th>
-                        <th>P</th>
-                        <th>W</th>
-                        <th>D</th>
-                        <th>L</th>
-                        <th>GF</th>
-                        <th>GA</th>
-                        <th>GD</th>
-                        <th>Pts</th>
-                        <th>Form</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {table.map((row, i) => {
-                        const pos = i + 1
-                        return (
-                            <tr key={row.team.id}>
-                                <td className={`${styles.posCol} ${getZoneClass(pos)}`}>{pos}</td>
-                                <td>
-                                    <div className={styles.teamCell}>
-                                        <img src={getTeamBadgeUrl(row.team.code)} alt="" className={styles.badge} />
-                                        <span className={styles.teamName}>{row.team.name}</span>
-                                    </div>
-                                </td>
-                                <td>{row.played}</td>
-                                <td>{row.won}</td>
-                                <td>{row.drawn}</td>
-                                <td>{row.lost}</td>
-                                <td>{row.gf}</td>
-                                <td>{row.ga}</td>
-                                <td className={row.gd >= 0 ? styles.gdPos : styles.gdNeg}>
-                                    {row.gd > 0 ? '+' : ''}{row.gd}
-                                </td>
-                                <td className={styles.pts}>{row.points}</td>
-                                <td>
-                                    <div className={styles.formDots}>
-                                        {row.form.map((f, j) => (
-                                            <span key={j} className={f === 'W' ? styles.formW : f === 'D' ? styles.formD : styles.formL}>
-                                                {f}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </table>
+            <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Team</th>
+                            <th>P</th>
+                            <th>W</th>
+                            <th>D</th>
+                            <th>L</th>
+                            <th>GF</th>
+                            <th>GA</th>
+                            <th>GD</th>
+                            <th>Pts</th>
+                            <th>Form</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {table.map((row, i) => {
+                            const pos = i + 1
+                            return (
+                                <tr key={row.team.id}>
+                                    <td className={`${styles.posCol} ${getZoneClass(pos)}`}>{pos}</td>
+                                    <td>
+                                        <div className={styles.teamCell}>
+                                            <img src={getTeamBadgeUrl(row.team.code)} alt="" className={styles.badge} />
+                                            <span className={styles.teamName}>{row.team.name}</span>
+                                        </div>
+                                    </td>
+                                    <td>{row.played}</td>
+                                    <td>{row.won}</td>
+                                    <td>{row.drawn}</td>
+                                    <td>{row.lost}</td>
+                                    <td>{row.gf}</td>
+                                    <td>{row.ga}</td>
+                                    <td className={row.gd >= 0 ? styles.gdPos : styles.gdNeg}>
+                                        {row.gd > 0 ? '+' : ''}{row.gd}
+                                    </td>
+                                    <td className={styles.pts}>{row.points}</td>
+                                    <td>
+                                        <div className={styles.formDots}>
+                                            {row.form.map((f, j) => (
+                                                <span key={j} className={f === 'W' ? styles.formW : f === 'D' ? styles.formD : styles.formL}>
+                                                    {f}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </table>
+            </div>
 
             <div className={styles.legend}>
                 <div className={styles.legendItem}>
@@ -127,7 +129,7 @@ export default function Standings() {
                     Champions League
                 </div>
                 <div className={styles.legendItem}>
-                    <span className={styles.legendDot} style={{ background: 'var(--yellow)' }} />
+                    <span className={styles.legendDot} style={{ background: '#F59E0B' }} />
                     Europa League
                 </div>
                 <div className={styles.legendItem}>

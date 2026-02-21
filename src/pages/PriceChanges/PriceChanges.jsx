@@ -57,14 +57,14 @@ export default function PriceChanges() {
 
             <div className={styles.grid}>
                 <div className={styles.section}>
-                    <div className={styles.risersTitle}>🟢 Risers ({risers.length})</div>
+                    <div className={styles.risersTitle}><img src="/circle-green.svg" alt="" style={{ width: 14, height: 14 }} /> Risers ({risers.length})</div>
                     {risers.length > 0
                         ? risers.map(p => renderPlayer(p, 'up'))
                         : <div className={styles.emptyState}>No risers this gameweek</div>
                     }
                 </div>
                 <div className={styles.section}>
-                    <div className={styles.fallersTitle}>🔴 Fallers ({fallers.length})</div>
+                    <div className={styles.fallersTitle}><img src="/circle-red.svg" alt="" style={{ width: 14, height: 14 }} /> Fallers ({fallers.length})</div>
                     {fallers.length > 0
                         ? fallers.map(p => renderPlayer(p, 'down'))
                         : <div className={styles.emptyState}>No fallers this gameweek</div>

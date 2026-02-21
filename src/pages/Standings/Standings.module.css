@@ -2,17 +2,29 @@
     animation: fadeIn 0.4s ease;
 }
 
+.tableWrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 75vh;
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    margin-top: 1.5rem;
+    -webkit-overflow-scrolling: touch;
+}
+
 .table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    margin-top: 1.5rem;
 }
 
 .table th {
     position: sticky;
     top: 0;
-    background: var(--bg-secondary);
+    background: #16213A;
     padding: 0.7rem 0.6rem;
     text-align: left;
     font-size: 0.7rem;
@@ -21,6 +33,18 @@
     text-transform: uppercase;
     letter-spacing: 0.03em;
     border-bottom: 2px solid var(--border-color);
+    z-index: 3;
+}
+
+.table th:first-child,
+.table th:nth-child(2) {
+    position: sticky;
+    left: 0;
+    z-index: 4;
+}
+
+.table th:nth-child(2) {
+    left: 36px;
 }
 
 .table td {
@@ -30,6 +54,23 @@
 }
 
 .table tr:hover td {
+    background: var(--bg-card-hover);
+}
+
+.table td:first-child,
+.table td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    background: #0F1626;
+    z-index: 1;
+}
+
+.table td:nth-child(2) {
+    left: 36px;
+}
+
+.table tr:hover td:first-child,
+.table tr:hover td:nth-child(2) {
     background: var(--bg-card-hover);
 }
 
@@ -45,7 +86,7 @@
 }
 
 .europaZone {
-    border-left: 3px solid var(--yellow);
+    border-left: 3px solid #F59E0B;
 }
 
 .confZone {
@@ -111,7 +152,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--yellow);
+    background: #F59E0B;
     color: var(--bg-primary);
 }
 
@@ -131,7 +172,7 @@
 .pts {
     font-weight: 800;
     font-size: 1rem;
-    color: var(--accent-primary);
+    color: #F59E0B;
 }
 
 .gd {
@@ -167,4 +208,62 @@
     width: 10px;
     height: 10px;
     border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+    .page {
+        overflow-x: hidden;
+    }
+
+    .tableWrapper {
+        max-height: 65vh;
+        max-width: calc(100vw - 2rem);
+    }
+
+    .table {
+        font-size: 0.7rem;
+        width: auto;
+        min-width: max-content;
+    }
+
+    .table th {
+        font-size: 0.6rem;
+        padding: 0.5rem 0.4rem;
+        min-width: 32px;
+    }
+
+    .table th:first-child {
+        min-width: 32px;
+    }
+
+    .table th:nth-child(2) {
+        min-width: 120px;
+        left: 32px;
+    }
+
+    .table td {
+        font-size: 0.72rem;
+        padding: 0.45rem 0.4rem;
+    }
+
+    .table td:first-child {
+        min-width: 32px;
+    }
+
+    .table td:nth-child(2) {
+        left: 32px;
+    }
+
+    .badge {
+        width: 18px;
+        height: 18px;
+    }
+
+    .formW,
+    .formD,
+    .formL {
+        width: 16px;
+        height: 16px;
+        font-size: 0.5rem;
+    }
 }
