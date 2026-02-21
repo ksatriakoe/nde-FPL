@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
 import styles from './Players.module.css'
@@ -13,6 +13,18 @@ export default function Players() {
     const [sortKey, setSortKey] = useState('total_points')
     const [sortDir, setSortDir] = useState('desc')
     const [page, setPage] = useState(0)
+    const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
+    const teamDropdownRef = useRef(null)
+
+    useEffect(() => {
+        function handleClick(e) {
+            if (teamDropdownRef.current && !teamDropdownRef.current.contains(e.target)) {
+                setTeamDropdownOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [])
 
     const handleSort = (key) => {
         if (sortKey === key) {
@@ -23,6 +35,14 @@ export default function Players() {
         }
         setPage(0)
     }
+
+    const sortedTeams = useMemo(() => {
+        return [...teams].sort((a, b) => a.name.localeCompare(b.name))
+    }, [teams])
+
+    const selectedTeamLabel = teamFilter === 'ALL'
+        ? 'All Teams'
+        : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const filtered = useMemo(() => {
         return players
@@ -98,63 +118,80 @@ export default function Players() {
                         {pos}
                     </button>
                 ))}
-                <select
-                    className={styles.select}
-                    value={teamFilter}
-                    onChange={e => { setTeamFilter(e.target.value); setPage(0) }}
-                >
-                    <option value="ALL">All Teams</option>
-                    {teams.sort((a, b) => a.name.localeCompare(b.name)).map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                </select>
+                <div className={styles.customSelect} ref={teamDropdownRef}>
+                    <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
+                        <span>{selectedTeamLabel}</span>
+                        <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${teamDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                    </button>
+                    {teamDropdownOpen && (
+                        <div className={styles.selectDropdown}>
+                            <div
+                                className={`${styles.selectOption} ${teamFilter === 'ALL' ? styles.selectOptionActive : ''}`}
+                                onClick={() => { setTeamFilter('ALL'); setPage(0); setTeamDropdownOpen(false) }}
+                            >
+                                All Teams
+                            </div>
+                            {sortedTeams.map(t => (
+                                <div
+                                    key={t.id}
+                                    className={`${styles.selectOption} ${teamFilter === String(t.id) ? styles.selectOptionActive : ''}`}
+                                    onClick={() => { setTeamFilter(String(t.id)); setPage(0); setTeamDropdownOpen(false) }}
+                                >
+                                    {t.name}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Player</th>
-                        <SortTh label="Pos" field="element_type" />
-                        <SortTh label="Price" field="now_cost" />
-                        <SortTh label="Pts" field="total_points" />
-                        <SortTh label="Form" field="form" />
-                        <SortTh label="GS" field="goals_scored" />
-                        <SortTh label="A" field="assists" />
-                        <SortTh label="CS" field="clean_sheets" />
-                        <SortTh label="Mins" field="minutes" />
-                        <SortTh label="Own%" field="selected_by_percent" />
-                    </tr>
-                </thead>
-                <tbody>
-                    {paginated.map((p, i) => {
-                        const team = getTeam(p.team)
-                        return (
-                            <tr key={p.id}>
-                                <td style={{ color: 'var(--text-muted)' }}>{page * PER_PAGE + i + 1}</td>
-                                <td>
-                                    <div className={styles.playerCell}>
-                                        {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
-                                        <div>
-                                            <div className={styles.playerName}>{p.web_name}</div>
-                                            <div className={styles.playerTeam}>{team?.short_name}</div>
+            <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <SortTh label="Pos" field="element_type" />
+                            <SortTh label="Price" field="now_cost" />
+                            <SortTh label="Pts" field="total_points" />
+                            <SortTh label="Form" field="form" />
+                            <SortTh label="GS" field="goals_scored" />
+                            <SortTh label="A" field="assists" />
+                            <SortTh label="CS" field="clean_sheets" />
+                            <SortTh label="Mins" field="minutes" />
+                            <SortTh label="Own%" field="selected_by_percent" />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {paginated.map((p, i) => {
+                            const team = getTeam(p.team)
+                            return (
+                                <tr key={p.id}>
+                                    <td style={{ color: 'var(--text-muted)' }}>{page * PER_PAGE + i + 1}</td>
+                                    <td>
+                                        <div className={styles.playerCell}>
+                                            {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
+                                            <div>
+                                                <div className={styles.playerName}>{p.web_name}</div>
+                                                <div className={styles.playerTeam}>{team?.short_name}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td><span className={posClass(p.element_type)}>{getPositionShort(p.element_type)}</span></td>
-                                <td>£{(p.now_cost / 10).toFixed(1)}m</td>
-                                <td style={{ fontWeight: 700 }}>{p.total_points}</td>
-                                <td><span className={formClass(p.form)}>{p.form}</span></td>
-                                <td>{p.goals_scored}</td>
-                                <td>{p.assists}</td>
-                                <td>{p.clean_sheets}</td>
-                                <td>{p.minutes}</td>
-                                <td>{p.selected_by_percent}%</td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </table>
+                                    </td>
+                                    <td><span className={posClass(p.element_type)}>{getPositionShort(p.element_type)}</span></td>
+                                    <td>£{(p.now_cost / 10).toFixed(1)}m</td>
+                                    <td style={{ fontWeight: 700 }}>{p.total_points}</td>
+                                    <td><span className={formClass(p.form)}>{p.form}</span></td>
+                                    <td>{p.goals_scored}</td>
+                                    <td>{p.assists}</td>
+                                    <td>{p.clean_sheets}</td>
+                                    <td>{p.minutes}</td>
+                                    <td>{p.selected_by_percent}%</td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </table>
+            </div>
 
             <div className={styles.paginationRow}>
                 <span>{filtered.length} players found</span>

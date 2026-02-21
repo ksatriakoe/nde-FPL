@@ -7,6 +7,7 @@
     gap: 0.75rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .searchInput {
@@ -15,7 +16,7 @@
     padding: 0.55rem 1rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    background: var(--bg-card);
+    background: #0F1626;
     color: var(--text-primary);
     font-size: 0.85rem;
     font-family: inherit;
@@ -35,7 +36,7 @@
     padding: 0.55rem 1rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    background: var(--bg-card);
+    background: #0F1626;
     color: var(--text-secondary);
     font-size: 0.8rem;
     cursor: pointer;
@@ -62,14 +63,83 @@
     color: var(--accent-primary);
 }
 
-.select {
-    padding: 0.55rem 0.75rem;
+/* Custom Team Dropdown */
+.customSelect {
+    position: relative;
+}
+
+.selectBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.85rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    background: var(--bg-card);
-    color: var(--text-primary);
-    font-size: 0.8rem;
+    background: #0F1626;
+    color: #E6EDF5;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
     font-family: inherit;
+}
+
+.selectBtn:hover {
+    border-color: var(--border-light);
+}
+
+.selectArrow {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+}
+
+.selectArrowOpen {
+    transform: rotate(180deg);
+}
+
+.selectDropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    z-index: 10;
+}
+
+.selectOption {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.1s ease;
+    white-space: nowrap;
+}
+
+.selectOption:hover {
+    background: #16213A;
+    color: #E6EDF5;
+}
+
+.selectOptionActive {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+/* Table Wrapper for scrollable mobile */
+.tableWrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 75vh;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    -webkit-overflow-scrolling: touch;
 }
 
 .table {
@@ -93,10 +163,22 @@
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
+    z-index: 3;
 }
 
 .table th:hover {
     color: var(--accent-primary);
+}
+
+.table th:first-child,
+.table th:nth-child(2) {
+    position: sticky;
+    left: 0;
+    z-index: 4;
+}
+
+.table th:nth-child(2) {
+    left: 32px;
 }
 
 .sortIcon {
@@ -112,6 +194,23 @@
 }
 
 .table tr:hover td {
+    background: var(--bg-card-hover);
+}
+
+.table td:first-child,
+.table td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    background: var(--bg-primary);
+    z-index: 1;
+}
+
+.table td:nth-child(2) {
+    left: 32px;
+}
+
+.table tr:hover td:first-child,
+.table tr:hover td:nth-child(2) {
     background: var(--bg-card-hover);
 }
 
@@ -193,7 +292,7 @@
 .formLow {
     font-weight: 700;
     font-size: 0.82rem;
-    color: var(--red);
+    color: #F59E0B;
 }
 
 .teamBadge {
@@ -229,4 +328,65 @@
 .pageBtn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .page {
+        overflow-x: hidden;
+    }
+
+    .tableWrapper {
+        max-height: 65vh;
+        max-width: calc(100vw - 2rem);
+    }
+
+    .table {
+        font-size: 0.7rem;
+        width: auto;
+        min-width: max-content;
+    }
+
+    .table th {
+        font-size: 0.6rem;
+        padding: 0.4rem 0.3rem;
+        min-width: 42px;
+    }
+
+    .table th:first-child {
+        min-width: 28px;
+    }
+
+    .table th:nth-child(2) {
+        min-width: 100px;
+        left: 28px;
+    }
+
+    .table td {
+        font-size: 0.72rem;
+        padding: 0.4rem 0.3rem;
+    }
+
+    .table td:nth-child(2) {
+        left: 28px;
+    }
+
+    .teamBadge {
+        width: 16px;
+        height: 16px;
+    }
+
+    .controls {
+        gap: 0.5rem;
+    }
+
+    .searchInput {
+        min-width: 150px;
+    }
+
+    .filterBtn,
+    .filterBtnActive {
+        padding: 0.4rem 0.65rem;
+        font-size: 0.7rem;
+    }
 }

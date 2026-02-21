@@ -27,7 +27,7 @@ function Countdown({ deadline }) {
 
     return (
         <div className={styles.countdown}>
-            <div className={styles.countdownTitle}>⏰ Deadline Approaching</div>
+            <div className={styles.countdownTitle}><img src="/clock.svg" alt="" style={{ width: 18, height: 18, verticalAlign: 'middle', marginRight: 6 }} />Deadline Approaching</div>
             <div className={styles.countdownTimer}>
                 <div className={styles.timeBlock}>
                     <span className={styles.timeValue}>{pad(timeLeft.d)}</span>
@@ -103,7 +103,7 @@ export default function Dashboard() {
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Current GW</div>
                     <div className={styles.statValue}>{gw?.id || '-'}</div>
-                    <div className={styles.statSub}>{currentGw?.finished === false ? '🔴 In Progress' : '✅ Finished'}</div>
+                    <div className={styles.statSub}>{currentGw?.finished === false ? '🔴 In Progress' : <><img src="/check.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} />Finished</>}</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statLabel}>Average Score</div>
@@ -119,7 +119,7 @@ export default function Dashboard() {
 
             <div className={styles.quickGrid}>
                 <div className={styles.quickCard}>
-                    <div className={styles.quickTitle}>🏅 Top Points Scorers</div>
+                    <div className={styles.quickTitle}><img src="/medal.svg" alt="" style={{ width: 20, height: 20 }} />Top Points Scorers</div>
                     {topPlayers.map((p, i) => {
                         const team = getTeam(p.team)
                         return (
@@ -135,7 +135,7 @@ export default function Dashboard() {
                     })}
                 </div>
                 <div className={styles.quickCard}>
-                    <div className={styles.quickTitle}>🔥 Most Transferred In</div>
+                    <div className={styles.quickTitle}><img src="/fire.svg" alt="" style={{ width: 20, height: 20 }} />Most Transferred In</div>
                     {mostTransferred.map((p, i) => {
                         const team = getTeam(p.team)
                         return (
