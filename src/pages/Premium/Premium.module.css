@@ -841,13 +841,9 @@
     }
 
     .paginationRow {
-        flex-direction: column;
+        flex-direction: row;
         gap: 0.5rem;
-        align-items: stretch;
-        text-align: center;
-    }
-
-    .paginationRow>div {
-        justify-content: center;
+        align-items: center;
+        justify-content: space-between;
     }
 }

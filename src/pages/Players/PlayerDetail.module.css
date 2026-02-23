@@ -384,11 +384,12 @@
     .historyWrapper {
         max-height: 50vh;
         max-width: calc(100vw - 2.5rem);
+        width: 100%;
     }
 
     .historyTable {
-        width: auto;
-        min-width: max-content;
+        width: 100%;
+        min-width: 100%;
     }
 
     .historyTable th {
