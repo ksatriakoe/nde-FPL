@@ -66,6 +66,23 @@ export default function Watchlist() {
         return map[t] || styles.posTag
     }
 
+    const formClass = (f) => {
+        const v = parseFloat(f)
+        if (v >= 6) return styles.formHigh
+        if (v >= 3.5) return styles.formMid
+        return styles.formLow
+    }
+
+    const statusClass = (s) => {
+        const map = { a: styles.statusAvail, i: styles.statusInjured, d: styles.statusDoubtful }
+        return map[s] || styles.statusUnavail
+    }
+
+    const statusLabel = (s) => {
+        const map = { a: 'Available', i: 'Injured', d: 'Doubtful' }
+        return map[s] || 'Unavail'
+    }
+
     if (loading) {
         return (
             <div className={styles.page}>
@@ -100,7 +117,7 @@ export default function Watchlist() {
                                         {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
                                         <div>
                                             <span style={{ fontWeight: 600 }}>{p.web_name}</span>
-                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: 6 }}>
+                                            <span className={styles.addPlayerInfo}>
                                                 {team?.short_name} · {getPositionShort(p.element_type)} · £{(p.now_cost / 10).toFixed(1)}m
                                             </span>
                                         </div>
@@ -165,37 +182,22 @@ export default function Watchlist() {
                                         </td>
                                         <td><span className={posClass(p.element_type)}>{getPositionShort(p.element_type)}</span></td>
                                         <td>£{(p.now_cost / 10).toFixed(1)}m</td>
-                                        <td style={{
-                                            fontWeight: 700,
-                                            color: parseFloat(p.form) >= 6 ? 'var(--green)' :
-                                                parseFloat(p.form) >= 3.5 ? 'var(--yellow)' : '#F59E0B'
-                                        }}>{p.form}</td>
+                                        <td><span className={formClass(p.form)}>{p.form}</span></td>
                                         <td style={{ fontWeight: 700 }}>{p.total_points}</td>
                                         <td>{p.selected_by_percent}%</td>
                                         <td>
-                                            <span style={{
-                                                fontSize: '0.7rem',
-                                                fontWeight: 700,
-                                                padding: '0.15rem 0.4rem',
-                                                borderRadius: 4,
-                                                background: p.status === 'a' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-                                                color: p.status === 'a' ? 'var(--green)' : 'var(--red)',
-                                            }}>
-                                                {p.status === 'a' ? 'Available' : p.status === 'i' ? 'Injured' : p.status === 'd' ? 'Doubtful' : 'Unavail'}
+                                            <span className={statusClass(p.status)}>
+                                                {statusLabel(p.status)}
                                             </span>
                                         </td>
                                         <td>
-                                            <div style={{ display: 'flex', gap: 3 }}>
+                                            <div className={styles.fdrRow}>
                                                 {(p.upcoming || []).map((f, j) => (
-                                                    <span key={j} style={{
-                                                        display: 'inline-block',
-                                                        padding: '0.15rem 0.35rem',
-                                                        borderRadius: 4,
-                                                        fontWeight: 700,
-                                                        fontSize: '0.65rem',
-                                                        color: '#fff',
-                                                        background: getDifficultyColor(f.difficulty)
-                                                    }}>
+                                                    <span
+                                                        key={j}
+                                                        className={styles.fdrCell}
+                                                        style={{ background: getDifficultyColor(f.difficulty) }}
+                                                    >
                                                         {f.opponent}({f.isHome ? 'H' : 'A'})
                                                     </span>
                                                 ))}
@@ -216,7 +218,7 @@ export default function Watchlist() {
                 <div className={styles.empty}>
                     <div className={styles.emptyIcon}>👀</div>
                     <div>Belum ada pemain di watchlist</div>
-                    <div style={{ fontSize: '0.8rem', marginTop: 4 }}>Cari dan tambah pemain yang ingin kamu pantau</div>
+                    <div className={styles.emptyHint}>Cari dan tambah pemain yang ingin kamu pantau</div>
                 </div>
             )}
         </div>
