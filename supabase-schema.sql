@@ -30,3 +30,34 @@ CREATE POLICY "Anon insert access" ON subscriptions
 -- Allow updates for existing subscriptions
 CREATE POLICY "Anon update access" ON subscriptions
     FOR UPDATE USING (true);
+
+-- ============================================
+-- AI Results table (stores Gemini AI outputs per user)
+-- ============================================
+CREATE TABLE IF NOT EXISTS ai_results (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    wallet_address TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('captain_picks', 'predictions', 'gw_summary', 'transfers')),
+    gameweek INTEGER NOT NULL,
+    result TEXT NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (wallet_address, type)
+);
+
+-- Index for fast wallet lookups
+CREATE INDEX IF NOT EXISTS idx_ai_results_wallet ON ai_results(wallet_address);
+
+-- RLS policies
+ALTER TABLE ai_results ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read their own results
+CREATE POLICY "Public read ai_results" ON ai_results
+    FOR SELECT USING (true);
+
+-- Allow insert from anon key
+CREATE POLICY "Anon insert ai_results" ON ai_results
+    FOR INSERT WITH CHECK (true);
+
+-- Allow update from anon key
+CREATE POLICY "Anon update ai_results" ON ai_results
+    FOR UPDATE USING (true);

@@ -1,17 +1,35 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
+import { formatAiResponse } from '../../services/formatAi'
+import { loadAiResult, saveAiResult } from '../../services/aiResults'
 import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function CaptainPicks() {
     const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
     const { openSettings } = useSettings()
+    const { wallet } = useAuth()
     const [analyzing, setAnalyzing] = useState(false)
     const [result, setResult] = useState('')
+    const [savedGw, setSavedGw] = useState(null)
+    const [page, setPage] = useState(0)
+    const PER_PAGE = 10
 
     const apiKey = localStorage.getItem('gemini_key') || ''
+
+    // Load saved result on mount
+    useEffect(() => {
+        if (!wallet) return
+        loadAiResult(wallet, 'captain_picks').then(data => {
+            if (data) {
+                setResult(data.result)
+                setSavedGw(data.gameweek)
+            }
+        })
+    }, [wallet])
 
     const topCandidates = useMemo(() => {
         if (!players.length || !fixtures.length || !currentGw) return []
@@ -30,7 +48,6 @@ export default function CaptainPicks() {
                 const scoreB = parseFloat(b.form) * (5 - b.fdr + 1)
                 return scoreB - scoreA
             })
-            .slice(0, 10)
     }, [players, fixtures, teams, currentGw])
 
     const posClass = (t) => {
@@ -66,6 +83,8 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
 
             const response = await callGemini(apiKey, prompt)
             setResult(response)
+            setSavedGw(currentGw.id)
+            if (wallet) saveAiResult(wallet, 'captain_picks', currentGw.id, response)
         } catch (err) {
             setResult('❌ Error: ' + err.message)
         }
@@ -89,22 +108,18 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
             </div>
             <p className={styles.subtitle}>AI-powered captain recommendations for GW{currentGw?.id}</p>
 
-            <div className={styles.aiCard}>
-                <div className={styles.keyRow}>
-                    {!apiKey ? (
-                        <button className={styles.openSettingsBtn} onClick={openSettings}>
-                            ⚙️ Open Settings to configure API Key
-                        </button>
-                    ) : (
-                        <button className={styles.aiBtn} onClick={handleAnalyze} disabled={analyzing}>
-                            {analyzing ? 'Analyzing...' : '✨ Get AI Picks'}
-                        </button>
-                    )}
-                </div>
-            </div>
+            {!apiKey ? (
+                <button className={styles.openSettingsBtn} onClick={openSettings}>
+                    ⚙️ Open Settings to configure API Key
+                </button>
+            ) : (
+                <button className={styles.aiBtn} onClick={handleAnalyze} disabled={analyzing}>
+                    {analyzing ? '⏳ Analyzing...' : '✨ Get AI Picks'}
+                </button>
+            )}
 
             <div className={styles.section}>
-                <div className={styles.sectionTitle}>Top Captain Candidates — GW{currentGw?.id}</div>
+                <div className={styles.sectionTitle}>Top Captain Candidates — GW{currentGw?.id} ({topCandidates.length} players)</div>
                 <div className={styles.tableWrapper}>
                     <table className={styles.table}>
                         <thead>
@@ -119,11 +134,11 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
                             </tr>
                         </thead>
                         <tbody>
-                            {topCandidates.map((p, i) => {
+                            {topCandidates.slice(page * PER_PAGE, (page + 1) * PER_PAGE).map((p, i) => {
                                 const team = getTeam(p.team)
                                 return (
                                     <tr key={p.id}>
-                                        <td style={{ color: 'var(--text-muted)' }}>{i + 1}</td>
+                                        <td style={{ color: 'var(--text-muted)' }}>{page * PER_PAGE + i + 1}</td>
                                         <td>
                                             <div className={styles.playerCell}>
                                                 {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
@@ -136,7 +151,11 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
                                         <td><span className={posClass(p.element_type)}>{getPositionShort(p.element_type)}</span></td>
                                         <td className={styles.formHigh}>{p.form}</td>
                                         <td style={{ fontWeight: 700 }}>{p.total_points}</td>
-                                        <td>{p.opponent} ({p.isHome ? 'H' : 'A'})</td>
+                                        <td>
+                                            <span className={styles.fdrCell} style={{ background: getDifficultyColor(p.fdr) }}>
+                                                {p.opponent} ({p.isHome ? 'H' : 'A'})
+                                            </span>
+                                        </td>
                                         <td>
                                             <span className={styles.fdrCell} style={{ background: getDifficultyColor(p.fdr) }}>
                                                 {p.fdr}
@@ -148,12 +167,26 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
                         </tbody>
                     </table>
                 </div>
+                <div className={styles.paginationRow}>
+                    <span>{topCandidates.length} players found</span>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button className={styles.pageBtn} onClick={() => setPage(p => p - 1)} disabled={page === 0}>
+                            <img src="/left.svg" alt="" className={styles.pageArrow} />
+                            Prev
+                        </button>
+                        <span>Page {page + 1} of {Math.ceil(topCandidates.length / PER_PAGE)}</span>
+                        <button className={styles.pageBtn} onClick={() => setPage(p => p + 1)} disabled={page >= Math.ceil(topCandidates.length / PER_PAGE) - 1}>
+                            Next
+                            <img src="/right.svg" alt="" className={styles.pageArrow} />
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {result && (
                 <div className={styles.section}>
                     <div className={styles.sectionTitle}>AI Analysis</div>
-                    <div className={styles.aiResult}>{result}</div>
+                    <div className={styles.aiResult} dangerouslySetInnerHTML={{ __html: formatAiResponse(result) }} />
                 </div>
             )}
         </div>

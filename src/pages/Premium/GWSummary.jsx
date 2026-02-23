@@ -1,24 +1,43 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useFpl } from '../../hooks/useFplData'
 import { getPositionShort } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
+import { formatAiResponse } from '../../services/formatAi'
+import { loadAiResult, saveAiResult } from '../../services/aiResults'
 import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function GWSummary() {
     const { players, fixtures, teams, currentGw, loading } = useFpl()
     const { openSettings } = useSettings()
+    const { wallet } = useAuth()
     const [analyzing, setAnalyzing] = useState(false)
     const [summary, setSummary] = useState('')
+    const [savedGw, setSavedGw] = useState(null)
+    const [formPage, setFormPage] = useState(0)
+    const [transPage, setTransPage] = useState(0)
+    const PER_PAGE = 5
 
     const apiKey = localStorage.getItem('gemini_key') || ''
+
+    // Load saved result on mount
+    useEffect(() => {
+        if (!wallet) return
+        loadAiResult(wallet, 'gw_summary').then(data => {
+            if (data) {
+                setSummary(data.result)
+                setSavedGw(data.gameweek)
+            }
+        })
+    }, [wallet])
 
     const gwStats = useMemo(() => {
         if (!players.length || !fixtures.length || !currentGw) return null
         const gw = currentGw.id
 
-        const topForm = [...players].filter(p => p.status === 'a').sort((a, b) => parseFloat(b.form) - parseFloat(a.form)).slice(0, 5)
-        const mostTransIn = [...players].sort((a, b) => (b.transfers_in_event || 0) - (a.transfers_in_event || 0)).slice(0, 5)
+        const topForm = [...players].filter(p => p.status === 'a').sort((a, b) => parseFloat(b.form) - parseFloat(a.form))
+        const mostTransIn = [...players].sort((a, b) => (b.transfers_in_event || 0) - (a.transfers_in_event || 0))
         const mostTransOut = [...players].sort((a, b) => (b.transfers_out_event || 0) - (a.transfers_out_event || 0)).slice(0, 5)
         const gwMatches = fixtures.filter(f => f.event === gw).length
         const injuredCount = players.filter(p => p.status !== 'a').length
@@ -61,6 +80,8 @@ Keep it concise, actionable, and insightful. Use bullet points.`
 
             const response = await callGemini(apiKey, prompt)
             setSummary(response)
+            setSavedGw(currentGw.id)
+            if (wallet) saveAiResult(wallet, 'gw_summary', currentGw.id, response)
         } catch (err) {
             setSummary('❌ Error: ' + err.message)
         }
@@ -84,21 +105,17 @@ Keep it concise, actionable, and insightful. Use bullet points.`
             </div>
             <p className={styles.subtitle}>AI-generated gameweek preview and strategic summary</p>
 
-            <div className={styles.aiCard}>
-                <div className={styles.keyRow}>
-                    {!apiKey ? (
-                        <button className={styles.openSettingsBtn} onClick={openSettings}>
-                            ⚙️ Open Settings to configure API Key
-                        </button>
-                    ) : (
-                        <button className={styles.aiBtn} onClick={handleSummarize} disabled={analyzing}>
-                            {analyzing ? 'Generating...' : '📋 Generate Summary'}
-                        </button>
-                    )}
-                </div>
-            </div>
+            {!apiKey ? (
+                <button className={styles.openSettingsBtn} onClick={openSettings}>
+                    ⚙️ Open Settings to configure API Key
+                </button>
+            ) : (
+                <button className={styles.aiBtn} onClick={handleSummarize} disabled={analyzing}>
+                    {analyzing ? '⏳ Generating...' : '📋 Generate Summary'}
+                </button>
+            )}
 
-            <div className={styles.cardGrid}>
+            <div className={styles.statsGrid}>
                 <div className={styles.card}>
                     <div className={styles.scoreCard}>
                         <div className={styles.scoreValue}>{gwStats.gwMatches}</div>
@@ -129,7 +146,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                             <tr><th>Player</th><th>Pos</th><th>Form</th><th>Pts</th><th>Own%</th></tr>
                         </thead>
                         <tbody>
-                            {gwStats.topForm.map(p => (
+                            {gwStats.topForm.slice(formPage * PER_PAGE, (formPage + 1) * PER_PAGE).map((p, i) => (
                                 <tr key={p.id}>
                                     <td style={{ fontWeight: 600 }}>{p.web_name}</td>
                                     <td>{getPositionShort(p.element_type)}</td>
@@ -141,6 +158,18 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                         </tbody>
                     </table>
                 </div>
+                <div className={styles.paginationRow}>
+                    <span>{gwStats.topForm.length} players</span>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button className={styles.pageBtn} onClick={() => setFormPage(p => p - 1)} disabled={formPage === 0}>
+                            <img src="/left.svg" alt="" className={styles.pageArrow} /> Prev
+                        </button>
+                        <span>Page {formPage + 1} of {Math.ceil(gwStats.topForm.length / PER_PAGE)}</span>
+                        <button className={styles.pageBtn} onClick={() => setFormPage(p => p + 1)} disabled={formPage >= Math.ceil(gwStats.topForm.length / PER_PAGE) - 1}>
+                            Next <img src="/right.svg" alt="" className={styles.pageArrow} />
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className={styles.section}>
@@ -151,7 +180,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                             <tr><th>Player</th><th>Transfers In</th><th>Form</th><th>Price</th></tr>
                         </thead>
                         <tbody>
-                            {gwStats.mostTransIn.map(p => (
+                            {gwStats.mostTransIn.slice(transPage * PER_PAGE, (transPage + 1) * PER_PAGE).map((p, i) => (
                                 <tr key={p.id}>
                                     <td style={{ fontWeight: 600 }}>{p.web_name}</td>
                                     <td style={{ color: 'var(--green)', fontWeight: 700 }}>+{p.transfers_in_event?.toLocaleString()}</td>
@@ -162,12 +191,24 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                         </tbody>
                     </table>
                 </div>
+                <div className={styles.paginationRow}>
+                    <span>{gwStats.mostTransIn.length} players</span>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button className={styles.pageBtn} onClick={() => setTransPage(p => p - 1)} disabled={transPage === 0}>
+                            <img src="/left.svg" alt="" className={styles.pageArrow} /> Prev
+                        </button>
+                        <span>Page {transPage + 1} of {Math.ceil(gwStats.mostTransIn.length / PER_PAGE)}</span>
+                        <button className={styles.pageBtn} onClick={() => setTransPage(p => p + 1)} disabled={transPage >= Math.ceil(gwStats.mostTransIn.length / PER_PAGE) - 1}>
+                            Next <img src="/right.svg" alt="" className={styles.pageArrow} />
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {summary && (
                 <div className={styles.section}>
                     <div className={styles.sectionTitle}>AI Summary</div>
-                    <div className={styles.aiResult}>{summary}</div>
+                    <div className={styles.aiResult} dangerouslySetInnerHTML={{ __html: formatAiResponse(summary) }} />
                 </div>
             )}
         </div>

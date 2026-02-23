@@ -585,53 +585,64 @@
 }
 
 .aiBtn {
-    padding: 0.55rem 1.25rem;
-    border-radius: var(--radius-sm);
+    display: inline-block;
+    width: fit-content;
+    padding: 0.7rem 1.75rem;
+    border-radius: var(--radius);
     border: none;
-    background: var(--accent-gradient);
-    color: var(--bg-primary);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+    color: #fff;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     cursor: pointer;
     font-family: inherit;
-    transition: opacity 0.15s ease;
+    letter-spacing: 0.02em;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s ease;
+    margin: 0.5rem 0 0.75rem;
 }
 
 .aiBtn:hover {
-    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: 0 0 28px rgba(139, 92, 246, 0.45), 0 6px 16px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(135deg, #7c7ff7, #9b6ff9, #b86bfa);
 }
 
 .aiBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .openSettingsBtn {
-    padding: 0.55rem 1.25rem;
-    border-radius: var(--radius-sm);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    display: inline-block;
+    width: fit-content;
+    padding: 0.65rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid rgba(245, 158, 11, 0.35);
     background: rgba(245, 158, 11, 0.08);
     color: #F59E0B;
     font-weight: 600;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.15s ease;
+    transition: all 0.2s ease;
+    margin: 0.5rem 0 0.75rem;
 }
 
 .openSettingsBtn:hover {
     background: rgba(245, 158, 11, 0.15);
     border-color: #F59E0B;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
 }
 
 .aiResult {
-    background: #16213A;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 1.25rem;
-    line-height: 1.6;
+    border-radius: var(--radius);
+    padding: 0.5rem 0;
+    line-height: 1.7;
     font-size: 0.85rem;
-    white-space: pre-wrap;
+    color: #fff;
 }
 
 .keyRow {
@@ -662,6 +673,13 @@
     font-size: 0.7rem;
     color: var(--text-secondary);
     margin-top: 0.15rem;
+}
+
+/* ── Stats Grid (3-col) ── */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
 }
 
 /* ── Pagination ── */
@@ -805,5 +823,20 @@
     .filterBtnActive {
         padding: 0.4rem 0.65rem;
         font-size: 0.7rem;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .paginationRow {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .paginationRow>div {
+        justify-content: center;
     }
 }

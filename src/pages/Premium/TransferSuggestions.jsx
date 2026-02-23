@@ -1,18 +1,34 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
+import { formatAiResponse } from '../../services/formatAi'
+import { loadAiResult, saveAiResult } from '../../services/aiResults'
 import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function TransferSuggestions() {
     const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
     const { openSettings } = useSettings()
+    const { wallet } = useAuth()
     const [budget, setBudget] = useState(100)
     const [analyzing, setAnalyzing] = useState(false)
     const [suggestions, setSuggestions] = useState('')
+    const [savedGw, setSavedGw] = useState(null)
 
     const apiKey = localStorage.getItem('gemini_key') || ''
+
+    // Load saved result on mount
+    useEffect(() => {
+        if (!wallet) return
+        loadAiResult(wallet, 'transfers').then(data => {
+            if (data) {
+                setSuggestions(data.result)
+                setSavedGw(data.gameweek)
+            }
+        })
+    }, [wallet])
 
     // Value picks: high form relative to price
     const valuePicks = useMemo(() => {
@@ -97,6 +113,8 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
 
             const response = await callGemini(apiKey, prompt)
             setSuggestions(response)
+            setSavedGw(currentGw.id)
+            if (wallet) saveAiResult(wallet, 'transfers', currentGw.id, response)
         } catch (err) {
             setSuggestions('❌ Error: ' + err.message)
         }
@@ -120,31 +138,27 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
             </div>
             <p className={styles.subtitle}>AI-powered transfer recommendations based on form, value, and fixtures</p>
 
-            <div className={styles.aiCard}>
-                <div className={styles.keyRow}>
-                    {!apiKey ? (
-                        <button className={styles.openSettingsBtn} onClick={openSettings}>
-                            ⚙️ Open Settings to configure API Key
-                        </button>
-                    ) : (
-                        <>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Budget:</span>
-                                <input
-                                    className={styles.aiKeyInput}
-                                    type="number"
-                                    value={budget}
-                                    onChange={e => setBudget(Number(e.target.value))}
-                                    style={{ width: 80, maxWidth: 80 }}
-                                />
-                            </div>
-                            <button className={styles.aiBtn} onClick={handleSuggest} disabled={analyzing}>
-                                {analyzing ? 'Analyzing...' : '💡 Get Suggestions'}
-                            </button>
-                        </>
-                    )}
+            {!apiKey ? (
+                <button className={styles.openSettingsBtn} onClick={openSettings}>
+                    ⚙️ Open Settings to configure API Key
+                </button>
+            ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Budget:</span>
+                        <input
+                            className={styles.aiKeyInput}
+                            type="number"
+                            value={budget}
+                            onChange={e => setBudget(Number(e.target.value))}
+                            style={{ width: 80, maxWidth: 80 }}
+                        />
+                    </div>
+                    <button className={styles.aiBtn} onClick={handleSuggest} disabled={analyzing}>
+                        {analyzing ? '⏳ Analyzing...' : '💡 Get Suggestions'}
+                    </button>
                 </div>
-            </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                 <div className={styles.section}>
@@ -155,7 +169,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                                 <tr><th>Player</th><th>Pos</th><th>Price</th><th>Form</th><th>Fixtures</th></tr>
                             </thead>
                             <tbody>
-                                {valuePicks.slice(0, 8).map(p => {
+                                {valuePicks.map(p => {
                                     const team = getTeam(p.team)
                                     return (
                                         <tr key={p.id}>
@@ -193,7 +207,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                                 <tr><th>Player</th><th>Pos</th><th>Price</th><th>Form</th><th>Status</th></tr>
                             </thead>
                             <tbody>
-                                {sellCandidates.slice(0, 8).map(p => {
+                                {sellCandidates.map(p => {
                                     const team = getTeam(p.team)
                                     return (
                                         <tr key={p.id}>
@@ -221,7 +235,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
             {suggestions && (
                 <div className={styles.section}>
                     <div className={styles.sectionTitle}>AI Transfer Plan</div>
-                    <div className={styles.aiResult}>{suggestions}</div>
+                    <div className={styles.aiResult} dangerouslySetInnerHTML={{ __html: formatAiResponse(suggestions) }} />
                 </div>
             )}
         </div>
