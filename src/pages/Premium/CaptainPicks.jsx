@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
@@ -10,6 +11,7 @@ import styles from './Premium.module.css'
 
 export default function CaptainPicks() {
     const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
     const [analyzing, setAnalyzing] = useState(false)
@@ -137,7 +139,7 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
                             {topCandidates.slice(page * PER_PAGE, (page + 1) * PER_PAGE).map((p, i) => {
                                 const team = getTeam(p.team)
                                 return (
-                                    <tr key={p.id}>
+                                    <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
                                         <td style={{ color: 'var(--text-muted)' }}>{page * PER_PAGE + i + 1}</td>
                                         <td>
                                             <div className={styles.playerCell}>

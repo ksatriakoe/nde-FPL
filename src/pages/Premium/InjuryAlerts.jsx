@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
 import styles from './Premium.module.css'
@@ -13,6 +14,7 @@ const STATUS_OPTIONS = [
 
 export default function InjuryAlerts() {
     const { players, loading, getTeam } = useFpl()
+    const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [posFilter, setPosFilter] = useState('ALL')
@@ -164,7 +166,7 @@ export default function InjuryAlerts() {
                             const st = statusMap[p.status] || statusMap.u
                             const chance = p.chance_of_playing_next_round
                             return (
-                                <tr key={p.id}>
+                                <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
                                     <td className={styles.textMuted}>{i + 1}</td>
                                     <td>
                                         <div className={styles.playerCell}>

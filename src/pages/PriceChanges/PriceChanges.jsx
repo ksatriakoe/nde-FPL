@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
 import styles from './PriceChanges.module.css'
 
 export default function PriceChanges() {
     const { players, loading, getTeam } = useFpl()
+    const navigate = useNavigate()
 
     const { risers, fallers } = useMemo(() => {
         const risers = players
@@ -34,7 +36,7 @@ export default function PriceChanges() {
         const team = getTeam(p.team)
         const change = p.cost_change_event / 10
         return (
-            <div key={p.id} className={styles.playerRow}>
+            <div key={p.id} className={styles.playerRow} onClick={() => navigate(`/players/${p.id}`)}>
                 {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.badge} />}
                 <div className={styles.info}>
                     <div className={styles.name}>{p.web_name}</div>

@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { fetchPlayerSummary, getTeamBadgeUrl, getPlayerPhotoUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
 import styles from './PlayerDetail.module.css'
 
 export default function PlayerDetail() {
     const { id } = useParams()
+    const navigate = useNavigate()
     const { players, getTeam, getPosition, fixtures, teams, currentGw } = useFpl()
     const [summary, setSummary] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -45,9 +46,9 @@ export default function PlayerDetail() {
     if (!player) {
         return (
             <div className={styles.page}>
-                <Link to="/players" className={styles.backBtn}>
-                    <img src="/left.svg" alt="" style={{ width: 14, height: 14 }} /> Back to Players
-                </Link>
+                <button onClick={() => navigate(-1)} className={styles.backBtn}>
+                    <img src="/left.svg" alt="" style={{ width: 14, height: 14 }} /> Back
+                </button>
                 <div className={styles.notFound}>Player not found</div>
             </div>
         )
@@ -73,9 +74,9 @@ export default function PlayerDetail() {
 
     return (
         <div className={styles.page}>
-            <Link to="/players" className={styles.backBtn}>
-                <img src="/left.svg" alt="" style={{ width: 14, height: 14 }} /> Back to Players
-            </Link>
+            <button onClick={() => navigate(-1)} className={styles.backBtn}>
+                <img src="/left.svg" alt="" style={{ width: 14, height: 14 }} /> Back
+            </button>
 
             <div className={styles.header}>
                 <div className={styles.playerPhoto}>

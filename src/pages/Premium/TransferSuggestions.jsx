@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
@@ -10,6 +11,7 @@ import styles from './Premium.module.css'
 
 export default function TransferSuggestions() {
     const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
     const [budget, setBudget] = useState(100)
@@ -166,13 +168,14 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
                             <thead>
-                                <tr><th>Player</th><th>Pos</th><th>Price</th><th>Form</th><th>Fixtures</th></tr>
+                                <tr><th>#</th><th>Player</th><th>Pos</th><th>Price</th><th>Form</th><th>Fixtures</th></tr>
                             </thead>
                             <tbody>
                                 {valuePicks.map(p => {
                                     const team = getTeam(p.team)
                                     return (
-                                        <tr key={p.id}>
+                                        <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
+                                            <td style={{ color: 'var(--text-muted)' }}>{valuePicks.indexOf(p) + 1}</td>
                                             <td>
                                                 <div className={styles.playerCell}>
                                                     {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
@@ -204,13 +207,14 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
                             <thead>
-                                <tr><th>Player</th><th>Pos</th><th>Price</th><th>Form</th><th>Status</th></tr>
+                                <tr><th>#</th><th>Player</th><th>Pos</th><th>Price</th><th>Form</th><th>Status</th></tr>
                             </thead>
                             <tbody>
                                 {sellCandidates.map(p => {
                                     const team = getTeam(p.team)
                                     return (
-                                        <tr key={p.id}>
+                                        <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
+                                            <td style={{ color: 'var(--text-muted)' }}>{sellCandidates.indexOf(p) + 1}</td>
                                             <td>
                                                 <div className={styles.playerCell}>
                                                     {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}

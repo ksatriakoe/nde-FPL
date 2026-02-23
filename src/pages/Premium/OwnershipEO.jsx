@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
 import styles from './Premium.module.css'
@@ -7,6 +8,7 @@ const PER_PAGE = 25
 
 export default function OwnershipEO() {
     const { players, loading, getTeam } = useFpl()
+    const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [posFilter, setPosFilter] = useState('ALL')
     const [sortKey, setSortKey] = useState('selected_by_percent')
@@ -138,7 +140,7 @@ export default function OwnershipEO() {
                         {paginated.map((p, i) => {
                             const team = getTeam(p.team)
                             return (
-                                <tr key={p.id}>
+                                <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
                                     <td className={styles.textMuted}>{page * PER_PAGE + i + 1}</td>
                                     <td>
                                         <div className={styles.playerCell}>
