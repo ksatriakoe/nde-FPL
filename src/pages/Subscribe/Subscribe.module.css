@@ -310,12 +310,12 @@
 /* ── TX Link ── */
 .txLink {
     font-size: 0.7rem;
-    color: var(--text-muted);
+    color: rgba(139, 92, 246, 0.7);
     text-align: center;
 }
 
 .txLink a {
-    color: var(--accent-primary);
+    color: #8B5CF6;
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 0.65rem;
     word-break: break-all;
