@@ -160,7 +160,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                 </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div className={styles.transferGrid}>
                 <div className={styles.section}>
                     <div className={styles.sectionTitle}>🟢 Value Picks (Buy)</div>
                     <div className={styles.tableWrapper}>

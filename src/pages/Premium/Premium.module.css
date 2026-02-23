@@ -682,6 +682,13 @@
     gap: 1rem;
 }
 
+.transferGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
 /* ── Pagination ── */
 .paginationRow {
     display: flex;
@@ -826,6 +833,10 @@
     }
 
     .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .transferGrid {
         grid-template-columns: 1fr;
     }
 
