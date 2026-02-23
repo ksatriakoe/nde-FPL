@@ -71,7 +71,7 @@ export default function Layout() {
                             return (
                                 <div key={i} className={styles.sectionLabel}>
                                     {item.label}
-                                    {item.premium && <span className={styles.premiumBadge}>PRO</span>}
+                                    {item.premium && <span className={styles.premiumBadge}>PREMIUM</span>}
                                 </div>
                             )
                         }
@@ -121,14 +121,14 @@ export default function Layout() {
                                 title="AI Settings"
                             >
                                 <img src="/gear.svg" alt="Settings" className={styles.settingsIcon} />
-                                <span className={styles.settingsBadge}>PRO</span>
+                                <span className={styles.settingsBadge}>PREMIUM</span>
                             </button>
                             {settingsOpen && (
                                 <div className={styles.settingsPopup}>
                                     {isPremium ? (
                                         <>
                                             <div className={styles.settingsHeader}>
-                                                <img src="/gear.svg" alt="" style={{ width: 16, height: 16, filter: 'brightness(0) saturate(100%) invert(67%) sepia(74%) saturate(1575%) hue-rotate(10deg) brightness(100%) contrast(96%)' }} />
+                                                <img src="/gear.svg" alt="" className={styles.popupGearIcon} />
                                                 <span>AI Settings</span>
                                                 <span className={styles.settingsProTag}>PREMIUM</span>
                                             </div>
@@ -144,17 +144,17 @@ export default function Layout() {
                                                 onChange={e => saveKey(e.target.value)}
                                             />
                                             <div className={styles.settingsHint}>
-                                                🔒 Stored locally — never sent to our servers
+                                                <img src="/lock.svg" alt="" className={styles.hintIcon} /> Stored locally — never sent to our servers
                                             </div>
                                             <div className={styles.settingsGuide}>
-                                                <div className={styles.guideTitle}>📖 How to get your API key:</div>
+                                                <div className={styles.guideTitle}><img src="/book.svg" alt="" className={styles.hintIcon} /> How to get your API key:</div>
                                                 <ol className={styles.guideSteps}>
                                                     <li>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className={styles.guideLink}>Google AI Studio</a></li>
                                                     <li>Sign in with your Google account</li>
                                                     <li>Click <strong>"Create API Key"</strong></li>
                                                     <li>Copy the key and paste it above</li>
                                                 </ol>
-                                                <div className={styles.guideFree}>✨ It's free — no credit card required</div>
+                                                <div className={styles.guideFree}><img src="/magic-pro.svg" alt="" className={styles.hintIcon} /> It's free — no credit card required</div>
                                             </div>
                                             {apiKey && (
                                                 <div className={styles.settingsStatus}>
@@ -166,7 +166,7 @@ export default function Layout() {
                                     ) : (
                                         <>
                                             <div className={styles.settingsHeader}>
-                                                <span>🔒</span>
+                                                <img src="/lock.svg" alt="" className={styles.hintIcon} />
                                                 <span>Premium Required</span>
                                             </div>
                                             <p className={styles.settingsDesc}>
@@ -176,7 +176,7 @@ export default function Layout() {
                                                 className={styles.settingsSubscribeBtn}
                                                 onClick={() => { navigate('/subscribe'); setSettingsOpen(false) }}
                                             >
-                                                ⭐ Subscribe Now
+                                                Subscribe Now
                                             </button>
                                         </>
                                     )}

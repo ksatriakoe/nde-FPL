@@ -80,7 +80,7 @@ export default function Watchlist() {
 
     const statusLabel = (s) => {
         const map = { a: 'Available', i: 'Injured', d: 'Doubtful' }
-        return map[s] || 'Unavail'
+        return map[s] || 'Unavailable'
     }
 
     if (loading) {
@@ -95,11 +95,11 @@ export default function Watchlist() {
     return (
         <div className={styles.page}>
             <h1 className="page-title">Watchlist</h1>
-            <p className={styles.subtitle}>Pantau pemain yang kamu incar — data tersimpan di browser</p>
+            <p className={styles.subtitle}>Track the players you're eyeing — data saved in your browser</p>
 
             {/* Add Player */}
             <div className={styles.addPanel}>
-                <div className={styles.addTitle}>➕ Tambah Pemain</div>
+                <div className={styles.addTitle}><img src="/plus.svg" alt="" className={styles.addIcon} /> Add Player</div>
                 <input
                     className={styles.searchInput}
                     placeholder="Cari pemain untuk ditambahkan..."
@@ -133,7 +133,7 @@ export default function Watchlist() {
             </div>
 
             {/* Filters */}
-            {watchedPlayers.length > 0 && (
+            {watchlist.ids.length > 0 && (
                 <div className={styles.controls}>
                     {['ALL', 'GKP', 'DEF', 'MID', 'FWD'].map(pos => (
                         <button
@@ -148,7 +148,7 @@ export default function Watchlist() {
             )}
 
             {/* Watchlist Table */}
-            {watchedPlayers.length > 0 ? (
+            {watchlist.ids.length > 0 ? (
                 <div className={styles.tableWrapper}>
                     <table className={styles.table}>
                         <thead>
@@ -168,12 +168,12 @@ export default function Watchlist() {
                             {watchedPlayers.map(p => {
                                 const team = getTeam(p.team)
                                 return (
-                                    <tr key={p.id}>
+                                    <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)} style={{ cursor: 'pointer' }}>
                                         <td>
                                             <div className={styles.playerCell}>
                                                 {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
                                                 <div>
-                                                    <div className={styles.playerName} onClick={() => navigate(`/players/${p.id}`)}>
+                                                    <div className={styles.playerName}>
                                                         {p.web_name}
                                                     </div>
                                                     <div className={styles.playerTeam}>{team?.short_name}</div>

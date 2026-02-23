@@ -1,9 +1,11 @@
 .page {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 1.25rem;
     max-width: 520px;
     margin: 0 auto;
+    min-height: calc(100vh - var(--header-height) - 4rem);
     animation: fadeIn 0.4s ease;
 }
 
@@ -124,7 +126,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--border-light);
+    background: #8B5CF6;
 }
 
 .planHeader {
@@ -144,9 +146,9 @@
     font-size: 0.6rem;
     font-weight: 700;
     letter-spacing: 0.08em;
-    background: rgba(29, 78, 216, 0.15);
-    border: 1px solid var(--border-light);
-    color: var(--border-light);
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: #8B5CF6;
     padding: 4px 12px;
     border-radius: 20px;
 }
@@ -167,8 +169,8 @@
 .statusActive {
     font-size: 0.7rem;
     font-weight: 700;
-    color: var(--green);
-    background: rgba(16, 185, 129, 0.12);
+    color: #8B5CF6;
+    background: rgba(139, 92, 246, 0.12);
     padding: 3px 10px;
     border-radius: 20px;
 }
@@ -226,7 +228,7 @@
 
 .features li::before {
     content: '✓';
-    color: var(--accent-primary);
+    color: #8B5CF6;
     font-weight: 700;
     font-size: 0.65rem;
     width: 16px;
@@ -234,7 +236,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(34, 211, 238, 0.1);
+    background: rgba(139, 92, 246, 0.1);
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -268,13 +270,13 @@
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    background: var(--accent-gradient);
-    color: #070B14;
-    transition: opacity 0.2s, transform 0.15s;
+    background: #8B5CF6;
+    color: #fff;
+    transition: background 0.2s, transform 0.15s;
 }
 
 .subscribeBtn:hover:not(:disabled) {
-    opacity: 0.9;
+    background: #7c3aed;
     transform: translateY(-1px);
 }
 
@@ -373,7 +375,7 @@
 }
 
 .stepNum {
-    color: var(--accent-primary);
+    color: #8B5CF6;
     font-weight: 700;
     min-width: 16px;
 }
@@ -403,7 +405,7 @@
 .addressValue {
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 0.72rem;
-    color: var(--accent-primary);
+    color: #8B5CF6;
     opacity: 0.8;
     overflow: hidden;
     text-overflow: ellipsis;

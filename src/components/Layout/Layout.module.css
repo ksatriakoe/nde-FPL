@@ -211,21 +211,21 @@
     gap: 0.35rem;
     padding: 0.4rem 0.65rem;
     border-radius: var(--radius-sm);
-    border: 1px solid rgba(245, 158, 11, 0.25);
-    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    background: rgba(139, 92, 246, 0.06);
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
 .settingsBtn:hover {
-    border-color: #F59E0B;
-    background: rgba(245, 158, 11, 0.12);
+    border-color: #8B5CF6;
+    background: rgba(139, 92, 246, 0.12);
 }
 
 .settingsIcon {
     width: 18px;
     height: 18px;
-    filter: brightness(0) saturate(100%) invert(67%) sepia(74%) saturate(1575%) hue-rotate(10deg) brightness(100%) contrast(96%);
+    filter: brightness(0) saturate(100%) invert(52%) sepia(98%) saturate(3000%) hue-rotate(240deg) brightness(90%) contrast(95%);
     transition: transform 0.3s ease;
 }
 
@@ -236,7 +236,7 @@
 .settingsBadge {
     font-size: 0.6rem;
     font-weight: 700;
-    color: #F59E0B;
+    color: #8B5CF6;
     letter-spacing: 0.04em;
 }
 
@@ -264,12 +264,31 @@
 
 .settingsProTag {
     font-size: 0.6rem;
-    background: rgba(29, 78, 216, 0.15);
-    color: #1D4ED8;
+    background: rgba(139, 92, 246, 0.15);
+    color: #8B5CF6;
     padding: 0.15rem 0.45rem;
     border-radius: 4px;
     font-weight: 700;
     letter-spacing: 0.04em;
+}
+
+.popupGearIcon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) saturate(100%) invert(52%) sepia(98%) saturate(3000%) hue-rotate(240deg) brightness(90%) contrast(95%);
+}
+
+.hintIcon {
+    width: 14px;
+    height: 14px;
+    filter: brightness(0) saturate(100%) invert(52%) sepia(98%) saturate(3000%) hue-rotate(240deg) brightness(90%) contrast(95%);
+    vertical-align: middle;
+}
+
+.magicIcon {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
 }
 
 .settingsDesc {
@@ -304,7 +323,7 @@
 }
 
 .settingsInput:focus {
-    border-color: #F59E0B;
+    border-color: #8B5CF6;
 }
 
 .settingsHint {
@@ -316,8 +335,8 @@
 .settingsGuide {
     margin-top: 0.85rem;
     padding: 0.75rem;
-    background: rgba(245, 158, 11, 0.04);
-    border: 1px solid rgba(245, 158, 11, 0.12);
+    background: rgba(139, 92, 246, 0.04);
+    border: 1px solid rgba(139, 92, 246, 0.12);
     border-radius: var(--radius-sm);
 }
 
@@ -337,19 +356,19 @@
 }
 
 .guideLink {
-    color: #F59E0B;
+    color: #8B5CF6;
     text-decoration: underline;
     font-weight: 600;
 }
 
 .guideLink:hover {
-    color: #FBBF24;
+    color: #A78BFA;
 }
 
 .guideFree {
     margin-top: 0.4rem;
     font-size: 0.68rem;
-    color: var(--green);
+    color: #8B5CF6;
     font-weight: 600;
 }
 
@@ -372,20 +391,20 @@
 
 .settingsSubscribeBtn {
     width: 100%;
-    padding: 0.65rem;
-    border-radius: var(--radius-sm);
+    padding: 0.6rem;
+    border-radius: 9999px;
     border: none;
-    background: var(--accent-gradient);
-    color: #0a0f1c;
+    background: #8B5CF6;
+    color: #fff;
     font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
     font-family: inherit;
-    transition: opacity 0.15s ease;
+    transition: background 0.15s ease;
 }
 
 .settingsSubscribeBtn:hover {
-    opacity: 0.9;
+    background: #7c3aed;
 }
 
 @media (max-width: 768px) {

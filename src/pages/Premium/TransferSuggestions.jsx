@@ -227,7 +227,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                                             <td>£{p.price.toFixed(1)}m</td>
                                             <td className={styles.formLow}>{p.form}</td>
                                             <td style={{ color: p.status !== 'a' ? 'var(--red)' : 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem' }}>
-                                                {p.status !== 'a' ? '⚠ Unavail' : 'Low form'}
+                                                {p.status !== 'a' ? '⚠ Unavailable' : 'Low form'}
                                             </td>
                                         </tr>
                                     )

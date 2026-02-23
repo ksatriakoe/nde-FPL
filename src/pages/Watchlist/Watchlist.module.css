@@ -18,10 +18,19 @@
 }
 
 .addTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 0.85rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: var(--text-secondary);
+}
+
+.addIcon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) saturate(100%) invert(76%) sepia(60%) saturate(500%) hue-rotate(150deg) brightness(95%) contrast(90%);
 }
 
 .searchInput {
@@ -197,12 +206,8 @@
 
 .playerName {
     font-weight: 600;
-    cursor: pointer;
 }
 
-.playerName:hover {
-    color: var(--accent-primary);
-}
 
 .playerTeam {
     font-size: 0.7rem;
@@ -363,12 +368,15 @@
 
     .controls {
         gap: 0.5rem;
+        justify-content: center;
     }
 
     .filterBtn,
     .filterBtnActive {
         padding: 0.4rem 0.65rem;
         font-size: 0.7rem;
+        flex: 1;
+        text-align: center;
     }
 
     .tableWrapper {
