@@ -97,6 +97,13 @@ export default function MyTeam() {
 
             {error && <div className={styles.error}>{error}</div>}
 
+            {loading && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <div className="shimmer" style={{ height: 120, borderRadius: 'var(--radius)' }} />
+                    <div className="shimmer" style={{ height: 200, borderRadius: 'var(--radius)' }} />
+                </div>
+            )}
+
             {manager && (
                 <div className={styles.managerCard}>
                     <div className={styles.managerHeader}>
