@@ -14,7 +14,7 @@ export default function TransferSuggestions() {
     const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
-    const [budget, setBudget] = useState(100)
+    const [budget, setBudget] = useState('100')
     const [analyzing, setAnalyzing] = useState(false)
     const [suggestions, setSuggestions] = useState('')
     const [savedGw, setSavedGw] = useState(null)
@@ -145,19 +145,21 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                     ⚙️ Open Settings to configure API Key
                 </button>
             ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Budget:</span>
+                <div className={styles.budgetRow}>
+                    <div className={styles.budgetField}>
+                        <span className={styles.budgetPrefix}>£</span>
                         <input
-                            className={styles.aiKeyInput}
+                            className={styles.budgetInput}
                             type="number"
                             value={budget}
-                            onChange={e => setBudget(Number(e.target.value))}
-                            style={{ width: 80, maxWidth: 80 }}
+                            onChange={e => setBudget(e.target.value)}
+                            onBlur={() => { if (budget === '') setBudget('100') }}
                         />
+                        <span className={styles.budgetSuffix}>m</span>
                     </div>
                     <button className={styles.aiBtn} onClick={handleSuggest} disabled={analyzing}>
-                        {analyzing ? '⏳ Analyzing...' : '💡 Get Suggestions'}
+                        <img src="/magic.svg" alt="" style={{ width: 18, height: 18, filter: 'brightness(0) invert(1)' }} />
+                        {analyzing ? 'Analyzing...' : 'Get Suggestions'}
                     </button>
                 </div>
             )}

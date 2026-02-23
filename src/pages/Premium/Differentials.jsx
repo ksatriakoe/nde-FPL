@@ -117,6 +117,12 @@ export default function Differentials() {
                             {pos}
                         </button>
                     ))}
+                    <button
+                        className={maxOwnership === 5 ? styles.filterBtnActive : styles.filterBtn}
+                        onClick={() => setMaxOwnership(maxOwnership === 5 ? 10 : 5)}
+                    >
+                        {'<'}{maxOwnership}% owned
+                    </button>
                     <div className={styles.customSelect} ref={teamDropdownRef}>
                         <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
                             <span>{selectedTeamLabel}</span>
@@ -142,12 +148,6 @@ export default function Differentials() {
                             </div>
                         )}
                     </div>
-                    <button
-                        className={maxOwnership === 5 ? styles.filterBtnActive : styles.filterBtn}
-                        onClick={() => setMaxOwnership(maxOwnership === 5 ? 10 : 5)}
-                    >
-                        {'<'}{maxOwnership}% owned
-                    </button>
                 </div>
             </div>
 

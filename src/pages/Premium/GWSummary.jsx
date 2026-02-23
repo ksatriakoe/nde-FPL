@@ -113,7 +113,8 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                 </button>
             ) : (
                 <button className={styles.aiBtn} onClick={handleSummarize} disabled={analyzing}>
-                    {analyzing ? '⏳ Generating...' : '📋 Generate Summary'}
+                    <img src="/magic.svg" alt="" style={{ width: 18, height: 18, filter: 'brightness(0) invert(1)' }} />
+                    {analyzing ? 'Generating...' : 'Generate Summary'}
                 </button>
             )}
 

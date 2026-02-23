@@ -140,6 +140,25 @@ export default function FormFixtureMatrix() {
                             {pos}
                         </button>
                     ))}
+                    <div className={styles.customSelect} ref={gwDropdownRef}>
+                        <button className={styles.selectBtn} onClick={() => setGwDropdownOpen(!gwDropdownOpen)}>
+                            <span>{selectedGwLabel}</span>
+                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${gwDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                        </button>
+                        {gwDropdownOpen && (
+                            <div className={styles.selectDropdown}>
+                                {GW_OPTIONS.map(opt => (
+                                    <div
+                                        key={opt.value}
+                                        className={`${styles.selectOption} ${gwCount === opt.value ? styles.selectOptionActive : ''}`}
+                                        onClick={() => { setGwCount(opt.value); setGwDropdownOpen(false); setPage(0) }}
+                                    >
+                                        {opt.label}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <div className={styles.customSelect} ref={teamDropdownRef}>
                         <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
                             <span>{selectedTeamLabel}</span>
@@ -160,25 +179,6 @@ export default function FormFixtureMatrix() {
                                         onClick={() => { setTeamFilter(String(t.id)); setPage(0); setTeamDropdownOpen(false) }}
                                     >
                                         {t.name}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <div className={styles.customSelect} ref={gwDropdownRef}>
-                        <button className={styles.selectBtn} onClick={() => setGwDropdownOpen(!gwDropdownOpen)}>
-                            <span>{selectedGwLabel}</span>
-                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${gwDropdownOpen ? styles.selectArrowOpen : ''}`} />
-                        </button>
-                        {gwDropdownOpen && (
-                            <div className={styles.selectDropdown}>
-                                {GW_OPTIONS.map(opt => (
-                                    <div
-                                        key={opt.value}
-                                        className={`${styles.selectOption} ${gwCount === opt.value ? styles.selectOptionActive : ''}`}
-                                        onClick={() => { setGwCount(opt.value); setGwDropdownOpen(false); setPage(0) }}
-                                    >
-                                        {opt.label}
                                     </div>
                                 ))}
                             </div>

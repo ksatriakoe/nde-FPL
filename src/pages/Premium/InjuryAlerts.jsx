@@ -139,6 +139,25 @@ export default function InjuryAlerts() {
                             {pos}
                         </button>
                     ))}
+                    <div className={styles.customSelect} ref={statusDropdownRef}>
+                        <button className={styles.selectBtn} onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}>
+                            <span>{selectedStatusLabel}</span>
+                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${statusDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                        </button>
+                        {statusDropdownOpen && (
+                            <div className={styles.selectDropdown}>
+                                {STATUS_OPTIONS.map(opt => (
+                                    <div
+                                        key={opt.key}
+                                        className={`${styles.selectOption} ${statusFilter === opt.key ? styles.selectOptionActive : ''}`}
+                                        onClick={() => { setStatusFilter(opt.key); setStatusDropdownOpen(false) }}
+                                    >
+                                        {opt.label} ({opt.key === 'all' ? counts.all : opt.key === 'u' ? counts.u + (counts.n || 0) : counts[opt.key] || 0})
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <div className={styles.customSelect} ref={teamDropdownRef}>
                         <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
                             <span>{selectedTeamLabel}</span>
@@ -159,25 +178,6 @@ export default function InjuryAlerts() {
                                         onClick={() => { setTeamFilter(String(t.id)); setTeamDropdownOpen(false) }}
                                     >
                                         {t.name}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <div className={styles.customSelect} ref={statusDropdownRef}>
-                        <button className={styles.selectBtn} onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}>
-                            <span>{selectedStatusLabel}</span>
-                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${statusDropdownOpen ? styles.selectArrowOpen : ''}`} />
-                        </button>
-                        {statusDropdownOpen && (
-                            <div className={styles.selectDropdown}>
-                                {STATUS_OPTIONS.map(opt => (
-                                    <div
-                                        key={opt.key}
-                                        className={`${styles.selectOption} ${statusFilter === opt.key ? styles.selectOptionActive : ''}`}
-                                        onClick={() => { setStatusFilter(opt.key); setStatusDropdownOpen(false) }}
-                                    >
-                                        {opt.label} ({opt.key === 'all' ? counts.all : opt.key === 'u' ? counts.u + (counts.n || 0) : counts[opt.key] || 0})
                                     </div>
                                 ))}
                             </div>

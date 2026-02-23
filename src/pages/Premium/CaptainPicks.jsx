@@ -116,7 +116,8 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
                 </button>
             ) : (
                 <button className={styles.aiBtn} onClick={handleAnalyze} disabled={analyzing}>
-                    {analyzing ? '⏳ Analyzing...' : '✨ Get AI Picks'}
+                    <img src="/magic.svg" alt="" style={{ width: 18, height: 18, filter: 'brightness(0) invert(1)' }} />
+                    {analyzing ? 'Analyzing...' : 'Get AI Picks'}
                 </button>
             )}
 

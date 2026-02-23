@@ -106,7 +106,8 @@ Be realistic with predictions based on the team strengths provided.`
                 </button>
             ) : (
                 <button className={styles.aiBtn} onClick={handlePredict} disabled={analyzing}>
-                    {analyzing ? '⏳ Predicting...' : '🔮 Predict Matches'}
+                    <img src="/magic.svg" alt="" style={{ width: 18, height: 18, filter: 'brightness(0) invert(1)' }} />
+                    {analyzing ? 'Predicting...' : 'Predict Matches'}
                 </button>
             )}
 
