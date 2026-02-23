@@ -17,9 +17,12 @@ export default function FormFixtureMatrix() {
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [posFilter, setPosFilter] = useState('ALL')
+    const [teamFilter, setTeamFilter] = useState('ALL')
     const [gwCount, setGwCount] = useState(5)
     const [gwDropdownOpen, setGwDropdownOpen] = useState(false)
+    const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
     const gwDropdownRef = useRef(null)
+    const teamDropdownRef = useRef(null)
     const [page, setPage] = useState(0)
 
     useEffect(() => {
@@ -27,10 +30,21 @@ export default function FormFixtureMatrix() {
             if (gwDropdownRef.current && !gwDropdownRef.current.contains(e.target)) {
                 setGwDropdownOpen(false)
             }
+            if (teamDropdownRef.current && !teamDropdownRef.current.contains(e.target)) {
+                setTeamDropdownOpen(false)
+            }
         }
         document.addEventListener('mousedown', handleClick)
         return () => document.removeEventListener('mousedown', handleClick)
     }, [])
+
+    const sortedTeams = useMemo(() => {
+        return [...teams].sort((a, b) => a.name.localeCompare(b.name))
+    }, [teams])
+
+    const selectedTeamLabel = teamFilter === 'ALL'
+        ? 'All Teams'
+        : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const gwRange = useMemo(() => {
         if (!currentGw) return []
@@ -46,6 +60,7 @@ export default function FormFixtureMatrix() {
                 if (parseFloat(p.form) < 3.0) return false
                 if (p.minutes < 200) return false
                 if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
+                if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
                 if (search) {
                     const q = search.toLowerCase()
                     return p.web_name.toLowerCase().includes(q) ||
@@ -75,7 +90,7 @@ export default function FormFixtureMatrix() {
                 return { ...p, gwFixtures, avgFDR, score }
             })
             .sort((a, b) => b.score - a.score)
-    }, [players, fixtures, teams, currentGw, posFilter, gwRange, search])
+    }, [players, fixtures, teams, currentGw, posFilter, teamFilter, gwRange, search])
 
     const totalPages = Math.ceil(matrixData.length / PER_PAGE)
     const paginated = matrixData.slice(page * PER_PAGE, (page + 1) * PER_PAGE)
@@ -125,6 +140,31 @@ export default function FormFixtureMatrix() {
                             {pos}
                         </button>
                     ))}
+                    <div className={styles.customSelect} ref={teamDropdownRef}>
+                        <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
+                            <span>{selectedTeamLabel}</span>
+                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${teamDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                        </button>
+                        {teamDropdownOpen && (
+                            <div className={styles.selectDropdown}>
+                                <div
+                                    className={`${styles.selectOption} ${teamFilter === 'ALL' ? styles.selectOptionActive : ''}`}
+                                    onClick={() => { setTeamFilter('ALL'); setPage(0); setTeamDropdownOpen(false) }}
+                                >
+                                    All Teams
+                                </div>
+                                {sortedTeams.map(t => (
+                                    <div
+                                        key={t.id}
+                                        className={`${styles.selectOption} ${teamFilter === String(t.id) ? styles.selectOptionActive : ''}`}
+                                        onClick={() => { setTeamFilter(String(t.id)); setPage(0); setTeamDropdownOpen(false) }}
+                                    >
+                                        {t.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <div className={styles.customSelect} ref={gwDropdownRef}>
                         <button className={styles.selectBtn} onClick={() => setGwDropdownOpen(!gwDropdownOpen)}>
                             <span>{selectedGwLabel}</span>

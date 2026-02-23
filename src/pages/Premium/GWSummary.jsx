@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getPositionShort } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
 import { formatAiResponse } from '../../services/formatAi'
 import { loadAiResult, saveAiResult } from '../../services/aiResults'
@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function GWSummary() {
-    const { players, fixtures, teams, currentGw, loading } = useFpl()
+    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
@@ -148,15 +148,23 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                             <tr><th>Player</th><th>Pos</th><th>Form</th><th>Pts</th><th>Own%</th></tr>
                         </thead>
                         <tbody>
-                            {gwStats.topForm.slice(formPage * PER_PAGE, (formPage + 1) * PER_PAGE).map((p, i) => (
-                                <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
-                                    <td style={{ fontWeight: 600 }}>{p.web_name}</td>
-                                    <td>{getPositionShort(p.element_type)}</td>
-                                    <td className={styles.formHigh}>{p.form}</td>
-                                    <td style={{ fontWeight: 700 }}>{p.total_points}</td>
-                                    <td>{p.selected_by_percent}%</td>
-                                </tr>
-                            ))}
+                            {gwStats.topForm.slice(formPage * PER_PAGE, (formPage + 1) * PER_PAGE).map((p, i) => {
+                                const team = getTeam(p.team)
+                                return (
+                                    <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
+                                        <td>
+                                            <div className={styles.playerCell}>
+                                                {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
+                                                <span className={styles.playerName}>{p.web_name}</span>
+                                            </div>
+                                        </td>
+                                        <td>{getPositionShort(p.element_type)}</td>
+                                        <td className={styles.formHigh}>{p.form}</td>
+                                        <td style={{ fontWeight: 700 }}>{p.total_points}</td>
+                                        <td>{p.selected_by_percent}%</td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -182,14 +190,22 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                             <tr><th>Player</th><th>Transfers In</th><th>Form</th><th>Price</th></tr>
                         </thead>
                         <tbody>
-                            {gwStats.mostTransIn.slice(transPage * PER_PAGE, (transPage + 1) * PER_PAGE).map((p, i) => (
-                                <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
-                                    <td style={{ fontWeight: 600 }}>{p.web_name}</td>
-                                    <td style={{ color: 'var(--green)', fontWeight: 700 }}>+{p.transfers_in_event?.toLocaleString()}</td>
-                                    <td>{p.form}</td>
-                                    <td>£{(p.now_cost / 10).toFixed(1)}m</td>
-                                </tr>
-                            ))}
+                            {gwStats.mostTransIn.slice(transPage * PER_PAGE, (transPage + 1) * PER_PAGE).map((p, i) => {
+                                const team = getTeam(p.team)
+                                return (
+                                    <tr key={p.id} onClick={() => navigate(`/players/${p.id}`)}>
+                                        <td>
+                                            <div className={styles.playerCell}>
+                                                {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
+                                                <span className={styles.playerName}>{p.web_name}</span>
+                                            </div>
+                                        </td>
+                                        <td style={{ color: 'var(--green)', fontWeight: 700 }}>+{p.transfers_in_event?.toLocaleString()}</td>
+                                        <td>{p.form}</td>
+                                        <td>£{(p.now_cost / 10).toFixed(1)}m</td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>

@@ -13,23 +13,37 @@ const STATUS_OPTIONS = [
 ]
 
 export default function InjuryAlerts() {
-    const { players, loading, getTeam } = useFpl()
+    const { players, teams, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [posFilter, setPosFilter] = useState('ALL')
+    const [teamFilter, setTeamFilter] = useState('ALL')
     const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
+    const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
     const statusDropdownRef = useRef(null)
+    const teamDropdownRef = useRef(null)
 
     useEffect(() => {
         function handleClick(e) {
             if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target)) {
                 setStatusDropdownOpen(false)
             }
+            if (teamDropdownRef.current && !teamDropdownRef.current.contains(e.target)) {
+                setTeamDropdownOpen(false)
+            }
         }
         document.addEventListener('mousedown', handleClick)
         return () => document.removeEventListener('mousedown', handleClick)
     }, [])
+
+    const sortedTeams = useMemo(() => {
+        return [...teams].sort((a, b) => a.name.localeCompare(b.name))
+    }, [teams])
+
+    const selectedTeamLabel = teamFilter === 'ALL'
+        ? 'All Teams'
+        : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const statusMap = {
         i: { label: 'Injured', class: styles.statusInjured },
@@ -45,6 +59,7 @@ export default function InjuryAlerts() {
                 if (p.status === 'a') return false
                 if (statusFilter !== 'all' && p.status !== statusFilter) return false
                 if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
+                if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
                 if (search) {
                     const q = search.toLowerCase()
                     return p.web_name.toLowerCase().includes(q) ||
@@ -58,7 +73,7 @@ export default function InjuryAlerts() {
                 if (priority[a.status] !== priority[b.status]) return priority[a.status] - priority[b.status]
                 return parseFloat(b.selected_by_percent) - parseFloat(a.selected_by_percent)
             })
-    }, [players, statusFilter, posFilter, search])
+    }, [players, statusFilter, posFilter, teamFilter, search])
 
     const counts = useMemo(() => {
         const c = { all: 0, i: 0, s: 0, d: 0, u: 0, n: 0 }
@@ -124,6 +139,31 @@ export default function InjuryAlerts() {
                             {pos}
                         </button>
                     ))}
+                    <div className={styles.customSelect} ref={teamDropdownRef}>
+                        <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
+                            <span>{selectedTeamLabel}</span>
+                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${teamDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                        </button>
+                        {teamDropdownOpen && (
+                            <div className={styles.selectDropdown}>
+                                <div
+                                    className={`${styles.selectOption} ${teamFilter === 'ALL' ? styles.selectOptionActive : ''}`}
+                                    onClick={() => { setTeamFilter('ALL'); setTeamDropdownOpen(false) }}
+                                >
+                                    All Teams
+                                </div>
+                                {sortedTeams.map(t => (
+                                    <div
+                                        key={t.id}
+                                        className={`${styles.selectOption} ${teamFilter === String(t.id) ? styles.selectOptionActive : ''}`}
+                                        onClick={() => { setTeamFilter(String(t.id)); setTeamDropdownOpen(false) }}
+                                    >
+                                        {t.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <div className={styles.customSelect} ref={statusDropdownRef}>
                         <button className={styles.selectBtn} onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}>
                             <span>{selectedStatusLabel}</span>

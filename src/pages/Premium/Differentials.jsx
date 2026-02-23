@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
@@ -8,8 +8,29 @@ export default function Differentials() {
     const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [posFilter, setPosFilter] = useState('ALL')
+    const [teamFilter, setTeamFilter] = useState('ALL')
     const [maxOwnership, setMaxOwnership] = useState(10)
     const [search, setSearch] = useState('')
+    const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
+    const teamDropdownRef = useRef(null)
+
+    useEffect(() => {
+        function handleClick(e) {
+            if (teamDropdownRef.current && !teamDropdownRef.current.contains(e.target)) {
+                setTeamDropdownOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [])
+
+    const sortedTeams = useMemo(() => {
+        return [...teams].sort((a, b) => a.name.localeCompare(b.name))
+    }, [teams])
+
+    const selectedTeamLabel = teamFilter === 'ALL'
+        ? 'All Teams'
+        : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const differentials = useMemo(() => {
         if (!players.length || !fixtures.length || !currentGw) return []
@@ -21,7 +42,13 @@ export default function Differentials() {
                 if (parseFloat(p.form) < 4.0) return false
                 if (p.minutes < 200) return false
                 if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
-                if (search && !p.web_name.toLowerCase().includes(search.toLowerCase())) return false
+                if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
+                if (search) {
+                    const q = search.toLowerCase()
+                    return p.web_name.toLowerCase().includes(q) ||
+                        p.first_name.toLowerCase().includes(q) ||
+                        p.second_name.toLowerCase().includes(q)
+                }
                 return true
             })
             .map(p => {
@@ -42,7 +69,7 @@ export default function Differentials() {
                 return { ...p, upcoming, avgFDR: parseFloat(avgFDR) }
             })
             .sort((a, b) => a.avgFDR - b.avgFDR || parseFloat(b.form) - parseFloat(a.form))
-    }, [players, fixtures, teams, currentGw, posFilter, maxOwnership, search])
+    }, [players, fixtures, teams, currentGw, posFilter, teamFilter, maxOwnership, search])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }
@@ -70,15 +97,17 @@ export default function Differentials() {
                 Low-ownership players with high form and favorable upcoming fixtures
             </p>
 
-            <div className={styles.toolbar}>
-                <input
-                    className={styles.searchInput}
-                    type="text"
-                    placeholder="Search player..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                />
-                <div className={styles.filters}>
+            <div className={styles.controls}>
+                <div className={styles.searchRow}>
+                    <input
+                        className={styles.searchInput}
+                        type="text"
+                        placeholder="Search player..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                </div>
+                <div className={styles.filterRow}>
                     {['ALL', 'GKP', 'DEF', 'MID', 'FWD'].map(pos => (
                         <button
                             key={pos}
@@ -88,6 +117,31 @@ export default function Differentials() {
                             {pos}
                         </button>
                     ))}
+                    <div className={styles.customSelect} ref={teamDropdownRef}>
+                        <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
+                            <span>{selectedTeamLabel}</span>
+                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${teamDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                        </button>
+                        {teamDropdownOpen && (
+                            <div className={styles.selectDropdown}>
+                                <div
+                                    className={`${styles.selectOption} ${teamFilter === 'ALL' ? styles.selectOptionActive : ''}`}
+                                    onClick={() => { setTeamFilter('ALL'); setTeamDropdownOpen(false) }}
+                                >
+                                    All Teams
+                                </div>
+                                {sortedTeams.map(t => (
+                                    <div
+                                        key={t.id}
+                                        className={`${styles.selectOption} ${teamFilter === String(t.id) ? styles.selectOptionActive : ''}`}
+                                        onClick={() => { setTeamFilter(String(t.id)); setTeamDropdownOpen(false) }}
+                                    >
+                                        {t.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <button
                         className={maxOwnership === 5 ? styles.filterBtnActive : styles.filterBtn}
                         onClick={() => setMaxOwnership(maxOwnership === 5 ? 10 : 5)}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
@@ -7,13 +7,34 @@ import styles from './Premium.module.css'
 const PER_PAGE = 25
 
 export default function OwnershipEO() {
-    const { players, loading, getTeam } = useFpl()
+    const { players, teams, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [posFilter, setPosFilter] = useState('ALL')
+    const [teamFilter, setTeamFilter] = useState('ALL')
     const [sortKey, setSortKey] = useState('selected_by_percent')
     const [sortDir, setSortDir] = useState('desc')
     const [page, setPage] = useState(0)
+    const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
+    const teamDropdownRef = useRef(null)
+
+    useEffect(() => {
+        function handleClick(e) {
+            if (teamDropdownRef.current && !teamDropdownRef.current.contains(e.target)) {
+                setTeamDropdownOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [])
+
+    const sortedTeams = useMemo(() => {
+        return [...teams].sort((a, b) => a.name.localeCompare(b.name))
+    }, [teams])
+
+    const selectedTeamLabel = teamFilter === 'ALL'
+        ? 'All Teams'
+        : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const handleSort = (key) => {
         if (sortKey === key) setSortDir(d => d === 'desc' ? 'asc' : 'desc')
@@ -26,6 +47,7 @@ export default function OwnershipEO() {
             .filter(p => {
                 if (parseFloat(p.selected_by_percent) < 1) return false
                 if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
+                if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
                 if (search) {
                     const q = search.toLowerCase()
                     return p.web_name.toLowerCase().includes(q) ||
@@ -56,7 +78,7 @@ export default function OwnershipEO() {
                 let bv = parseFloat(b[sortKey]) || 0
                 return sortDir === 'desc' ? bv - av : av - bv
             })
-    }, [players, posFilter, sortKey, sortDir, search])
+    }, [players, posFilter, teamFilter, sortKey, sortDir, search])
 
     const totalPages = Math.ceil(ownershipData.length / PER_PAGE)
     const paginated = ownershipData.slice(page * PER_PAGE, (page + 1) * PER_PAGE)
@@ -117,6 +139,31 @@ export default function OwnershipEO() {
                             {pos}
                         </button>
                     ))}
+                    <div className={styles.customSelect} ref={teamDropdownRef}>
+                        <button className={styles.selectBtn} onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}>
+                            <span>{selectedTeamLabel}</span>
+                            <img src="/bottom.svg" alt="Toggle" className={`${styles.selectArrow} ${teamDropdownOpen ? styles.selectArrowOpen : ''}`} />
+                        </button>
+                        {teamDropdownOpen && (
+                            <div className={styles.selectDropdown}>
+                                <div
+                                    className={`${styles.selectOption} ${teamFilter === 'ALL' ? styles.selectOptionActive : ''}`}
+                                    onClick={() => { setTeamFilter('ALL'); setPage(0); setTeamDropdownOpen(false) }}
+                                >
+                                    All Teams
+                                </div>
+                                {sortedTeams.map(t => (
+                                    <div
+                                        key={t.id}
+                                        className={`${styles.selectOption} ${teamFilter === String(t.id) ? styles.selectOptionActive : ''}`}
+                                        onClick={() => { setTeamFilter(String(t.id)); setPage(0); setTeamDropdownOpen(false) }}
+                                    >
+                                        {t.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
