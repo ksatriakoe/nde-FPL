@@ -17,25 +17,26 @@
 }
 
 .rangeLabel {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
     font-weight: 600;
 }
 
 .rangeSelect {
-    padding: 0.4rem 0.5rem;
+    padding: 0.45rem 0.6rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
     background: #0F1626;
     color: #E6EDF5;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    font-family: inherit;
 }
 
 .rangeSep {
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
 }
 
 .customSelect {
@@ -108,6 +109,7 @@
     overflow-x: auto;
     overflow-y: auto;
     max-height: 75vh;
+    background: #0F1626;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     -webkit-overflow-scrolling: touch;
@@ -123,7 +125,7 @@
 .fixtureTable th {
     position: sticky;
     top: 0;
-    background: var(--bg-secondary);
+    background: #16213A;
     padding: 0.5rem 0.3rem;
     font-weight: 700;
     font-size: 0.7rem;
@@ -155,7 +157,7 @@
     font-weight: 700;
     position: sticky;
     left: 0;
-    background: var(--bg-primary);
+    background: #0F1626;
     z-index: 1;
 }
 
@@ -188,15 +190,16 @@
 }
 
 .venueBtn {
-    padding: 0.35rem 0.75rem;
+    padding: 0.45rem 1rem;
     border: none;
     background: none;
     color: var(--text-secondary);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.15s ease;
+    font-family: inherit;
 }
 
 .venueBtn:hover {

@@ -1,6 +1,9 @@
-import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useFpl } from '../../hooks/useFplData'
+import { useAuth } from '../../hooks/useAuth'
+import { SettingsProvider } from '../../hooks/useSettings'
 import styles from './Layout.module.css'
 
 const navItems = [
@@ -11,15 +14,47 @@ const navItems = [
     { to: '/players', icon: <img src="/player.svg" alt="" className="nav-svg-icon" />, label: 'Players' },
     { to: '/price-changes', icon: <img src="/money.svg" alt="" className="nav-svg-icon" />, label: 'Price Changes' },
     { to: '/standings', icon: <img src="/trophy.svg" alt="" className="nav-svg-icon" />, label: 'Standings' },
-    { label: 'Premium', section: true, premium: true },
-    { to: '#', icon: '🤖', label: 'AI Picks', locked: true },
-    { to: '#', icon: '📊', label: 'Analytics', locked: true },
-    { to: '#', icon: '🗓️', label: 'Planner', locked: true },
+    { to: '/my-team', icon: <img src="/player.svg" alt="" className="nav-svg-icon" />, label: 'My Team' },
+    { to: '/watchlist', icon: <img src="/star.svg" alt="" className="nav-svg-icon" />, label: 'Watchlist' },
+    { label: 'AI Features', section: true, premium: true },
+    { to: '/captain-picks', icon: <img src="/star.svg" alt="" className="nav-svg-icon" />, label: 'Captain Picks' },
+    { to: '/match-predictions', icon: <img src="/goal.svg" alt="" className="nav-svg-icon" />, label: 'Predictions' },
+    { to: '/gw-summary', icon: <img src="/fire.svg" alt="" className="nav-svg-icon" />, label: 'GW Summary' },
+    { to: '/transfers', icon: <img src="/check.svg" alt="" className="nav-svg-icon" />, label: 'Transfers AI' },
+    { label: 'Analytics', section: true, premium: true },
+    { to: '/differentials', icon: <img src="/archery.svg" alt="" className="nav-svg-icon" />, label: 'Differentials' },
+    { to: '/injuries', icon: <img src="/red-card.svg" alt="" className="nav-svg-icon" />, label: 'Injury Alerts' },
+    { to: '/form-fixture', icon: <img src="/stats.svg" alt="" className="nav-svg-icon" />, label: 'Form×Fixture' },
+    { to: '/ownership', icon: <img src="/medal.svg" alt="" className="nav-svg-icon" />, label: 'Ownership & EO' },
+    { label: 'Account', section: true },
+    { to: '/subscribe', icon: '⭐', label: 'Subscribe' },
 ]
 
 export default function Layout() {
     const { currentGw, nextGw, loading } = useFpl()
+    const { isPremium, wallet } = useAuth()
+    const navigate = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [settingsOpen, setSettingsOpen] = useState(false)
+    const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_key') || '')
+    const settingsRef = useRef(null)
+
+    useEffect(() => {
+        function handleClick(e) {
+            if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+                setSettingsOpen(false)
+            }
+        }
+        if (settingsOpen) {
+            document.addEventListener('mousedown', handleClick)
+            return () => document.removeEventListener('mousedown', handleClick)
+        }
+    }, [settingsOpen])
+
+    const saveKey = (k) => {
+        setApiKey(k)
+        localStorage.setItem('gemini_key', k)
+    }
 
     const gwLabel = currentGw ? `GW${currentGw.id}` : nextGw ? `GW${nextGw.id}` : ''
 
@@ -46,13 +81,12 @@ export default function Layout() {
                                 to={item.to}
                                 end={item.to === '/'}
                                 className={({ isActive }) =>
-                                    isActive && !item.locked ? styles.navLinkActive : styles.navLink
+                                    isActive ? styles.navLinkActive : styles.navLink
                                 }
                                 onClick={() => setMobileOpen(false)}
                             >
                                 <span className={styles.navIcon}>{item.icon}</span>
                                 {item.label}
-                                {item.locked && <span className={styles.premiumBadge}>🔒</span>}
                             </NavLink>
                         )
                     })}
@@ -80,10 +114,82 @@ export default function Layout() {
                                 LIVE
                             </div>
                         )}
+                        <div className={styles.settingsWrapper} ref={settingsRef}>
+                            <button
+                                className={styles.settingsBtn}
+                                onClick={() => setSettingsOpen(!settingsOpen)}
+                                title="AI Settings"
+                            >
+                                <img src="/gear.svg" alt="Settings" className={styles.settingsIcon} />
+                                <span className={styles.settingsBadge}>PRO</span>
+                            </button>
+                            {settingsOpen && (
+                                <div className={styles.settingsPopup}>
+                                    {isPremium ? (
+                                        <>
+                                            <div className={styles.settingsHeader}>
+                                                <img src="/gear.svg" alt="" style={{ width: 16, height: 16, filter: 'brightness(0) saturate(100%) invert(67%) sepia(74%) saturate(1575%) hue-rotate(10deg) brightness(100%) contrast(96%)' }} />
+                                                <span>AI Settings</span>
+                                                <span className={styles.settingsProTag}>PREMIUM</span>
+                                            </div>
+                                            <p className={styles.settingsDesc}>
+                                                Enter your Gemini API key to unlock AI-powered features like Captain Picks, Predictions, GW Summary, and Transfer Suggestions.
+                                            </p>
+                                            <label className={styles.settingsLabel}>Gemini API Key</label>
+                                            <input
+                                                className={styles.settingsInput}
+                                                type="password"
+                                                placeholder="Enter your API key..."
+                                                value={apiKey}
+                                                onChange={e => saveKey(e.target.value)}
+                                            />
+                                            <div className={styles.settingsHint}>
+                                                🔒 Stored locally — never sent to our servers
+                                            </div>
+                                            <div className={styles.settingsGuide}>
+                                                <div className={styles.guideTitle}>📖 How to get your API key:</div>
+                                                <ol className={styles.guideSteps}>
+                                                    <li>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className={styles.guideLink}>Google AI Studio</a></li>
+                                                    <li>Sign in with your Google account</li>
+                                                    <li>Click <strong>"Create API Key"</strong></li>
+                                                    <li>Copy the key and paste it above</li>
+                                                </ol>
+                                                <div className={styles.guideFree}>✨ It's free — no credit card required</div>
+                                            </div>
+                                            {apiKey && (
+                                                <div className={styles.settingsStatus}>
+                                                    <span className={styles.statusDot}></span>
+                                                    API key configured
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className={styles.settingsHeader}>
+                                                <span>🔒</span>
+                                                <span>Premium Required</span>
+                                            </div>
+                                            <p className={styles.settingsDesc}>
+                                                Subscribe to Premium to access AI-powered features including Captain Picks, Match Predictions, GW Summary, and Transfer AI.
+                                            </p>
+                                            <button
+                                                className={styles.settingsSubscribeBtn}
+                                                onClick={() => { navigate('/subscribe'); setSettingsOpen(false) }}
+                                            >
+                                                ⭐ Subscribe Now
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
                     </div>
                 </header>
                 <div className={styles.content}>
-                    <Outlet />
+                    <SettingsProvider value={{ openSettings: () => setSettingsOpen(true) }}>
+                        <Outlet />
+                    </SettingsProvider>
                 </div>
             </div>
         </div>

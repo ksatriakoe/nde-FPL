@@ -1,0 +1,791 @@
+.page {
+    animation: fadeIn 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Header ── */
+.premiumHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.premiumHeader h1 {
+    margin: 0;
+}
+
+.premiumBadge {
+    font-size: 0.6rem;
+    background: rgba(29, 78, 216, 0.15);
+    border: 1px solid var(--border-light);
+    color: var(--border-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    margin: -0.5rem 0 0;
+}
+
+/* ── Controls / Filters ── */
+.controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.searchRow {
+    display: contents;
+}
+
+.filterRow {
+    display: contents;
+}
+
+.resultCount {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filters {
+    display: contents;
+}
+
+.searchInput {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #0F1626;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.searchInput::placeholder {
+    color: var(--text-muted);
+}
+
+.searchInput:focus {
+    border-color: var(--accent-primary);
+}
+
+.filterBtn {
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #0F1626;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+
+.filterBtn:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.filterBtnActive {
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid var(--accent-primary);
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--accent-primary);
+}
+
+/* ── Custom Dropdown ── */
+.customSelect {
+    position: relative;
+}
+
+.selectBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #0F1626;
+    color: #E6EDF5;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.selectBtn:hover {
+    border-color: var(--border-light);
+}
+
+.selectArrow {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+}
+
+.selectArrowOpen {
+    transform: rotate(180deg);
+}
+
+.selectDropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    z-index: 10;
+}
+
+.selectOption {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.1s ease;
+    white-space: nowrap;
+}
+
+.selectOption:hover {
+    background: #16213A;
+    color: #E6EDF5;
+}
+
+.selectOptionActive {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+/* ── Table ── */
+.tableWrapper {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 75vh;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.8rem;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    padding: 0.65rem 0.6rem;
+    background: #16213A;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+    user-select: none;
+    z-index: 3;
+}
+
+.table th:first-child,
+.table th:nth-child(2) {
+    position: sticky;
+    left: 0;
+    z-index: 4;
+}
+
+.table th:nth-child(2) {
+    left: 32px;
+}
+
+.table td {
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.table td:first-child,
+.table td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    background: #0F1626;
+    z-index: 1;
+}
+
+.table td:nth-child(2) {
+    left: 32px;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ── Player Cell ── */
+.playerCell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.playerName {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.playerTeam {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.teamBadge {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* ── Position Tags ── */
+.posTag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.posGKP {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(249, 115, 22, 0.15);
+    color: #F97316;
+}
+
+.posDEF {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--green);
+}
+
+.posMID {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--blue);
+}
+
+.posFWD {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--red);
+}
+
+/* ── Status Badges (Injury) ── */
+.statusBadge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.statusInjured {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--red);
+}
+
+.statusDoubtful {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+}
+
+.statusSuspended {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #FB923C;
+}
+
+.statusUnavail {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(100, 116, 139, 0.15);
+    color: var(--text-muted);
+}
+
+/* ── Form Badges ── */
+.formHigh {
+    font-weight: 700;
+    color: var(--green);
+}
+
+.formMid {
+    font-weight: 700;
+    color: var(--yellow);
+}
+
+.formLow {
+    font-weight: 700;
+    color: #F59E0B;
+}
+
+/* ── Value Styles ── */
+.textMuted {
+    color: var(--text-muted);
+}
+
+.textSecondary {
+    color: var(--text-secondary);
+}
+
+.textAccent {
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+.textBold {
+    font-weight: 700;
+}
+
+.fdrGood {
+    font-weight: 700;
+    color: var(--green);
+}
+
+.fdrMid {
+    font-weight: 700;
+    color: var(--yellow);
+}
+
+.fdrBad {
+    font-weight: 700;
+    color: var(--red);
+}
+
+/* ── Chance Colors ── */
+.chanceHigh {
+    font-weight: 700;
+    color: var(--green);
+}
+
+.chanceMid {
+    font-weight: 700;
+    color: var(--yellow);
+}
+
+.chanceLow {
+    font-weight: 700;
+    color: #F59E0B;
+}
+
+.chanceNone {
+    font-weight: 700;
+    color: var(--red);
+}
+
+/* ── Danger Badges ── */
+.dangerHigh {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--red);
+}
+
+.dangerMedium {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+}
+
+.dangerLow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--green);
+}
+
+/* ── Sort Arrow ── */
+.sortArrow {
+    margin-left: 4px;
+    font-size: 0.6rem;
+}
+
+/* ── Cards Grid ── */
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    transition: border-color 0.2s ease;
+}
+
+.card:hover {
+    border-color: rgba(34, 211, 238, 0.3);
+}
+
+/* Matrix cell */
+.matrixCell {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.4rem;
+    border-radius: 4px;
+    min-width: 50px;
+}
+
+/* FDR cell */
+.fdrCell {
+    display: inline-block;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: #fff;
+    min-width: 40px;
+    text-align: center;
+}
+
+.fdrRow {
+    display: flex;
+    gap: 3px;
+}
+
+.newsCell {
+    max-width: 250px;
+    white-space: normal !important;
+    font-size: 0.75rem !important;
+    color: var(--text-secondary);
+}
+
+/* ── Empty State ── */
+.emptyState {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+    font-size: 0.85rem;
+}
+
+/* ── Sections ── */
+.section {
+    margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* ── AI features ── */
+.aiCard {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.aiKeyInput {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #16213A;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+}
+
+.aiKeyInput:focus {
+    border-color: var(--accent-primary);
+}
+
+.aiBtn {
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent-gradient);
+    color: var(--bg-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+}
+
+.aiBtn:hover {
+    opacity: 0.85;
+}
+
+.aiBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.aiResult {
+    background: #16213A;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem;
+    line-height: 1.6;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+}
+
+.keyRow {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.keyHint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Score card */
+.scoreCard {
+    text-align: center;
+    padding: 0.75rem;
+}
+
+.scoreValue {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.scoreLabel {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
+}
+
+/* ── Pagination ── */
+.paginationRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.pageBtn {
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #0F1626;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: border-color 0.15s ease;
+}
+
+.pageBtn:hover {
+    border-color: var(--accent-primary);
+}
+
+.pageBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pageArrow {
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .page {
+        overflow-x: hidden;
+    }
+
+    .cardGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .keyRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aiKeyInput {
+        max-width: 100%;
+    }
+
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchRow {
+        display: block;
+        width: 100%;
+    }
+
+    .searchRow .searchInput {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .filterRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .searchInput {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .tableWrapper {
+        max-height: 65vh;
+        max-width: calc(100vw - 2rem);
+    }
+
+    .table {
+        font-size: 0.7rem;
+        width: auto;
+        min-width: max-content;
+    }
+
+    .table th {
+        font-size: 0.6rem;
+        padding: 0.4rem 0.3rem;
+        min-width: 42px;
+    }
+
+    .table th:first-child {
+        min-width: 28px;
+    }
+
+    .table th:nth-child(2) {
+        min-width: 100px;
+        left: 28px;
+    }
+
+    .table td {
+        font-size: 0.72rem;
+        padding: 0.4rem 0.3rem;
+    }
+
+    .table td:nth-child(2) {
+        left: 28px;
+    }
+
+    .teamBadge {
+        width: 16px;
+        height: 16px;
+    }
+
+    .filterBtn,
+    .filterBtnActive {
+        padding: 0.4rem 0.65rem;
+        font-size: 0.7rem;
+    }
+}

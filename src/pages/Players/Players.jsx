@@ -79,8 +79,12 @@ export default function Players() {
     const loadConsistency = useCallback(async () => {
         if (consistencyLoading) return
         setConsistencyLoading(true)
-        const top = filtered.slice(0, 50)
+        const top = filtered.slice(0, 80)
         const toFetch = top.filter(p => !consistencyData[p.id])
+        if (toFetch.length === 0) {
+            setConsistencyLoading(false)
+            return
+        }
         setConsistencyProgress({ done: 0, total: toFetch.length })
 
         const results = { ...consistencyData }
@@ -101,11 +105,16 @@ export default function Players() {
         setConsistencyLoading(false)
     }, [filtered, consistencyData, consistencyLoading])
 
+    // Re-trigger load when entering consistency mode OR when filters change
     useEffect(() => {
-        if (viewMode === 'consistency' && Object.keys(consistencyData).length === 0 && !consistencyLoading) {
+        if (viewMode !== 'consistency') return
+        // Check if there are filtered players without consistency data
+        const top = filtered.slice(0, 80)
+        const missing = top.filter(p => !consistencyData[p.id])
+        if (missing.length > 0 && !consistencyLoading) {
             loadConsistency()
         }
-    }, [viewMode])
+    }, [viewMode, posFilter, teamFilter])
 
     const consistencyList = useMemo(() => {
         if (viewMode !== 'consistency') return []
@@ -129,7 +138,7 @@ export default function Players() {
     }, [filtered, consistencyData, viewMode, threshold])
 
     const SortTh = ({ label, field }) => (
-        <th onClick={() => handleSort(field)}>
+        <th className={styles.sortable} onClick={() => handleSort(field)}>
             {label}
             {sortKey === field && (
                 <span className={styles.sortIcon}>{sortDir === 'desc' ? '▼' : '▲'}</span>
@@ -234,7 +243,7 @@ export default function Players() {
                                 <tr>
                                     <th>#</th>
                                     <th>Player</th>
-                                    <SortTh label="Pos" field="element_type" />
+                                    <th>Pos</th>
                                     <SortTh label="Price" field="now_cost" />
                                     <SortTh label="Pts" field="total_points" />
                                     <SortTh label="Form" field="form" />

@@ -35,6 +35,27 @@ export async function fetchPlayerSummary(playerId) {
     return res.json()
 }
 
+export async function fetchManager(managerId) {
+    const url = isDev ? `/api/fpl/entry/${managerId}/` : `/api/entry?id=${managerId}`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Failed to fetch manager data')
+    return res.json()
+}
+
+export async function fetchManagerPicks(managerId, gw) {
+    const url = isDev ? `/api/fpl/entry/${managerId}/event/${gw}/picks/` : `/api/entry-picks?id=${managerId}&gw=${gw}`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Failed to fetch manager picks')
+    return res.json()
+}
+
+export async function fetchManagerHistory(managerId) {
+    const url = isDev ? `/api/fpl/entry/${managerId}/history/` : `/api/entry-history?id=${managerId}`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Failed to fetch manager history')
+    return res.json()
+}
+
 export function getTeamBadgeUrl(teamCode) {
     return `https://resources.premierleague.com/premierleague/badges/70/t${teamCode}.png`
 }

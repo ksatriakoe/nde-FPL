@@ -123,7 +123,7 @@ export default function PlayerDetail() {
                     <h3 className={styles.sectionTitle}>Upcoming Fixtures</h3>
                     <div className={styles.fixtureRow}>
                         {upcomingFixtures.map((f, i) => (
-                            <div key={i} className={styles.fixtureCard} style={{ borderLeftColor: getDifficultyColor(f.difficulty) }}>
+                            <div key={i} className={styles.fixtureCard} style={{ borderTopColor: getDifficultyColor(f.difficulty) }}>
                                 <div className={styles.fixtureGW}>GW{f.gw}</div>
                                 <div className={styles.fixtureOpp}>{f.opponent}</div>
                                 <div className={styles.fixtureVenue}>{f.isHome ? 'H' : 'A'}</div>

@@ -200,6 +200,194 @@
     cursor: pointer;
 }
 
+/* ── Settings Gear ── */
+.settingsWrapper {
+    position: relative;
+}
+
+.settingsBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    background: rgba(245, 158, 11, 0.06);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.settingsBtn:hover {
+    border-color: #F59E0B;
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.settingsIcon {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) saturate(100%) invert(67%) sepia(74%) saturate(1575%) hue-rotate(10deg) brightness(100%) contrast(96%);
+    transition: transform 0.3s ease;
+}
+
+.settingsBtn:hover .settingsIcon {
+    transform: rotate(45deg);
+}
+
+.settingsBadge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #F59E0B;
+    letter-spacing: 0.04em;
+}
+
+.settingsPopup {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 320px;
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    z-index: 200;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.settingsHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+}
+
+.settingsProTag {
+    font-size: 0.6rem;
+    background: rgba(29, 78, 216, 0.15);
+    color: #1D4ED8;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.settingsDesc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.settingsLabel {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.settingsInput {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #0a0f1c;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+    box-sizing: border-box;
+}
+
+.settingsInput:focus {
+    border-color: #F59E0B;
+}
+
+.settingsHint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+.settingsGuide {
+    margin-top: 0.85rem;
+    padding: 0.75rem;
+    background: rgba(245, 158, 11, 0.04);
+    border: 1px solid rgba(245, 158, 11, 0.12);
+    border-radius: var(--radius-sm);
+}
+
+.guideTitle {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    color: var(--text-primary);
+}
+
+.guideSteps {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.guideLink {
+    color: #F59E0B;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.guideLink:hover {
+    color: #FBBF24;
+}
+
+.guideFree {
+    margin-top: 0.4rem;
+    font-size: 0.68rem;
+    color: var(--green);
+    font-weight: 600;
+}
+
+.settingsStatus {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    font-size: 0.78rem;
+    color: var(--green);
+    font-weight: 600;
+}
+
+.statusDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+}
+
+.settingsSubscribeBtn {
+    width: 100%;
+    padding: 0.65rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent-gradient);
+    color: #0a0f1c;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+}
+
+.settingsSubscribeBtn:hover {
+    opacity: 0.9;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
@@ -219,5 +407,22 @@
 
     .mobileToggle {
         display: block;
+    }
+
+    .header {
+        padding: 0 1rem;
+    }
+
+    .headerLeft>span {
+        display: none;
+    }
+
+    .settingsPopup {
+        width: 280px;
+        right: -40px;
+    }
+
+    .settingsBadge {
+        display: none;
     }
 }

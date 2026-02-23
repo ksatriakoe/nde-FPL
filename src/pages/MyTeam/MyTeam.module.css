@@ -1,0 +1,275 @@
+.page {
+    animation: fadeIn 0.4s ease;
+}
+
+/* ID Input */
+.idForm {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.idInput {
+    width: 200px;
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: #0F1626;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+}
+
+.idInput:focus {
+    border-color: var(--accent-primary);
+}
+
+.loadBtn {
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent-gradient);
+    color: var(--bg-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+}
+
+.loadBtn:hover {
+    opacity: 0.85;
+}
+
+.loadBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Manager Info */
+.managerCard {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.managerName {
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.managerTeam {
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+    margin-top: 0.1rem;
+}
+
+.statChips {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.chip {
+    background: #16213A;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.85rem;
+    text-align: center;
+}
+
+.chipValue {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.chipLabel {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+}
+
+/* GW Chart */
+.gwChart {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    overflow-x: auto;
+}
+
+.chartTitle {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.chartBars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 120px;
+    min-width: max-content;
+}
+
+.bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.barFill {
+    width: 22px;
+    border-radius: 3px 3px 0 0;
+    background: var(--accent-gradient);
+    transition: height 0.3s ease;
+}
+
+.barLabel {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+}
+
+.barValue {
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+/* Pitch Layout */
+.pitch {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.25rem 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.pitchTitle {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.positionRow {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.playerCard {
+    background: #16213A;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.65rem;
+    text-align: center;
+    min-width: 80px;
+    position: relative;
+    transition: border-color 0.15s ease;
+    cursor: pointer;
+}
+
+.playerCard:hover {
+    border-color: var(--accent-primary);
+}
+
+.captainBadge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-radius: 50%;
+    font-size: 0.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vcBadge {
+    composes: captainBadge;
+    background: var(--accent-purple);
+}
+
+.playerCardBadge {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    margin-bottom: 0.15rem;
+}
+
+.playerCardName {
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.playerCardPts {
+    font-size: 0.65rem;
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
+/* Bench */
+.benchLabel {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin: 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.benchRow {
+    composes: positionRow;
+    opacity: 0.6;
+}
+
+/* Error */
+.error {
+    color: var(--red);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .managerCard {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .idInput {
+        width: 100%;
+    }
+
+    .playerCard {
+        min-width: 65px;
+        padding: 0.4rem 0.5rem;
+    }
+
+    .playerCardName {
+        font-size: 0.65rem;
+    }
+}

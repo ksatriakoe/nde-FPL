@@ -1,0 +1,429 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 520px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Wallet Card ── */
+.walletCard {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+}
+
+.walletRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.walletLabel {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.copyBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.copyBtn svg {
+    transition: color 0.2s;
+}
+
+.copyBtn:hover svg {
+    color: var(--accent-primary);
+}
+
+.walletAddr {
+    font-size: 0.65rem;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.copiedToast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0F1626;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    z-index: 1000;
+    animation: toastIn 0.3s ease;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.walletMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* ── Plan Card ── */
+.planCard {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.planCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--border-light);
+}
+
+.planHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.planName {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.planBadge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    background: rgba(29, 78, 216, 0.15);
+    border: 1px solid var(--border-light);
+    color: var(--border-light);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* Status rows inside plan card */
+.statusRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35rem 0;
+}
+
+.statusLabel {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.statusActive {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(16, 185, 129, 0.12);
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.statusInactive {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--red);
+    background: rgba(244, 63, 94, 0.1);
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.statusValue {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.planPrice {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0.35rem 0 0.5rem;
+}
+
+.planPrice span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.planPeriod {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+}
+
+/* ── Features ── */
+.features {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+    margin-bottom: 1.5rem;
+}
+
+.features li {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.features li::before {
+    content: '✓';
+    color: var(--accent-primary);
+    font-weight: 700;
+    font-size: 0.65rem;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(34, 211, 238, 0.1);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ── Divider ── */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 0 0 1rem;
+}
+
+/* ── CTA ── */
+.ctaArea {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ctaLabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.subscribeBtn {
+    width: 100%;
+    padding: 0.85rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--accent-gradient);
+    color: #070B14;
+    transition: opacity 0.2s, transform 0.15s;
+}
+
+.subscribeBtn:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.subscribeBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Alerts ── */
+.error {
+    font-size: 0.8rem;
+    color: var(--red);
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    width: 100%;
+}
+
+.success {
+    font-size: 0.8rem;
+    color: var(--green);
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    width: 100%;
+}
+
+/* ── TX Link ── */
+.txLink {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.txLink a {
+    color: var(--accent-primary);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.65rem;
+    word-break: break-all;
+    text-decoration: none;
+}
+
+.txLink a:hover {
+    text-decoration: underline;
+}
+
+/* ── Active Badge ── */
+.activeBadge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.activeBadge p {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* ── Info Card ── */
+.infoCard {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+}
+
+.infoTitle {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.65rem;
+}
+
+.infoSteps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.infoSteps li {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 0.5rem;
+    line-height: 1.5;
+}
+
+.stepNum {
+    color: var(--accent-primary);
+    font-weight: 700;
+    min-width: 16px;
+}
+
+.addressInfo {
+    margin-top: 0.75rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.addressRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.addressLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 56px;
+}
+
+.addressValue {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.72rem;
+    color: var(--accent-primary);
+    opacity: 0.8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .page {
+        gap: 1rem;
+    }
+
+    .planPrice {
+        font-size: 1.75rem;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+    }
+
+    .walletAddr {
+        max-width: 180px;
+    }
+}

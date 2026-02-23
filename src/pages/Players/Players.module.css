@@ -256,6 +256,7 @@
     overflow-x: auto;
     overflow-y: auto;
     max-height: 75vh;
+    background: #0F1626;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     -webkit-overflow-scrolling: touch;
@@ -270,7 +271,7 @@
 .table th {
     position: sticky;
     top: 0;
-    background: var(--bg-secondary);
+    background: #16213A;
     padding: 0.65rem 0.5rem;
     text-align: left;
     font-size: 0.7rem;
@@ -279,13 +280,16 @@
     text-transform: uppercase;
     letter-spacing: 0.03em;
     border-bottom: 2px solid var(--border-color);
-    cursor: pointer;
     user-select: none;
     white-space: nowrap;
     z-index: 3;
 }
 
-.table th:hover {
+.table th.sortable {
+    cursor: pointer;
+}
+
+.table th.sortable:hover {
     color: var(--accent-primary);
 }
 
@@ -320,7 +324,7 @@
 .table td:nth-child(2) {
     position: sticky;
     left: 0;
-    background: var(--bg-primary);
+    background: #0F1626;
     z-index: 1;
 }
 
