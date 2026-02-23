@@ -789,12 +789,13 @@
     .tableWrapper {
         max-height: 65vh;
         max-width: calc(100vw - 2rem);
+        width: 100%;
     }
 
     .table {
         font-size: 0.7rem;
-        width: auto;
-        min-width: max-content;
+        width: 100%;
+        min-width: 100%;
     }
 
     .table th {
