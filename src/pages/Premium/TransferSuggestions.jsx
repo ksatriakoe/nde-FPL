@@ -136,7 +136,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
         <div className={styles.page}>
             <div className={styles.premiumHeader}>
                 <h1 className="page-title">Transfer Suggestions</h1>
-                <span className={styles.premiumBadge}>AI PREMIUM</span>
+                <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
             <p className={styles.subtitle}>AI-powered transfer recommendations based on form, value, and fixtures</p>
 
@@ -166,7 +166,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
 
             <div className={styles.transferGrid}>
                 <div className={styles.section}>
-                    <div className={styles.sectionTitle}>🟢 Value Picks (Buy)</div>
+                    <div className={styles.sectionTitle}><img src="/circle-green.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} />Value Picks (Buy)</div>
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
                             <thead>
@@ -205,7 +205,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                 </div>
 
                 <div className={styles.section}>
-                    <div className={styles.sectionTitle}>🔴 Consider Selling</div>
+                    <div className={styles.sectionTitle}><img src="/circle-red.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} />Consider Selling</div>
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
                             <thead>

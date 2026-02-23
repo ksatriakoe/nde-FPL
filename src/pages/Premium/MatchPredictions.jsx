@@ -96,7 +96,7 @@ Be realistic with predictions based on the team strengths provided.`
         <div className={styles.page}>
             <div className={styles.premiumHeader}>
                 <h1 className="page-title">AI Match Predictions</h1>
-                <span className={styles.premiumBadge}>AI PREMIUM</span>
+                <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
             <p className={styles.subtitle}>AI score predictions for GW{currentGw?.id} matches</p>
 
@@ -114,7 +114,7 @@ Be realistic with predictions based on the team strengths provided.`
             <div className={styles.section}>
                 <div className={styles.sectionTitle}>GW{currentGw?.id} Fixtures</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', fontSize: '0.68rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
-                    <span>ℹ️ FDR = Fixture Difficulty Rating (1-5)</span>
+                    <span><img src="/info.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4, filter: 'brightness(0) invert(1) opacity(0.7)' }} />FDR = Fixture Difficulty Rating (1-5)</span>
                     <span style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 4 }}>
                         <span className={styles.fdrCell} style={{ background: getDifficultyColor(1), fontSize: '0.55rem', padding: '1px 5px' }}>1</span>
                         <span style={{ marginRight: 4 }}>Easy</span>

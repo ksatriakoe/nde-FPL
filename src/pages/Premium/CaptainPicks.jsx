@@ -106,7 +106,7 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
         <div className={styles.page}>
             <div className={styles.premiumHeader}>
                 <h1 className="page-title">AI Captain Picks</h1>
-                <span className={styles.premiumBadge}>AI PREMIUM</span>
+                <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
             <p className={styles.subtitle}>AI-powered captain recommendations for GW{currentGw?.id}</p>
 

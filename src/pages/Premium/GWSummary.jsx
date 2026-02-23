@@ -103,7 +103,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
         <div className={styles.page}>
             <div className={styles.premiumHeader}>
                 <h1 className="page-title">GW{currentGw?.id} Summary</h1>
-                <span className={styles.premiumBadge}>AI PREMIUM</span>
+                <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
             <p className={styles.subtitle}>AI-generated gameweek preview and strategic summary</p>
 
@@ -142,7 +142,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
             </div>
 
             <div className={styles.section}>
-                <div className={styles.sectionTitle}>🔥 Top Form</div>
+                <div className={styles.sectionTitle}><img src="/fire.svg" alt="" style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }} />Top Form</div>
                 <div className={styles.tableWrapper}>
                     <table className={styles.table}>
                         <thead>
@@ -184,7 +184,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
             </div>
 
             <div className={styles.section}>
-                <div className={styles.sectionTitle}>📈 Most Transferred In</div>
+                <div className={styles.sectionTitle}><img src="/stats.svg" alt="" style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }} />Most Transferred In</div>
                 <div className={styles.tableWrapper}>
                     <table className={styles.table}>
                         <thead>
