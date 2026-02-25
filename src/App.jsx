@@ -22,6 +22,7 @@ import Differentials from './pages/Premium/Differentials'
 import TransferSuggestions from './pages/Premium/TransferSuggestions'
 import InjuryAlerts from './pages/Premium/InjuryAlerts'
 import FormFixtureMatrix from './pages/Premium/FormFixtureMatrix'
+import ConsistencyFixture from './pages/Premium/ConsistencyFixture'
 import OwnershipEO from './pages/Premium/OwnershipEO'
 import MyTeam from './pages/MyTeam/MyTeam'
 import Watchlist from './pages/Watchlist/Watchlist'
@@ -59,6 +60,7 @@ export default function App() {
                     <Route path="/transfers" element={<PremiumGate><TransferSuggestions /></PremiumGate>} />
                     <Route path="/injuries" element={<PremiumGate><InjuryAlerts /></PremiumGate>} />
                     <Route path="/form-fixture" element={<PremiumGate><FormFixtureMatrix /></PremiumGate>} />
+                    <Route path="/consistency-fixture" element={<PremiumGate><ConsistencyFixture /></PremiumGate>} />
                     <Route path="/ownership" element={<PremiumGate><OwnershipEO /></PremiumGate>} />
                   </Route>
                 </Routes>

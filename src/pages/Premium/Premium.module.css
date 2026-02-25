@@ -799,6 +799,37 @@
     vertical-align: middle;
 }
 
+/* ── Loading Box (Consistency) ── */
+.loadingBox {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+}
+
+.loadingText {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.progressBar {
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--accent-primary);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
 @media (max-width: 768px) {
     .page {
         overflow-x: hidden;

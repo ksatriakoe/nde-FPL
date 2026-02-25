@@ -405,7 +405,7 @@
 .addressValue {
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 0.72rem;
-    color: #8B5CF6;
+    color: var(--text-secondary);
     opacity: 0.8;
     overflow: hidden;
     text-overflow: ellipsis;

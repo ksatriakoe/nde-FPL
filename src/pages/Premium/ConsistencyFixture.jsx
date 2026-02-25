@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, normalizeText } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, fetchLive, normalizeText } from '../../services/fplApi'
 import styles from './Premium.module.css'
 
 const GW_OPTIONS = [
@@ -11,8 +11,9 @@ const GW_OPTIONS = [
 ]
 
 const PER_PAGE = 25
+const THRESHOLD = 7
 
-export default function FormFixtureMatrix() {
+export default function ConsistencyFixture() {
     const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
@@ -24,6 +25,10 @@ export default function FormFixtureMatrix() {
     const gwDropdownRef = useRef(null)
     const teamDropdownRef = useRef(null)
     const [page, setPage] = useState(0)
+
+    // Per-player consistency map built from GW live data
+    const [consistencyMap, setConsistencyMap] = useState(null)
+    const [dataLoading, setDataLoading] = useState(true)
 
     useEffect(() => {
         function handleClick(e) {
@@ -52,22 +57,80 @@ export default function FormFixtureMatrix() {
         return Array.from({ length: gwCount }, (_, i) => start + i).filter(g => g <= 38)
     }, [currentGw, gwCount])
 
-    const matrixData = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return []
+    // Fetch ALL past GW live data in parallel to build consistency map
+    // ~27 API calls instead of 300+ per-player calls
+    useEffect(() => {
+        if (!currentGw || consistencyMap) return
 
-        return players
-            .filter(p => {
-                if (parseFloat(p.form) < 3.0) return false
-                if (p.minutes < 200) return false
-                if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
-                if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
-                if (search) {
-                    const q = normalizeText(search)
-                    return normalizeText(p.web_name).includes(q)
+        const pastGWs = []
+        for (let i = 1; i < currentGw.id; i++) pastGWs.push(i)
+        if (pastGWs.length === 0) {
+            setConsistencyMap({})
+            setDataLoading(false)
+            return
+        }
+
+        let cancelled = false
+            ; (async () => {
+                try {
+                    const results = await Promise.all(
+                        pastGWs.map(gw => fetchLive(gw).catch(() => null))
+                    )
+                    if (cancelled) return
+
+                    const map = {}
+                    results.forEach((liveData) => {
+                        if (!liveData?.elements) return
+                        liveData.elements.forEach(el => {
+                            if (!map[el.id]) map[el.id] = { played: 0, high: 0 }
+                            const stats = el.stats
+                            if (stats.minutes > 0) {
+                                map[el.id].played++
+                                if (stats.total_points >= THRESHOLD) {
+                                    map[el.id].high++
+                                }
+                            }
+                        })
+                    })
+
+                    setConsistencyMap(map)
+                } catch {
+                    setConsistencyMap({})
+                } finally {
+                    if (!cancelled) setDataLoading(false)
                 }
-                return true
-            })
+            })()
+
+        return () => { cancelled = true }
+    }, [currentGw])
+
+    // Filtered for display (instant — no API calls)
+    const displayFiltered = useMemo(() => {
+        if (!players.length || !fixtures.length || !currentGw) return []
+        return players.filter(p => {
+            if (p.minutes < 200) return false
+            if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
+            if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
+            if (search) {
+                const q = normalizeText(search)
+                return normalizeText(p.web_name).includes(q)
+            }
+            return true
+        })
+    }, [players, fixtures, currentGw, posFilter, teamFilter, search])
+
+    // Build final data with consistency + fixture
+    const matrixData = useMemo(() => {
+        if (!consistencyMap) return []
+        return displayFiltered
+            .filter(p => consistencyMap[p.id] && consistencyMap[p.id].played > 0)
             .map(p => {
+                const cd = consistencyMap[p.id]
+                const consistencyPct = cd.played > 0
+                    ? Math.round((cd.high / cd.played) * 100)
+                    : 0
+
+                // Fixture data
                 const gwFixtures = {}
                 gwRange.forEach(gw => {
                     const matches = fixtures.filter(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
@@ -83,12 +146,20 @@ export default function FormFixtureMatrix() {
 
                 const allDiffs = Object.values(gwFixtures).flat().map(f => f.difficulty)
                 const avgFDR = allDiffs.length > 0 ? allDiffs.reduce((a, b) => a + b, 0) / allDiffs.length : 5
-                const score = parseFloat(p.form) * (5 - avgFDR + 1)
+                const score = consistencyPct * ((5 - avgFDR + 1) / 5)
 
-                return { ...p, gwFixtures, avgFDR, score }
+                return {
+                    ...p,
+                    gwFixtures,
+                    avgFDR,
+                    score,
+                    highGWCount: cd.high,
+                    gwsPlayed: cd.played,
+                    consistencyPct,
+                }
             })
             .sort((a, b) => b.score - a.score)
-    }, [players, fixtures, teams, currentGw, posFilter, teamFilter, gwRange, search])
+    }, [displayFiltered, consistencyMap, fixtures, teams, gwRange])
 
     const totalPages = Math.ceil(matrixData.length / PER_PAGE)
     const paginated = matrixData.slice(page * PER_PAGE, (page + 1) * PER_PAGE)
@@ -100,10 +171,10 @@ export default function FormFixtureMatrix() {
 
     const selectedGwLabel = GW_OPTIONS.find(o => o.value === gwCount)?.label || `${gwCount} GWs`
 
-    if (loading) {
+    if (loading || dataLoading) {
         return (
             <div className={styles.page}>
-                <h1 className="page-title">Form × Fixture Matrix</h1>
+                <h1 className="page-title">Consistency × Fixture</h1>
                 <div className="shimmer" style={{ height: 400, borderRadius: 'var(--radius)' }} />
             </div>
         )
@@ -112,11 +183,11 @@ export default function FormFixtureMatrix() {
     return (
         <div className={styles.page}>
             <div className={styles.premiumHeader}>
-                <h1 className="page-title">Form × Fixture Matrix</h1>
+                <h1 className="page-title">Consistency × Fixture</h1>
                 <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
             <p className={styles.subtitle}>
-                Players ranked by form combined with fixture difficulty — find who has both great form AND easy fixtures
+                Players ranked by consistency (GWs with {THRESHOLD}+ points) combined with fixture difficulty
             </p>
 
             <div className={styles.controls}>
@@ -192,7 +263,9 @@ export default function FormFixtureMatrix() {
                             <th>#</th>
                             <th>Player</th>
                             <th>Pos</th>
-                            <th>Form</th>
+                            <th>Price</th>
+                            <th>GWs {THRESHOLD}+</th>
+                            <th>Con%</th>
                             <th>Score</th>
                             {gwRange.map(gw => <th key={gw}>GW{gw}</th>)}
                         </tr>
@@ -213,7 +286,15 @@ export default function FormFixtureMatrix() {
                                         </div>
                                     </td>
                                     <td><span className={posClass(p.element_type)}>{getPositionShort(p.element_type)}</span></td>
-                                    <td className={styles.formHigh}>{p.form}</td>
+                                    <td>£{(p.now_cost / 10).toFixed(1)}m</td>
+                                    <td style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{p.highGWCount}</td>
+                                    <td>
+                                        <span className={
+                                            p.consistencyPct >= 50 ? styles.formHigh :
+                                                p.consistencyPct >= 30 ? styles.formMid :
+                                                    styles.formLow
+                                        }>{p.consistencyPct}%</span>
+                                    </td>
                                     <td className={styles.textAccent}>{p.score.toFixed(1)}</td>
                                     {gwRange.map(gw => {
                                         const fxs = p.gwFixtures[gw] || []

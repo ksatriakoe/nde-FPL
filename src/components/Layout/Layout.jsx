@@ -25,6 +25,7 @@ const navItems = [
     { to: '/differentials', icon: <img src="/pie-chart.svg" alt="" className="nav-svg-icon" />, label: 'Differentials' },
     { to: '/injuries', icon: <img src="/medical.svg" alt="" className="nav-svg-icon" />, label: 'Injury Alerts' },
     { to: '/form-fixture', icon: <img src="/calender.svg" alt="" className="nav-svg-icon" />, label: 'Form×Fixture' },
+    { to: '/consistency-fixture', icon: <img src="/card.svg" alt="" className="nav-svg-icon" />, label: 'Con×Fixture' },
     { to: '/ownership', icon: <img src="/target.svg" alt="" className="nav-svg-icon" />, label: 'Ownership & EO' },
     { label: 'Account', section: true },
     { to: '/subscribe', icon: <img src="/premium.svg" alt="" className="nav-svg-icon" />, label: 'Subscribe' },
@@ -60,6 +61,7 @@ export default function Layout() {
 
     return (
         <div className={styles.layout}>
+            {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
             <aside className={`${styles.sidebar} ${mobileOpen ? styles.sidebarOpen : ''}`}>
                 <div className={styles.logo}>
                     <div className={styles.logoIcon}>F</div>
@@ -103,9 +105,8 @@ export default function Layout() {
                             ☰
                         </button>
                         {gwLabel && <span className={styles.gwBadge}>{gwLabel}</span>}
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                            Fantasy Premier League 2025/26
-                        </span>
+                        <span className={styles.seasonFull}>Fantasy Premier League 2025/26</span>
+                        <span className={styles.seasonMobile}>FPL 25/26</span>
                     </div>
                     <div className={styles.headerRight}>
                         {!loading && currentGw && !currentGw.finished && (

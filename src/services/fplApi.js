@@ -69,6 +69,11 @@ export function getPositionShort(typeId) {
     return map[typeId] || '?'
 }
 
+/** Strip diacritics: Güéhi → Guehi, Söyüncü → Soyuncu */
+export function normalizeText(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
+
 export function getDifficultyColor(fdr) {
     if (fdr <= 2) return 'var(--fdr-easy)'
     if (fdr === 3) return 'var(--fdr-medium)'

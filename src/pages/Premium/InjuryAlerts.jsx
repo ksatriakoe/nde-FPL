@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort, normalizeText } from '../../services/fplApi'
 import styles from './Premium.module.css'
 
 const STATUS_OPTIONS = [
@@ -61,10 +61,8 @@ export default function InjuryAlerts() {
                 if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
                 if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
                 if (search) {
-                    const q = search.toLowerCase()
-                    return p.web_name.toLowerCase().includes(q) ||
-                        p.first_name.toLowerCase().includes(q) ||
-                        p.second_name.toLowerCase().includes(q)
+                    const q = normalizeText(search)
+                    return normalizeText(p.web_name).includes(q)
                 }
                 return true
             })

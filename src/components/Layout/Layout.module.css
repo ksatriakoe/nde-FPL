@@ -3,6 +3,21 @@
     min-height: 100vh;
 }
 
+.overlay {
+    display: none;
+}
+
+.seasonFull {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.seasonMobile {
+    display: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
 .sidebar {
     width: var(--sidebar-width);
     background: var(--bg-secondary);
@@ -356,19 +371,20 @@
 }
 
 .guideLink {
-    color: #8B5CF6;
+    color: var(--text-secondary);
     text-decoration: underline;
     font-weight: 600;
 }
 
 .guideLink:hover {
-    color: #A78BFA;
+    color: var(--text-primary);
+    opacity: 0.8;
 }
 
 .guideFree {
     margin-top: 0.4rem;
     font-size: 0.68rem;
-    color: #8B5CF6;
+    color: var(--text-secondary);
     font-weight: 600;
 }
 
@@ -408,6 +424,14 @@
 }
 
 @media (max-width: 768px) {
+    .overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+
     .sidebar {
         transform: translateX(-100%);
     }
@@ -432,8 +456,12 @@
         padding: 0 1rem;
     }
 
-    .headerLeft>span {
+    .seasonFull {
         display: none;
+    }
+
+    .seasonMobile {
+        display: inline;
     }
 
     .settingsPopup {
