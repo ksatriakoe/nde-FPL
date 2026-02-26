@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function CaptainPicks() {
-    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
@@ -34,8 +34,8 @@ export default function CaptainPicks() {
     }, [wallet])
 
     const topCandidates = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return []
-        const gw = currentGw.id
+        if (!players.length || !fixtures.length || !targetGw) return []
+        const gw = targetGw.id
         return players
             .filter(p => p.status === 'a' && parseFloat(p.form) >= 4 && p.minutes > 300)
             .map(p => {
@@ -50,7 +50,7 @@ export default function CaptainPicks() {
                 const scoreB = parseFloat(b.form) * (5 - b.fdr + 1)
                 return scoreB - scoreA
             })
-    }, [players, fixtures, teams, currentGw])
+    }, [players, fixtures, teams, targetGw])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }
@@ -66,7 +66,7 @@ export default function CaptainPicks() {
                 `${p.web_name} (${getPositionShort(p.element_type)}, Form: ${p.form}, Pts: ${p.total_points}, vs ${p.opponent} ${p.isHome ? 'HOME' : 'AWAY'}, FDR: ${p.fdr}, Goals: ${p.goals_scored}, Assists: ${p.assists}, xG: ${p.expected_goals || 'N/A'}, xA: ${p.expected_assists || 'N/A'})`
             ).join('\n')
 
-            const prompt = `You are an FPL (Fantasy Premier League) expert analyst. Based on the following GW${currentGw.id} captain candidates, provide your top 3 captain picks with detailed reasoning.
+            const prompt = `You are an FPL (Fantasy Premier League) expert analyst. Based on the following GW${targetGw.id} captain candidates, provide your top 3 captain picks with detailed reasoning.
 
 Players:
 ${playerInfo}
@@ -85,8 +85,8 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
 
             const response = await callGemini(apiKey, prompt)
             setResult(response)
-            setSavedGw(currentGw.id)
-            if (wallet) saveAiResult(wallet, 'captain_picks', currentGw.id, response)
+            setSavedGw(targetGw.id)
+            if (wallet) saveAiResult(wallet, 'captain_picks', targetGw.id, response)
         } catch (err) {
             setResult('❌ Error: ' + err.message)
         }
@@ -108,7 +108,7 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
                 <h1 className="page-title">AI Captain Picks</h1>
                 <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
-            <p className={styles.subtitle}>AI-powered captain recommendations for GW{currentGw?.id}</p>
+            <p className={styles.subtitle}>AI-powered captain recommendations for GW{targetGw?.id}</p>
 
             {!apiKey ? (
                 <button className={styles.openSettingsBtn} onClick={openSettings}>
@@ -122,7 +122,7 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
             )}
 
             <div className={styles.section}>
-                <div className={styles.sectionTitle}>Top Captain Candidates — GW{currentGw?.id} ({topCandidates.length} players)</div>
+                <div className={styles.sectionTitle}>Top Captain Candidates — GW{targetGw?.id} ({topCandidates.length} players)</div>
                 <div className={styles.tableWrapper}>
                     <table className={styles.table}>
                         <thead>

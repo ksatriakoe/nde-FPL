@@ -92,7 +92,7 @@ export default function MyTeam() {
                     <img src="/search.svg" alt="" className={styles.searchIcon} />
                     {loading ? 'Loading...' : 'Load Team'}
                 </button>
-                <span className={styles.hint}>Find your FPL ID at fpl.team or in FPL Scout</span>
+                <span className={styles.hint}>Find your FPL ID at fpl.team or in Nde-FPL</span>
             </div>
 
             {error && <div className={styles.error}>{error}</div>}

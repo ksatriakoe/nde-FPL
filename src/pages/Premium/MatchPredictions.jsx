@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function MatchPredictions() {
-    const { fixtures, teams, currentGw, loading } = useFpl()
+    const { fixtures, teams, targetGw, loading } = useFpl()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
     const [analyzing, setAnalyzing] = useState(false)
@@ -30,9 +30,9 @@ export default function MatchPredictions() {
     }, [wallet])
 
     const gwFixtures = useMemo(() => {
-        if (!fixtures.length || !currentGw) return []
+        if (!fixtures.length || !targetGw) return []
         return fixtures
-            .filter(f => f.event === currentGw.id)
+            .filter(f => f.event === targetGw.id)
             .map(f => {
                 const home = teams.find(t => t.id === f.team_h)
                 const away = teams.find(t => t.id === f.team_a)
@@ -47,7 +47,7 @@ export default function MatchPredictions() {
                 }
             })
             .sort((a, b) => new Date(a.kickoff_time || 0) - new Date(b.kickoff_time || 0))
-    }, [fixtures, teams, currentGw])
+    }, [fixtures, teams, targetGw])
 
     const handlePredict = async () => {
         if (!apiKey) return
@@ -58,7 +58,7 @@ export default function MatchPredictions() {
                 `${f.homeName} (Home Strength: ${f.homeStrength}) vs ${f.awayName} (Away Strength: ${f.awayStrength}), Home FDR: ${f.team_h_difficulty}, Away FDR: ${f.team_a_difficulty}`
             ).join('\n')
 
-            const prompt = `You are a football prediction expert. Predict the outcomes for these Premier League GW${currentGw.id} matches.
+            const prompt = `You are a football prediction expert. Predict the outcomes for these Premier League GW${targetGw.id} matches.
 
 Matches:
 ${matchInfo}
@@ -75,8 +75,8 @@ Be realistic with predictions based on the team strengths provided.`
 
             const response = await callGemini(apiKey, prompt)
             setPredictions(response)
-            setSavedGw(currentGw.id)
-            if (wallet) saveAiResult(wallet, 'predictions', currentGw.id, response)
+            setSavedGw(targetGw.id)
+            if (wallet) saveAiResult(wallet, 'predictions', targetGw.id, response)
         } catch (err) {
             setPredictions('❌ Error: ' + err.message)
         }
@@ -98,7 +98,7 @@ Be realistic with predictions based on the team strengths provided.`
                 <h1 className="page-title">AI Match Predictions</h1>
                 <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
-            <p className={styles.subtitle}>AI score predictions for GW{currentGw?.id} matches</p>
+            <p className={styles.subtitle}>AI score predictions for GW{targetGw?.id} matches</p>
 
             {!apiKey ? (
                 <button className={styles.openSettingsBtn} onClick={openSettings}>
@@ -112,7 +112,7 @@ Be realistic with predictions based on the team strengths provided.`
             )}
 
             <div className={styles.section}>
-                <div className={styles.sectionTitle}>GW{currentGw?.id} Fixtures</div>
+                <div className={styles.sectionTitle}>GW{targetGw?.id} Fixtures</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', fontSize: '0.68rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                     <span><img src="/info.svg" alt="" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4, filter: 'brightness(0) invert(1) opacity(0.7)' }} />FDR = Fixture Difficulty Rating (1-5)</span>
                     <span style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 4 }}>

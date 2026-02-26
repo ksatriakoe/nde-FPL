@@ -13,7 +13,7 @@ const GW_OPTIONS = [
 const PER_PAGE = 25
 
 export default function FormFixtureMatrix() {
-    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [posFilter, setPosFilter] = useState('ALL')
@@ -47,13 +47,13 @@ export default function FormFixtureMatrix() {
         : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const gwRange = useMemo(() => {
-        if (!currentGw) return []
-        const start = currentGw.id
+        if (!targetGw) return []
+        const start = targetGw.id
         return Array.from({ length: gwCount }, (_, i) => start + i).filter(g => g <= 38)
-    }, [currentGw, gwCount])
+    }, [targetGw, gwCount])
 
     const matrixData = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return []
+        if (!players.length || !fixtures.length || !targetGw) return []
 
         return players
             .filter(p => {
@@ -88,7 +88,7 @@ export default function FormFixtureMatrix() {
                 return { ...p, gwFixtures, avgFDR, score }
             })
             .sort((a, b) => b.score - a.score)
-    }, [players, fixtures, teams, currentGw, posFilter, teamFilter, gwRange, search])
+    }, [players, fixtures, teams, targetGw, posFilter, teamFilter, gwRange, search])
 
     const totalPages = Math.ceil(matrixData.length / PER_PAGE)
     const paginated = matrixData.slice(page * PER_PAGE, (page + 1) * PER_PAGE)

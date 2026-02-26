@@ -40,17 +40,11 @@
     gap: 0.75rem;
 }
 
-.logoIcon {
+.logoImg {
     width: 36px;
     height: 36px;
-    background: var(--accent-gradient);
     border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: var(--bg-primary);
+    object-fit: contain;
 }
 
 .logoText {
@@ -60,10 +54,7 @@
 }
 
 .logoText span {
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
 }
 
 .nav {

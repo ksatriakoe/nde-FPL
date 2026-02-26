@@ -5,7 +5,7 @@ import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, normalizeText } 
 import styles from './Premium.module.css'
 
 export default function Differentials() {
-    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [posFilter, setPosFilter] = useState('ALL')
     const [teamFilter, setTeamFilter] = useState('ALL')
@@ -33,8 +33,8 @@ export default function Differentials() {
         : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const differentials = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return []
-        const gwStart = currentGw.id
+        if (!players.length || !fixtures.length || !targetGw) return []
+        const gwStart = targetGw.id
 
         return players
             .filter(p => {
@@ -67,7 +67,7 @@ export default function Differentials() {
                 return { ...p, upcoming, avgFDR: parseFloat(avgFDR) }
             })
             .sort((a, b) => a.avgFDR - b.avgFDR || parseFloat(b.form) - parseFloat(a.form))
-    }, [players, fixtures, teams, currentGw, posFilter, teamFilter, maxOwnership, search])
+    }, [players, fixtures, teams, targetGw, posFilter, teamFilter, maxOwnership, search])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }

@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function TransferSuggestions() {
-    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
@@ -34,8 +34,8 @@ export default function TransferSuggestions() {
 
     // Value picks: high form relative to price
     const valuePicks = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return []
-        const gw = currentGw.id
+        if (!players.length || !fixtures.length || !targetGw) return []
+        const gw = targetGw.id
         return players
             .filter(p => p.status === 'a' && parseFloat(p.form) >= 3.5 && p.minutes > 200)
             .map(p => {
@@ -58,12 +58,12 @@ export default function TransferSuggestions() {
             })
             .sort((a, b) => b.valueScore - a.valueScore)
             .slice(0, 15)
-    }, [players, fixtures, teams, currentGw])
+    }, [players, fixtures, teams, targetGw])
 
     // Players to sell: bad form + hard fixtures
     const sellCandidates = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return []
-        const gw = currentGw.id
+        if (!players.length || !fixtures.length || !targetGw) return []
+        const gw = targetGw.id
         return players
             .filter(p => parseFloat(p.selected_by_percent) > 10 && (parseFloat(p.form) < 3 || p.status !== 'a'))
             .map(p => {
@@ -78,7 +78,7 @@ export default function TransferSuggestions() {
             })
             .sort((a, b) => parseFloat(a.form) - parseFloat(b.form))
             .slice(0, 10)
-    }, [players, fixtures, currentGw])
+    }, [players, fixtures, targetGw])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }
@@ -97,7 +97,7 @@ export default function TransferSuggestions() {
                 `${p.web_name} (${getPositionShort(p.element_type)}, £${p.price}m, Form: ${p.form}, Status: ${p.status === 'a' ? 'Available' : 'Injured/Doubtful'})`
             ).join('\n')
 
-            const prompt = `You are an FPL transfer expert. Given a budget of £${budget}m, suggest the best transfers for GW${currentGw.id}.
+            const prompt = `You are an FPL transfer expert. Given a budget of £${budget}m, suggest the best transfers for GW${targetGw.id}.
 
 Best value players to BUY:
 ${buyStr}
@@ -115,8 +115,8 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
 
             const response = await callGemini(apiKey, prompt)
             setSuggestions(response)
-            setSavedGw(currentGw.id)
-            if (wallet) saveAiResult(wallet, 'transfers', currentGw.id, response)
+            setSavedGw(targetGw.id)
+            if (wallet) saveAiResult(wallet, 'transfers', targetGw.id, response)
         } catch (err) {
             setSuggestions('❌ Error: ' + err.message)
         }

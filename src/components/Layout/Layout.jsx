@@ -29,6 +29,8 @@ const navItems = [
     { to: '/ownership', icon: <img src="/target.svg" alt="" className="nav-svg-icon" />, label: 'Ownership & EO' },
     { label: 'Account', section: true },
     { to: '/subscribe', icon: <img src="/premium.svg" alt="" className="nav-svg-icon" />, label: 'Subscribe' },
+    { to: '/swap', icon: <img src="/swap.svg" alt="" className="nav-svg-icon" />, label: 'Swap' },
+    { to: '/staking', icon: <img src="/staking.svg" alt="" className="nav-svg-icon" />, label: 'Staking' },
 ]
 
 export default function Layout() {
@@ -64,8 +66,8 @@ export default function Layout() {
             {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
             <aside className={`${styles.sidebar} ${mobileOpen ? styles.sidebarOpen : ''}`}>
                 <div className={styles.logo}>
-                    <div className={styles.logoIcon}>F</div>
-                    <div className={styles.logoText}><span>FPL</span> Scout</div>
+                    <img src="/NdeFPL.png" alt="Nde-FPL" className={styles.logoImg} />
+                    <div className={styles.logoText}><span>Nde</span>-FPL</div>
                 </div>
                 <nav className={styles.nav}>
                     {navItems.map((item, i) => {

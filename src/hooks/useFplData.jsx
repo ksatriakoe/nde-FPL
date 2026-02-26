@@ -46,6 +46,8 @@ export function FplProvider({ children }) {
 
     const currentGw = events.find(e => e.is_current)
     const nextGw = events.find(e => e.is_next)
+    // For forward-looking pages: use nextGw when currentGw is finished
+    const targetGw = (currentGw?.finished ? nextGw : currentGw) || nextGw || currentGw
 
     const getTeam = (id) => teams.find(t => t.id === id)
     const getPlayer = (id) => players.find(p => p.id === id)
@@ -55,7 +57,7 @@ export function FplProvider({ children }) {
         <FplContext.Provider value={{
             data, fixtures, liveData, loading, error,
             teams, players, events, elementTypes,
-            currentGw, nextGw,
+            currentGw, nextGw, targetGw,
             getTeam, getPlayer, getPosition,
         }}>
             {children}

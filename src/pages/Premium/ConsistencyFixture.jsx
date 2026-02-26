@@ -14,7 +14,7 @@ const PER_PAGE = 25
 const THRESHOLD = 7
 
 export default function ConsistencyFixture() {
-    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, currentGw, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [posFilter, setPosFilter] = useState('ALL')
@@ -52,10 +52,10 @@ export default function ConsistencyFixture() {
         : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
     const gwRange = useMemo(() => {
-        if (!currentGw) return []
-        const start = currentGw.id
+        if (!targetGw) return []
+        const start = targetGw.id
         return Array.from({ length: gwCount }, (_, i) => start + i).filter(g => g <= 38)
-    }, [currentGw, gwCount])
+    }, [targetGw, gwCount])
 
     // Fetch ALL past GW live data in parallel to build consistency map
     // ~27 API calls instead of 300+ per-player calls
@@ -106,7 +106,7 @@ export default function ConsistencyFixture() {
 
     // Filtered for display (instant — no API calls)
     const displayFiltered = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return []
+        if (!players.length || !fixtures.length || !targetGw) return []
         return players.filter(p => {
             if (p.minutes < 200) return false
             if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
@@ -117,7 +117,7 @@ export default function ConsistencyFixture() {
             }
             return true
         })
-    }, [players, fixtures, currentGw, posFilter, teamFilter, search])
+    }, [players, fixtures, targetGw, posFilter, teamFilter, search])
 
     // Build final data with consistency + fixture
     const matrixData = useMemo(() => {

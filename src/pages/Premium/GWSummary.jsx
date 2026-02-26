@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function GWSummary() {
-    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
@@ -35,8 +35,8 @@ export default function GWSummary() {
     }, [wallet])
 
     const gwStats = useMemo(() => {
-        if (!players.length || !fixtures.length || !currentGw) return null
-        const gw = currentGw.id
+        if (!players.length || !fixtures.length || !targetGw) return null
+        const gw = targetGw.id
 
         const topForm = [...players].filter(p => p.status === 'a').sort((a, b) => parseFloat(b.form) - parseFloat(a.form))
         const mostTransIn = [...players].sort((a, b) => (b.transfers_in_event || 0) - (a.transfers_in_event || 0))
@@ -45,7 +45,7 @@ export default function GWSummary() {
         const injuredCount = players.filter(p => p.status !== 'a').length
 
         return { topForm, mostTransIn, mostTransOut, gwMatches, injuredCount }
-    }, [players, fixtures, currentGw])
+    }, [players, fixtures, targetGw])
 
     const handleSummarize = async () => {
         if (!apiKey || !gwStats) return
@@ -62,7 +62,7 @@ export default function GWSummary() {
                 `${p.web_name} (-${p.transfers_out_event?.toLocaleString()} transfers)`
             ).join(', ')
 
-            const prompt = `You are an FPL expert providing a GW${currentGw.id} preview/summary. Generate a comprehensive gameweek summary.
+            const prompt = `You are an FPL expert providing a GW${targetGw.id} preview/summary. Generate a comprehensive gameweek summary.
 
 Data:
 - ${gwStats.gwMatches} matches this GW
@@ -72,7 +72,7 @@ Data:
 - Most transferred out: ${transOutStr}
 
 Provide:
-📋 GW${currentGw.id} Summary
+📋 GW${targetGw.id} Summary
 - Key talking points, trending players, what to watch for
 - Transfer tips (who to bring in / sell)
 - Players to watch
@@ -82,8 +82,8 @@ Keep it concise, actionable, and insightful. Use bullet points.`
 
             const response = await callGemini(apiKey, prompt)
             setSummary(response)
-            setSavedGw(currentGw.id)
-            if (wallet) saveAiResult(wallet, 'gw_summary', currentGw.id, response)
+            setSavedGw(targetGw.id)
+            if (wallet) saveAiResult(wallet, 'gw_summary', targetGw.id, response)
         } catch (err) {
             setSummary('❌ Error: ' + err.message)
         }
@@ -102,7 +102,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
     return (
         <div className={styles.page}>
             <div className={styles.premiumHeader}>
-                <h1 className="page-title">GW{currentGw?.id} Summary</h1>
+                <h1 className="page-title">GW{targetGw?.id} Summary</h1>
                 <span className={styles.premiumBadge}>PREMIUM</span>
             </div>
             <p className={styles.subtitle}>AI-generated gameweek preview and strategic summary</p>

@@ -102,7 +102,7 @@ export default function Watchlist() {
                 <div className={styles.addTitle}><img src="/plus.svg" alt="" className={styles.addIcon} /> Add Player</div>
                 <input
                     className={styles.searchInput}
-                    placeholder="Cari pemain untuk ditambahkan..."
+                    placeholder="Search players to add..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     style={{ width: '100%', marginBottom: searchResults.length > 0 ? '0.5rem' : 0 }}
@@ -204,7 +204,7 @@ export default function Watchlist() {
                                             </div>
                                         </td>
                                         <td>
-                                            <button className={styles.removeBtn} onClick={() => watchlist.remove(p.id)} title="Remove">
+                                            <button className={styles.removeBtn} onClick={(e) => { e.stopPropagation(); watchlist.remove(p.id) }} title="Remove">
                                                 ✕
                                             </button>
                                         </td>
@@ -217,8 +217,8 @@ export default function Watchlist() {
             ) : (
                 <div className={styles.empty}>
                     <div className={styles.emptyIcon}>👀</div>
-                    <div>Belum ada pemain di watchlist</div>
-                    <div className={styles.emptyHint}>Cari dan tambah pemain yang ingin kamu pantau</div>
+                    <div>No players in your watchlist</div>
+                    <div className={styles.emptyHint}>Search and add players you want to track</div>
                 </div>
             )}
         </div>
