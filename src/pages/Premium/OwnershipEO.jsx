@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl, getPositionShort, normalizeText } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort, normalizeText, getStatusInfo } from '../../services/fplApi'
 import styles from './Premium.module.css'
 
 const PER_PAGE = 25
@@ -191,7 +191,7 @@ export default function OwnershipEO() {
                                         <div className={styles.playerCell}>
                                             {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
                                             <div>
-                                                <div className={styles.playerName}>{p.web_name}</div>
+                                                <div className={styles.playerName}>{p.web_name}{getStatusInfo(p.status) && <span className="status-dot" style={{ background: getStatusInfo(p.status).color }} title={getStatusInfo(p.status).label} />}</div>
                                                 <div className={styles.playerTeam}>{team?.short_name}</div>
                                             </div>
                                         </div>

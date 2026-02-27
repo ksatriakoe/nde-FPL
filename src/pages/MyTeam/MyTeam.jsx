@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { fetchManager, fetchManagerPicks, fetchManagerHistory, getTeamBadgeUrl } from '../../services/fplApi'
+import { fetchManager, fetchManagerPicks, fetchManagerHistory, getTeamBadgeUrl, getStatusInfo } from '../../services/fplApi'
 import styles from './MyTeam.module.css'
 
 export default function MyTeam() {
@@ -144,8 +144,8 @@ export default function MyTeam() {
                                         alt="" className={styles.playerCardBadge}
                                         onError={e => e.target.style.display = 'none'}
                                     />
-                                    <div className={styles.playerCardName}>{pick.player.web_name}</div>
-                                    <div className={styles.playerCardPts}>{pick.player.event_points} pts</div>
+                                    <div className={styles.playerCardName}>{pick.player.web_name}{getStatusInfo(pick.player.status) && <span className="status-dot" style={{ background: getStatusInfo(pick.player.status).color }} title={getStatusInfo(pick.player.status).label} />}</div>
+                                    <div className={styles.playerCardPts}>{pick.player.event_points * (pick.multiplier || 1)} pts{pick.multiplier > 1 && <span style={{ fontSize: '0.58rem', color: '#F59E0B', fontWeight: 800, marginLeft: 2 }}>×{pick.multiplier}</span>}</div>
                                 </div>
                             ))}
                         </div>
@@ -165,7 +165,7 @@ export default function MyTeam() {
                                     alt="" className={styles.playerCardBadge}
                                     onError={e => e.target.style.display = 'none'}
                                 />
-                                <div className={styles.playerCardName}>{pick.player.web_name}</div>
+                                <div className={styles.playerCardName}>{pick.player.web_name}{getStatusInfo(pick.player.status) && <span className="status-dot" style={{ background: getStatusInfo(pick.player.status).color }} title={getStatusInfo(pick.player.status).label} />}</div>
                                 <div className={styles.playerCardPts}>{pick.player.event_points} pts</div>
                             </div>
                         ))}

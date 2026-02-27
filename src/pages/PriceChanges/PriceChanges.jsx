@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort, getStatusInfo } from '../../services/fplApi'
 import styles from './PriceChanges.module.css'
 
 export default function PriceChanges() {
@@ -39,7 +39,7 @@ export default function PriceChanges() {
             <div key={p.id} className={styles.playerRow} onClick={() => navigate(`/players/${p.id}`)}>
                 {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.badge} />}
                 <div className={styles.info}>
-                    <div className={styles.name}>{p.web_name}</div>
+                    <div className={styles.name}>{p.web_name}{getStatusInfo(p.status) && <span className="status-dot" style={{ background: getStatusInfo(p.status).color }} title={getStatusInfo(p.status).label} />}</div>
                     <div className={styles.sub}>{team?.short_name} · {getPositionShort(p.element_type)}</div>
                 </div>
                 <div className={styles.price}>£{(p.now_cost / 10).toFixed(1)}m</div>

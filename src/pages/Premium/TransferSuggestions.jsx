@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, getStatusInfo } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
 import { formatAiResponse } from '../../services/formatAi'
 import { loadAiResult, saveAiResult } from '../../services/aiResults'
@@ -181,7 +181,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                                             <td>
                                                 <div className={styles.playerCell}>
                                                     {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
-                                                    <span className={styles.playerName}>{p.web_name}</span>
+                                                    <span className={styles.playerName}>{p.web_name}{getStatusInfo(p.status) && <span className="status-dot" style={{ background: getStatusInfo(p.status).color }} title={getStatusInfo(p.status).label} />}</span>
                                                 </div>
                                             </td>
                                             <td><span className={posClass(p.element_type)}>{getPositionShort(p.element_type)}</span></td>
@@ -220,7 +220,7 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                                             <td>
                                                 <div className={styles.playerCell}>
                                                     {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
-                                                    <span className={styles.playerName}>{p.web_name}</span>
+                                                    <span className={styles.playerName}>{p.web_name}{getStatusInfo(p.status) && <span className="status-dot" style={{ background: getStatusInfo(p.status).color }} title={getStatusInfo(p.status).label} />}</span>
                                                 </div>
                                             </td>
                                             <td><span className={posClass(p.element_type)}>{getPositionShort(p.element_type)}</span></td>

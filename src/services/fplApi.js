@@ -87,3 +87,12 @@ export function getDifficultyLabel(fdr) {
     if (fdr === 4) return 'Hard'
     return 'Very Hard'
 }
+
+/** Return status display info for a player status code */
+export function getStatusInfo(status) {
+    if (status === 'a') return null // available — no mark needed
+    if (status === 'd') return { color: '#F59E0B', label: 'Doubtful', abbr: '?' }
+    if (status === 'i') return { color: '#F43F5E', label: 'Injured', abbr: '!' }
+    if (status === 's') return { color: '#F43F5E', label: 'Suspended', abbr: '!' }
+    return { color: '#F43F5E', label: 'Unavailable', abbr: '!' }
+}

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl, getPositionShort } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort, getStatusInfo } from '../../services/fplApi'
 import { callGemini } from '../../services/geminiApi'
 import { formatAiResponse } from '../../services/formatAi'
 import { loadAiResult, saveAiResult } from '../../services/aiResults'
@@ -156,7 +156,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                                         <td>
                                             <div className={styles.playerCell}>
                                                 {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
-                                                <span className={styles.playerName}>{p.web_name}</span>
+                                                <span className={styles.playerName}>{p.web_name}{getStatusInfo(p.status) && <span className="status-dot" style={{ background: getStatusInfo(p.status).color }} title={getStatusInfo(p.status).label} />}</span>
                                             </div>
                                         </td>
                                         <td>{getPositionShort(p.element_type)}</td>
@@ -198,7 +198,7 @@ Keep it concise, actionable, and insightful. Use bullet points.`
                                         <td>
                                             <div className={styles.playerCell}>
                                                 {team && <img src={getTeamBadgeUrl(team.code)} alt="" className={styles.teamBadge} />}
-                                                <span className={styles.playerName}>{p.web_name}</span>
+                                                <span className={styles.playerName}>{p.web_name}{getStatusInfo(p.status) && <span className="status-dot" style={{ background: getStatusInfo(p.status).color }} title={getStatusInfo(p.status).label} />}</span>
                                             </div>
                                         </td>
                                         <td style={{ color: 'var(--green)', fontWeight: 700 }}>+{p.transfers_in_event?.toLocaleString()}</td>

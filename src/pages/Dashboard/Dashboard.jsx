@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useFpl } from '../../hooks/useFplData'
+import { getStatusInfo } from '../../services/fplApi'
 import styles from './Dashboard.module.css'
 
 function Countdown({ deadline }) {
@@ -126,7 +127,7 @@ export default function Dashboard() {
                             <div key={p.id} className={styles.topPlayer}>
                                 <div className={styles.topRank}>{i + 1}</div>
                                 <div className={styles.topInfo}>
-                                    <div className={styles.topName}>{p.web_name}</div>
+                                    <div className={styles.topName}>{p.web_name}{getStatusInfo(p.status) && <span className="status-dot" style={{ background: getStatusInfo(p.status).color }} title={getStatusInfo(p.status).label} />}</div>
                                     <div className={styles.topTeam}>{team?.short_name} · £{(p.now_cost / 10).toFixed(1)}m</div>
                                 </div>
                                 <div className={styles.topPoints}>{p.total_points}</div>
