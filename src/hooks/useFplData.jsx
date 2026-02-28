@@ -46,8 +46,9 @@ export function FplProvider({ children }) {
 
     const currentGw = events.find(e => e.is_current)
     const nextGw = events.find(e => e.is_next)
-    // For forward-looking pages: use nextGw when currentGw is finished
-    const targetGw = (currentGw?.finished ? nextGw : currentGw) || nextGw || currentGw
+    // For forward-looking pages: use nextGw when currentGw deadline has passed or is finished
+    const deadlinePassed = currentGw && new Date(currentGw.deadline_time) <= new Date()
+    const targetGw = ((deadlinePassed || currentGw?.finished) ? nextGw : currentGw) || nextGw || currentGw
 
     const getTeam = (id) => teams.find(t => t.id === id)
     const getPlayer = (id) => players.find(p => p.id === id)

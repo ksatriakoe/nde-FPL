@@ -15,8 +15,8 @@ const FILTER_OPTIONS = [
 ]
 
 export default function Fixtures() {
-    const { fixtures, teams, currentGw, nextGw, loading } = useFpl()
-    const gwStart = (currentGw?.finished && nextGw) ? nextGw.id : (currentGw?.id || 1)
+    const { fixtures, teams, targetGw, loading } = useFpl()
+    const gwStart = targetGw?.id || 1
 
     const [filter, setFilter] = useState(6)
     const [customFrom, setCustomFrom] = useState(gwStart)

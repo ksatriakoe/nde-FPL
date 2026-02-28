@@ -1,0 +1,1083 @@
+.page {
+    padding: 2rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Card wrapper */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.settingsBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: color 0.2s, transform 0.3s;
+}
+
+.settingsBtn:hover {
+    color: var(--text-primary);
+    transform: rotate(90deg);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    background: var(--bg-primary);
+    padding: 3px;
+    border-radius: 9999px;
+    margin-bottom: 1.5rem;
+}
+
+.tab {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.tabActive {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+}
+
+/* Token input sections */
+.tokenSection {
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    padding: 1rem;
+    transition: border-color 0.2s;
+}
+
+.tokenSection:focus-within {
+    outline: 1px solid var(--accent-primary);
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.sectionLabel {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.balanceRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.percentBtn {
+    background: rgba(34, 211, 238, 0.1);
+    border: none;
+    color: var(--accent-primary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0;
+    font-family: inherit;
+}
+
+.tokenSection:hover .percentBtn {
+    opacity: 1;
+}
+
+.percentBtn:hover {
+    background: rgba(34, 211, 238, 0.2);
+}
+
+.tokenRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* Token select button */
+.tokenBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.tokenBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.tokenBtnSelect {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+}
+
+.tokenBtnSelect:hover {
+    background: #1cc6d7;
+}
+
+.tokenIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tokenIconPlaceholder {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #475569, #334155);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.7rem;
+}
+
+.chevron {
+    font-size: 0.6rem;
+    margin-left: 2px;
+}
+
+/* Amount input */
+.amountInput {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-align: right;
+    outline: none;
+    font-family: inherit;
+}
+
+.amountInput::placeholder {
+    color: var(--text-muted);
+}
+
+/* Switch button */
+.switchRow {
+    display: flex;
+    justify-content: center;
+    margin: -0.5rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.switchBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    color: var(--accent-primary);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.switchBtn:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    transform: rotate(180deg);
+}
+
+/* Spacer between token sections */
+.spacer {
+    height: 4px;
+}
+
+/* Price info */
+.priceRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 1rem;
+}
+
+.flipBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+    font-size: 0.75rem;
+}
+
+.flipBtn:hover {
+    color: var(--text-primary);
+}
+
+/* Primary action button */
+.actionBtn {
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 1rem;
+    font-family: inherit;
+}
+
+.actionBtn:hover {
+    background: #1cc6d7;
+}
+
+.actionBtn:disabled {
+    background: var(--bg-card-hover);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Swap details box */
+.detailsBox {
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+}
+
+.detailLabel {
+    color: var(--text-secondary);
+}
+
+.detailValue {
+    color: var(--text-primary);
+}
+
+.impactGood {
+    color: var(--green);
+}
+
+.impactBad {
+    color: var(--red);
+}
+
+.routeRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.routePath {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.routeIcon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.routeArrow {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+}
+
+.routeSymbol {
+    font-size: 0.75rem;
+}
+
+/* ---- Pool specific ---- */
+.poolHeader {
+    margin-bottom: 0.5rem;
+}
+
+.poolTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.positionCard {
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.positionToggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+}
+
+.positionToggle:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.positionPair {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.positionDetails {
+    padding: 0 1rem 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.positionRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+}
+
+.positionLabel {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.positionValue {
+    color: var(--text-primary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.positionActions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+}
+
+.positionActionBtn {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+}
+
+.positionActionBtn:hover {
+    background: #1cc6d7;
+}
+
+.emptyPool {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem 0;
+    font-size: 0.85rem;
+}
+
+.scanningPool {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.backBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+.backBtn:hover {
+    color: var(--text-primary);
+}
+
+/* Remove liquidity */
+.removeHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.removeHeaderIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.removeHeaderText {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--text-primary);
+}
+
+.removeHeaderSep {
+    color: var(--text-secondary);
+    font-size: 1.15rem;
+}
+
+.removeCenter {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.removePercent {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.25rem 0;
+}
+
+.removeSub {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.percentBtns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.percentChoiceBtn {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.percentChoiceActive {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+}
+
+/* Slider */
+.sliderWrap {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    margin-top: 1rem;
+}
+
+.sliderProgress {
+    position: absolute;
+    height: 8px;
+    background: var(--accent-primary);
+    border-radius: 8px;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    margin: 0;
+}
+
+.slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: grab;
+    margin-top: -7px;
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2), 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.slider::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: grab;
+    border: none;
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Receive estimate */
+.receiveBox {
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.receiveTitle {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+/* Pool share info */
+.poolInfoBox {
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+}
+
+.poolInfoTitle {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.poolInfoGrid {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+.poolInfoValue {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.poolInfoLabel {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.plusRow {
+    display: flex;
+    justify-content: center;
+    margin: -0.5rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.plusIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* ---- Modals (shared) ---- */
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+}
+
+.modalCenter {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 101;
+    padding: 1rem;
+    pointer-events: none;
+}
+
+.modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 380px;
+    pointer-events: auto;
+    animation: fadeIn 0.2s ease;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modalTitle {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.modalClose {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.modalClose:hover {
+    color: var(--text-primary);
+}
+
+.modalBody {
+    padding: 1.25rem;
+}
+
+/* Token select modal */
+.tokenSearch {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    font-family: inherit;
+    margin-bottom: 1rem;
+}
+
+.tokenSearch:focus {
+    border-color: var(--accent-primary);
+}
+
+.tokenList {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.tokenListItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.tokenListItem:hover {
+    background: var(--bg-card-hover);
+}
+
+.tokenListLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tokenListIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.tokenListName {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.tokenListAddr {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.tokenListBal {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.importRow {
+    margin-top: 0.75rem;
+}
+
+.importInput {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    outline: none;
+    font-family: inherit;
+}
+
+.importInput:focus {
+    border-color: var(--accent-primary);
+}
+
+.importBtn {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+}
+
+.importBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Confirm modal */
+.confirmIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(245, 158, 11, 0.15);
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: #F59E0B;
+}
+
+.confirmTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.confirmText {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.confirmImpact {
+    color: var(--red);
+    font-weight: 700;
+}
+
+.confirmInput {
+    width: 100%;
+    padding: 0.7rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    font-family: inherit;
+    margin-bottom: 1rem;
+}
+
+.confirmInput:focus {
+    border-color: #F59E0B;
+}
+
+.confirmActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.cancelBtn {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+.cancelBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dangerBtn {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+.dangerBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Settings modal */
+.settingsLabel {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.settingsDesc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.slippageGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.slippageBtn {
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    text-align: center;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.slippageBtnActive {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+}
+
+.customSlippage {
+    width: 100%;
+    padding: 0.6rem 2rem 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    border: 1px solid var(--accent-primary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    font-family: inherit;
+}
+
+.customSlippageWrap {
+    position: relative;
+}
+
+.customSlippageSuffix {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.warningBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: var(--radius-sm);
+    margin-top: 0.75rem;
+}
+
+.warningIcon {
+    color: #F59E0B;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.warningText {
+    color: #F59E0B;
+    font-size: 0.75rem;
+}
+
+/* Alert */
+.alertContainer {
+    position: fixed;
+    top: 80px;
+    right: 1rem;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    animation: fadeIn 0.3s ease;
+    min-width: 220px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alertInfo {
+    border-left: 3px solid var(--accent-primary);
+}
+
+.alertSuccess {
+    border-left: 3px solid var(--green);
+}
+
+.alertError {
+    border-left: 3px solid var(--red);
+}
+
+.alertClose {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

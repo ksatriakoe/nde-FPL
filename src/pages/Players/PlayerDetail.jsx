@@ -7,7 +7,7 @@ import styles from './PlayerDetail.module.css'
 export default function PlayerDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { players, getTeam, getPosition, fixtures, teams, currentGw } = useFpl()
+    const { players, getTeam, getPosition, fixtures, teams, targetGw } = useFpl()
     const [summary, setSummary] = useState(null)
     const [loading, setLoading] = useState(true)
 
@@ -25,8 +25,8 @@ export default function PlayerDetail() {
     }, [id])
 
     const upcomingFixtures = useMemo(() => {
-        if (!fixtures || !player || !teams.length || !currentGw) return []
-        const gwStart = currentGw.id
+        if (!fixtures || !player || !teams.length || !targetGw) return []
+        const gwStart = targetGw.id
         return fixtures
             .filter(f => f.event >= gwStart && f.event <= gwStart + 5 && (f.team_h === player.team || f.team_a === player.team))
             .sort((a, b) => a.event - b.event)
@@ -41,7 +41,7 @@ export default function PlayerDetail() {
                     difficulty: isHome ? f.team_h_difficulty : f.team_a_difficulty,
                 }
             })
-    }, [fixtures, player, teams, currentGw])
+    }, [fixtures, player, teams, targetGw])
 
     if (!player) {
         return (
