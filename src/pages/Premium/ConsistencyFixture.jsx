@@ -58,7 +58,7 @@ export default function ConsistencyFixture() {
     }, [targetGw, gwCount])
 
     // Fetch ALL past GW live data in parallel to build consistency map
-    // ~27 API calls instead of 300+ per-player calls
+    // Uses retry logic to ensure all GWs are fetched reliably
     useEffect(() => {
         if (!currentGw || consistencyMap) return
 
@@ -71,35 +71,58 @@ export default function ConsistencyFixture() {
         }
 
         let cancelled = false
-            ; (async () => {
+
+        async function fetchWithRetry(gw, retries = 3) {
+            for (let attempt = 0; attempt < retries; attempt++) {
                 try {
-                    const results = await Promise.all(
-                        pastGWs.map(gw => fetchLive(gw).catch(() => null))
-                    )
-                    if (cancelled) return
-
-                    const map = {}
-                    results.forEach((liveData) => {
-                        if (!liveData?.elements) return
-                        liveData.elements.forEach(el => {
-                            if (!map[el.id]) map[el.id] = { played: 0, high: 0 }
-                            const stats = el.stats
-                            if (stats.minutes > 0) {
-                                map[el.id].played++
-                                if (stats.total_points >= THRESHOLD) {
-                                    map[el.id].high++
-                                }
-                            }
-                        })
-                    })
-
-                    setConsistencyMap(map)
+                    const data = await fetchLive(gw)
+                    return data
                 } catch {
-                    setConsistencyMap({})
-                } finally {
-                    if (!cancelled) setDataLoading(false)
+                    if (attempt < retries - 1) {
+                        await new Promise(r => setTimeout(r, 300 * (attempt + 1)))
+                    }
                 }
-            })()
+            }
+            return null
+        }
+
+        ; (async () => {
+            try {
+                // Fetch in batches of 5 to avoid overwhelming the API
+                const results = []
+                const BATCH = 5
+                for (let i = 0; i < pastGWs.length; i += BATCH) {
+                    if (cancelled) return
+                    const batch = pastGWs.slice(i, i + BATCH)
+                    const batchResults = await Promise.all(
+                        batch.map(gw => fetchWithRetry(gw))
+                    )
+                    results.push(...batchResults)
+                }
+                if (cancelled) return
+
+                const map = {}
+                results.forEach((liveData) => {
+                    if (!liveData?.elements) return
+                    liveData.elements.forEach(el => {
+                        if (!map[el.id]) map[el.id] = { played: 0, high: 0 }
+                        const stats = el.stats
+                        if (stats.minutes > 0) {
+                            map[el.id].played++
+                            if (stats.total_points >= THRESHOLD) {
+                                map[el.id].high++
+                            }
+                        }
+                    })
+                })
+
+                setConsistencyMap(map)
+            } catch {
+                setConsistencyMap({})
+            } finally {
+                if (!cancelled) setDataLoading(false)
+            }
+        })()
 
         return () => { cancelled = true }
     }, [currentGw])
