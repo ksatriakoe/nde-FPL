@@ -33,7 +33,7 @@ export default function Swap() {
             <div className={s.card}>
                 {/* Header */}
                 <div className={s.header}>
-                    <h1 className="page-title" style={{ margin: 0 }}>Swap & Pool</h1>
+                    <h1 className={s.title}>Swap & Pool</h1>
                     <button className={s.settingsBtn} onClick={() => setShowSettings(true)}>⚙️</button>
                 </div>
 

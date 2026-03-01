@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
+import { useWatchlist } from '../../hooks/useWatchlist'
 import { fetchPlayerSummary, getTeamBadgeUrl, getPlayerPhotoUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
 import styles from './PlayerDetail.module.css'
 
@@ -8,6 +9,7 @@ export default function PlayerDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
     const { players, getTeam, getPosition, fixtures, teams, targetGw } = useFpl()
+    const watchlist = useWatchlist()
     const [summary, setSummary] = useState(null)
     const [loading, setLoading] = useState(true)
 
@@ -106,6 +108,14 @@ export default function PlayerDetail() {
                         )}
                     </div>
                 </div>
+                <button
+                    className={watchlist.has(player.id) ? styles.watchlistBtnActive : styles.watchlistBtn}
+                    onClick={() => watchlist.toggle(player.id)}
+                    title={watchlist.has(player.id) ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                >
+                    <img src="/bookmark.svg" alt="" className={styles.watchlistIcon} />
+                    {watchlist.has(player.id) ? 'Watchlisted' : 'Watchlist'}
+                </button>
             </div>
 
             {/* Stats Grid */}
@@ -119,20 +129,22 @@ export default function PlayerDetail() {
             </div>
 
             {/* Upcoming Fixtures */}
-            {upcomingFixtures.length > 0 && (
-                <div className={styles.section}>
-                    <h3 className={styles.sectionTitle}>Upcoming Fixtures</h3>
-                    <div className={styles.fixtureRow}>
-                        {upcomingFixtures.map((f, i) => (
-                            <div key={i} className={styles.fixtureCard} style={{ borderTopColor: getDifficultyColor(f.difficulty) }}>
-                                <div className={styles.fixtureGW}>GW{f.gw}</div>
-                                <div className={styles.fixtureOpp}>{f.opponent}</div>
-                                <div className={styles.fixtureVenue}>{f.isHome ? 'H' : 'A'}</div>
-                            </div>
-                        ))}
+            {
+                upcomingFixtures.length > 0 && (
+                    <div className={styles.section}>
+                        <h3 className={styles.sectionTitle}>Upcoming Fixtures</h3>
+                        <div className={styles.fixtureRow}>
+                            {upcomingFixtures.map((f, i) => (
+                                <div key={i} className={styles.fixtureCard} style={{ borderTopColor: getDifficultyColor(f.difficulty) }}>
+                                    <div className={styles.fixtureGW}>GW{f.gw}</div>
+                                    <div className={styles.fixtureOpp}>{f.opponent}</div>
+                                    <div className={styles.fixtureVenue}>{f.isHome ? 'H' : 'A'}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* GW History */}
             <div className={styles.section}>
@@ -181,6 +193,6 @@ export default function PlayerDetail() {
                     <div className={styles.emptyState}>No gameweek history available</div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

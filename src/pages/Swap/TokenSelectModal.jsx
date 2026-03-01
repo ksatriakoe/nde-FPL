@@ -86,9 +86,11 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
                         <button className={s.modalClose} onClick={onClose}>&times;</button>
                     </div>
                     <div className={s.modalBody}>
-                        <input className={s.tokenSearch} placeholder="Search by name or paste address" value={search} onChange={e => setSearch(e.target.value)} autoFocus />
+                        <input className={s.tokenSearch} placeholder="Search token name" value={search} onChange={e => setSearch(e.target.value)} autoFocus />
                         <div className={s.tokenList}>
-                            {filtered.map(token => (
+                            {filtered.length === 0 ? (
+                                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0', fontSize: '0.8rem' }}>No tokens found</div>
+                            ) : filtered.map(token => (
                                 <div key={token.address} className={s.tokenListItem} onClick={() => onSelect(token)}>
                                     <div className={s.tokenListLeft}>
                                         <TokenIcon token={token} />
@@ -100,10 +102,6 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
                                     <div className={s.tokenListBal}>{token.balance > 0 ? formatBalance(token.balance) : ''}</div>
                                 </div>
                             ))}
-                        </div>
-                        <div className={s.importRow}>
-                            <input className={s.importInput} placeholder="Paste token contract address" value={importAddr} onChange={e => setImportAddr(e.target.value)} />
-                            <button className={s.importBtn} onClick={handleImport} disabled={!importAddr || importing}>{importing ? 'Importing...' : 'Import Token'}</button>
                         </div>
                     </div>
                 </div>

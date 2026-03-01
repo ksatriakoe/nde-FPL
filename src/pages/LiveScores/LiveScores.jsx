@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
 import { getTeamBadgeUrl } from '../../services/fplApi'
 import styles from './LiveScores.module.css'
 
 export default function LiveScores() {
     const { fixtures, teams, players, currentGw, events, loading } = useFpl()
+    const navigate = useNavigate()
     const [selectedGw, setSelectedGw] = useState(null)
 
     const gw = selectedGw || currentGw?.id || 1
@@ -122,7 +124,7 @@ export default function LiveScores() {
                                                     {Array.from({ length: count }, (_, k) => (
                                                         <img key={k} src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
                                                     ))}
-                                                    {player?.web_name || 'Unknown'}
+                                                    <span className={styles.playerLink} onClick={(e) => { e.stopPropagation(); navigate(`/players/${s.element}`) }}>{player?.web_name || 'Unknown'}</span>
                                                 </span>
                                             )
                                         })
@@ -131,7 +133,7 @@ export default function LiveScores() {
                                             const count = s.value || 1
                                             awayStats.push(
                                                 <span key={`a-${idx}-${j}`} className={styles.statBadge}>
-                                                    {player?.web_name || 'Unknown'}
+                                                    <span className={styles.playerLink} onClick={(e) => { e.stopPropagation(); navigate(`/players/${s.element}`) }}>{player?.web_name || 'Unknown'}</span>
                                                     {Array.from({ length: count }, (_, k) => (
                                                         <img key={k} src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
                                                     ))}

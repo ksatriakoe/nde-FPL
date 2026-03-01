@@ -301,7 +301,7 @@ export default function PoolTab({ showAlert, slippage }) {
                             <div className={s.balanceRow}>
                                 <button className={s.percentBtn} onClick={() => setAmountA((parseFloat(balanceA) * 0.5).toString())}>50%</button>
                                 <button className={s.percentBtn} onClick={() => setAmountA(balanceA)}>MAX</button>
-                                <span>🔑 {balAFmt} {tokenA.symbol}</span>
+                                <span>Bal: {balAFmt} {tokenA.symbol}</span>
                             </div>
                         </div>
                         <div className={s.tokenRow}>
@@ -313,7 +313,7 @@ export default function PoolTab({ showAlert, slippage }) {
                     <div className={s.tokenSection}>
                         <div className={s.sectionHeader}>
                             <span className={s.sectionLabel}>Token B</span>
-                            {tokenB && <div className={s.balanceRow}><span>🔑 {balBFmt} {tokenB.symbol}</span></div>}
+                            {tokenB && <div className={s.balanceRow}><span>Bal: {balBFmt} {tokenB.symbol}</span></div>}
                         </div>
                         <div className={s.tokenRow}>
                             <button className={`${s.tokenBtn} ${!tokenB ? s.tokenBtnSelect : ''}`} onClick={() => setSelectingFor('poolB')}>

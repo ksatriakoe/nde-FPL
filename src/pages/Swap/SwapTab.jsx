@@ -118,7 +118,14 @@ export default function SwapTab({ showAlert, slippage }) {
 
     const handleSwitch = () => {
         if (!toToken) return
-        setFromToken(toToken); setToToken(fromToken); setAmountIn(amountOut); setAmountOut(amountIn)
+        const prevFrom = fromToken
+        const prevTo = toToken
+        const prevAmountIn = amountIn
+        const prevAmountOut = amountOut
+        setFromToken(prevTo)
+        setToToken(prevFrom)
+        setAmountIn(prevAmountOut)
+        setAmountOut(prevAmountIn)
     }
 
     const TokenIcon = ({ token }) => {
@@ -137,7 +144,7 @@ export default function SwapTab({ showAlert, slippage }) {
                         <div className={s.balanceRow}>
                             <button className={s.percentBtn} onClick={() => setAmountIn((parseFloat(fromBalance) * 0.5).toString())}>50%</button>
                             <button className={s.percentBtn} onClick={() => setAmountIn(fromBalance)}>MAX</button>
-                            <span>🔑 {fromLoading ? '...' : `${fromFmt} ${fromToken.symbol}`}</span>
+                            <span>💼 {fromLoading ? '...' : `${fromFmt} ${fromToken.symbol}`}</span>
                         </div>
                     </div>
                     <div className={s.tokenRow}>
@@ -158,7 +165,7 @@ export default function SwapTab({ showAlert, slippage }) {
                 <div className={s.tokenSection}>
                     <div className={s.sectionHeader}>
                         <span className={s.sectionLabel}>You receive</span>
-                        {toToken && <div className={s.balanceRow}><span>🔑 {toLoading ? '...' : `${toFmt} ${toToken.symbol}`}</span></div>}
+                        {toToken && <div className={s.balanceRow}><span>💼 {toLoading ? '...' : `${toFmt} ${toToken.symbol}`}</span></div>}
                     </div>
                     <div className={s.tokenRow}>
                         <button className={`${s.tokenBtn} ${!toToken ? s.tokenBtnSelect : ''}`} onClick={() => setSelectingFor('to')}>
@@ -196,7 +203,7 @@ export default function SwapTab({ showAlert, slippage }) {
                             <div className={s.routePath}>
                                 <TokenIcon token={fromToken} /><span className={s.routeSymbol}>{fromToken.symbol}</span>
                                 <span className={s.routeArrow}>→</span>
-                                <span className={s.routeSymbol}>MNT</span>
+                                <span className={s.routeSymbol}>ETH</span>
                                 <span className={s.routeArrow}>→</span>
                                 <TokenIcon token={toToken} /><span className={s.routeSymbol}>{toToken.symbol}</span>
                             </div>

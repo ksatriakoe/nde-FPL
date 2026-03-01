@@ -205,6 +205,16 @@
     text-align: center;
 }
 
+.playerLink {
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.playerLink:hover {
+    color: var(--accent-primary);
+    text-decoration: underline;
+}
+
 @media (max-width: 768px) {
     .matchGrid {
         grid-template-columns: 1fr;

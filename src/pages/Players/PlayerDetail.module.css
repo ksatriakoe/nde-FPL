@@ -41,6 +41,60 @@
     margin-bottom: 1.5rem;
 }
 
+/* ── Watchlist Button ── */
+.watchlistBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.watchlistBtn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.watchlistBtnActive {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    border: 1px solid var(--accent-primary);
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--accent-primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.watchlistBtnActive:hover {
+    background: rgba(34, 211, 238, 0.15);
+}
+
+.watchlistIcon {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
 .playerPhoto {
     width: 90px;
     height: 90px;
@@ -339,6 +393,11 @@
 
     .statusRow {
         justify-content: center;
+    }
+
+    .watchlistBtn,
+    .watchlistBtnActive {
+        align-self: center;
     }
 
     .statsGrid {

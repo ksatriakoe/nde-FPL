@@ -1,27 +1,9 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
+import { useWatchlist } from '../../hooks/useWatchlist'
 import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, normalizeText } from '../../services/fplApi'
 import styles from './Watchlist.module.css'
-
-function useWatchlist() {
-    const [ids, setIds] = useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem('watchlist') || '[]')
-        } catch { return [] }
-    })
-
-    const save = (newIds) => {
-        setIds(newIds)
-        localStorage.setItem('watchlist', JSON.stringify(newIds))
-    }
-
-    const add = (id) => { if (!ids.includes(id)) save([...ids, id]) }
-    const remove = (id) => save(ids.filter(i => i !== id))
-    const has = (id) => ids.includes(id)
-
-    return { ids, add, remove, has }
-}
 
 export default function Watchlist() {
     const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
