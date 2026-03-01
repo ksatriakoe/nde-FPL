@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl, getPositionShort, getDifficultyColor } from '../../services/fplApi'
+import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, normalizeText } from '../../services/fplApi'
 import styles from './Watchlist.module.css'
 
 function useWatchlist() {
@@ -54,9 +54,9 @@ export default function Watchlist() {
 
     const searchResults = useMemo(() => {
         if (!search || search.length < 2 || !players.length) return []
-        const q = search.toLowerCase()
+        const q = normalizeText(search)
         return players
-            .filter(p => p.web_name.toLowerCase().includes(q) || p.first_name?.toLowerCase().includes(q) || p.second_name?.toLowerCase().includes(q))
+            .filter(p => normalizeText(p.web_name).includes(q) || normalizeText(p.first_name || '').includes(q) || normalizeText(p.second_name || '').includes(q))
             .filter(p => !watchlist.has(p.id))
             .slice(0, 10)
     }, [search, players, watchlist])
