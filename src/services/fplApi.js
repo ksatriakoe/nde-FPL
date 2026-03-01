@@ -7,6 +7,17 @@ function apiUrl(path) {
     return `/api/${path}`
 }
 
+async function fetchRetry(url, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        const res = await fetch(url)
+        if (res.ok) return res
+        if (i < retries - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)))
+    }
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+    return res
+}
+
 export async function fetchBootstrap() {
     const url = isDev ? '/api/fpl/bootstrap-static/' : '/api/bootstrap-static'
     const res = await fetch(url)
@@ -30,8 +41,7 @@ export async function fetchLive(gw) {
 
 export async function fetchPlayerSummary(playerId) {
     const url = isDev ? `/api/fpl/element-summary/${playerId}/` : `/api/element-summary?id=${playerId}`
-    const res = await fetch(url)
-    if (!res.ok) throw new Error('Failed to fetch player summary')
+    const res = await fetchRetry(url)
     return res.json()
 }
 

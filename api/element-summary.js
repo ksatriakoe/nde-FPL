@@ -2,15 +2,20 @@ const FPL_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
     'Referer': 'https://fantasy.premierleague.com/',
     'Origin': 'https://fantasy.premierleague.com',
+    'Connection': 'keep-alive',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
 }
 
 async function fetchWithRetry(url, retries = 3) {
     for (let i = 0; i < retries; i++) {
         const res = await fetch(url, { headers: FPL_HEADERS })
         if (res.ok) return res
-        if (i < retries - 1) await new Promise(r => setTimeout(r, 500 * (i + 1)))
+        if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)))
     }
     return fetch(url, { headers: FPL_HEADERS })
 }
