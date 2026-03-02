@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 const isDev = import.meta.env.DEV
 
 function apiUrl(path) {
@@ -18,25 +20,62 @@ async function fetchRetry(url, retries = 3) {
     return res
 }
 
+/** Read from Supabase fpl_cache table */
+async function readCache(key) {
+    if (!supabase) return null
+    try {
+        const { data, error } = await supabase
+            .from('fpl_cache')
+            .select('data, updated_at')
+            .eq('key', key)
+            .single()
+        if (error || !data) return null
+        return data.data
+    } catch {
+        return null
+    }
+}
+
 export async function fetchBootstrap() {
-    const url = isDev ? '/api/fpl/bootstrap-static/' : '/api/bootstrap-static'
-    const res = await fetch(url)
-    if (!res.ok) throw new Error('Failed to fetch bootstrap data')
-    return res.json()
+    // Primary: Vercel proxy
+    try {
+        const url = isDev ? '/api/fpl/bootstrap-static/' : '/api/bootstrap-static'
+        const res = await fetch(url)
+        if (res.ok) return res.json()
+    } catch { /* Vercel failed, try fallback */ }
+
+    // Fallback: Supabase cache
+    const cached = await readCache('bootstrap-static')
+    if (cached) return cached
+    throw new Error('Failed to fetch bootstrap data')
 }
 
 export async function fetchFixtures() {
-    const url = isDev ? '/api/fpl/fixtures/' : '/api/fixtures'
-    const res = await fetch(url)
-    if (!res.ok) throw new Error('Failed to fetch fixtures')
-    return res.json()
+    // Primary: Vercel proxy
+    try {
+        const url = isDev ? '/api/fpl/fixtures/' : '/api/fixtures'
+        const res = await fetch(url)
+        if (res.ok) return res.json()
+    } catch { /* Vercel failed, try fallback */ }
+
+    // Fallback: Supabase cache
+    const cached = await readCache('fixtures')
+    if (cached) return cached
+    throw new Error('Failed to fetch fixtures')
 }
 
 export async function fetchLive(gw) {
-    const url = isDev ? `/api/fpl/event/${gw}/live/` : `/api/live?gw=${gw}`
-    const res = await fetch(url)
-    if (!res.ok) throw new Error('Failed to fetch live data')
-    return res.json()
+    // Primary: Vercel proxy
+    try {
+        const url = isDev ? `/api/fpl/event/${gw}/live/` : `/api/live?gw=${gw}`
+        const res = await fetch(url)
+        if (res.ok) return res.json()
+    } catch { /* Vercel failed, try fallback */ }
+
+    // Fallback: Supabase cache
+    const cached = await readCache(`live_${gw}`)
+    if (cached) return cached
+    throw new Error('Failed to fetch live data')
 }
 
 export async function fetchPlayerSummary(playerId) {
