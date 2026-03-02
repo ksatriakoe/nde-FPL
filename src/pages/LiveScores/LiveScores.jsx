@@ -110,7 +110,9 @@ export default function LiveScores() {
                                     yellow_cards: '/yellow-card.svg',
                                     red_cards: '/red-card.svg',
                                     bonus: '/star.svg',
+                                    own_goals: '/goal.svg',
                                 }
+                                const isOG = (id) => id === 'own_goals'
                                 const homeStats = []
                                 const awayStats = []
                                 fix.stats.forEach((stat, idx) => {
@@ -124,6 +126,7 @@ export default function LiveScores() {
                                                     {Array.from({ length: count }, (_, k) => (
                                                         <img key={k} src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
                                                     ))}
+                                                    {isOG(stat.identifier) && <span className={styles.ogTag}>OG</span>}
                                                     <span className={styles.playerLink} onClick={(e) => { e.stopPropagation(); navigate(`/players/${s.element}`) }}>{player?.web_name || 'Unknown'}</span>
                                                 </span>
                                             )
@@ -134,6 +137,7 @@ export default function LiveScores() {
                                             awayStats.push(
                                                 <span key={`a-${idx}-${j}`} className={styles.statBadge}>
                                                     <span className={styles.playerLink} onClick={(e) => { e.stopPropagation(); navigate(`/players/${s.element}`) }}>{player?.web_name || 'Unknown'}</span>
+                                                    {isOG(stat.identifier) && <span className={styles.ogTag}>OG</span>}
                                                     {Array.from({ length: count }, (_, k) => (
                                                         <img key={k} src={iconSrc} alt={stat.identifier} className={styles.statIcon} />
                                                     ))}
