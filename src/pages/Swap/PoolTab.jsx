@@ -249,7 +249,7 @@ export default function PoolTab({ showAlert, slippage }) {
         const lpToRemove = formatBalance(parseFloat(selectedPosition.lpBalance) * removePercent / 100)
         return (
             <>
-                <button className={s.backBtn} onClick={() => { setView('list'); setSelectedPosition(null) }}>← Back to Pool</button>
+                <button className={s.backBtn} onClick={() => { setView('list'); setSelectedPosition(null) }}><img src="/left-arrow.svg" alt="" className={s.backArrowIcon} /> Back to Pool</button>
                 <div className={s.tokenSection} style={{ padding: '1.5rem', marginBottom: '1rem' }}>
                     <div className={s.removeHeader}>
                         <img src={selectedPosition.tokenA.logoURI} className={s.removeHeaderIcon} alt="" />
@@ -293,7 +293,7 @@ export default function PoolTab({ showAlert, slippage }) {
     if (view === 'add') {
         return (
             <>
-                <button className={s.backBtn} onClick={() => setView('list')}>← Back to Pool</button>
+                <button className={s.backBtn} onClick={() => setView('list')}><img src="/left-arrow.svg" alt="" className={s.backArrowIcon} /> Back to Pool</button>
                 <div>
                     <div className={s.tokenSection}>
                         <div className={s.sectionHeader}>
@@ -305,7 +305,7 @@ export default function PoolTab({ showAlert, slippage }) {
                             </div>
                         </div>
                         <div className={s.tokenRow}>
-                            <button className={s.tokenBtn} onClick={() => setSelectingFor('poolA')}><TokenIcon token={tokenA} /><span>{tokenA.symbol}</span><span className={s.chevron}>▼</span></button>
+                            <button className={s.tokenBtn} onClick={() => setSelectingFor('poolA')}><TokenIcon token={tokenA} /><span>{tokenA.symbol}</span><img src="/down-arrow.svg" alt="" className={s.chevronIcon} /></button>
                             <input className={s.amountInput} type="text" value={amountA} onChange={e => { setAmountA(e.target.value); setActiveInput('A') }} placeholder="0.00" />
                         </div>
                     </div>
@@ -318,7 +318,7 @@ export default function PoolTab({ showAlert, slippage }) {
                         <div className={s.tokenRow}>
                             <button className={`${s.tokenBtn} ${!tokenB ? s.tokenBtnSelect : ''}`} onClick={() => setSelectingFor('poolB')}>
                                 {tokenB ? <><TokenIcon token={tokenB} /><span>{tokenB.symbol}</span></> : <span>Select token</span>}
-                                <span className={s.chevron}>▼</span>
+                                <img src="/down-arrow.svg" alt="" className={s.chevronIcon} />
                             </button>
                             <input className={s.amountInput} type="text" value={amountB} onChange={e => { setAmountB(e.target.value); setActiveInput('B') }} placeholder="0.00" />
                         </div>

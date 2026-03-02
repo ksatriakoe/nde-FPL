@@ -144,33 +144,33 @@ export default function SwapTab({ showAlert, slippage }) {
                         <div className={s.balanceRow}>
                             <button className={s.percentBtn} onClick={() => setAmountIn((parseFloat(fromBalance) * 0.5).toString())}>50%</button>
                             <button className={s.percentBtn} onClick={() => setAmountIn(fromBalance)}>MAX</button>
-                            <span>💼 {fromLoading ? '...' : `${fromFmt} ${fromToken.symbol}`}</span>
+                            <span><img src="/wallet.svg" alt="" className={s.walletIcon} /> {fromLoading ? '...' : `${fromFmt} ${fromToken.symbol}`}</span>
                         </div>
                     </div>
                     <div className={s.tokenRow}>
                         <button className={s.tokenBtn} onClick={() => setSelectingFor('from')}>
                             <TokenIcon token={fromToken} />
                             <span>{fromToken.symbol}</span>
-                            <span className={s.chevron}>▼</span>
+                            <img src="/down-arrow.svg" alt="" className={s.chevronIcon} />
                         </button>
                         <input className={s.amountInput} type="text" value={amountIn} onChange={e => setAmountIn(e.target.value)} placeholder="0.00" />
                     </div>
                 </div>
 
                 <div className={s.switchRow}>
-                    <button className={s.switchBtn} onClick={handleSwitch}>↓</button>
+                    <button className={s.switchBtn} onClick={handleSwitch}><img src="/bottom-swap.svg" alt="Switch" className={s.switchIcon} /></button>
                 </div>
 
                 {/* You Receive */}
                 <div className={s.tokenSection}>
                     <div className={s.sectionHeader}>
                         <span className={s.sectionLabel}>You receive</span>
-                        {toToken && <div className={s.balanceRow}><span>💼 {toLoading ? '...' : `${toFmt} ${toToken.symbol}`}</span></div>}
+                        {toToken && <div className={s.balanceRow}><span><img src="/wallet.svg" alt="" className={s.walletIcon} /> {toLoading ? '...' : `${toFmt} ${toToken.symbol}`}</span></div>}
                     </div>
                     <div className={s.tokenRow}>
                         <button className={`${s.tokenBtn} ${!toToken ? s.tokenBtnSelect : ''}`} onClick={() => setSelectingFor('to')}>
                             {toToken ? <><TokenIcon token={toToken} /><span>{toToken.symbol}</span></> : <span>Select token</span>}
-                            <span className={s.chevron}>▼</span>
+                            <img src="/down-arrow.svg" alt="" className={s.chevronIcon} />
                         </button>
                         <input className={s.amountInput} type="text" value={amountOut} placeholder="0.00" disabled />
                     </div>

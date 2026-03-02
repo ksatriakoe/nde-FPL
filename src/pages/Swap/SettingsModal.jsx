@@ -25,7 +25,7 @@ export default function SettingsModal({ isOpen, onClose, slippage, setSlippage }
                         <button className={s.modalClose} onClick={onClose}>&times;</button>
                     </div>
                     <div className={s.modalBody}>
-                        <div className={s.settingsLabel}>⚙️ Slippage tolerance</div>
+                        <div className={s.settingsLabel}><img src="/gear-swap.svg" alt="" className={s.iconSvg} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.4rem' }} /> Slippage tolerance</div>
                         <div className={s.settingsDesc}>If prices move beyond this % during processing, the transaction cancels automatically.</div>
                         <div className={s.slippageGrid}>
                             {presets.map(p => (

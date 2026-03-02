@@ -50,15 +50,70 @@ export const defaultSwapToken = {
     decimals: 18,
 }
 
-// TODO: Tambahkan token yang sudah di-deploy di Sepolia
+// Dummy tokens untuk tampilan (Sepolia testnet)
 export const swapTokenList = [
-    // Contoh:
-    // {
-    //     chainId: 11155111,
-    //     address: '0x....',
-    //     name: 'My Token',
-    //     symbol: 'TKN',
-    //     decimals: 18,
-    //     logoURI: '',
-    // },
+    {
+        chainId: 11155111,
+        address: '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0',
+        name: 'Tether USD',
+        symbol: 'USDT',
+        decimals: 6,
+        logoURI: 'https://cryptologos.cc/logos/tether-usdt-logo.svg?v=040',
+    },
+    {
+        chainId: 11155111,
+        address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+        name: 'USD Coin',
+        symbol: 'USDC',
+        decimals: 6,
+        logoURI: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=040',
+    },
+    {
+        chainId: 11155111,
+        address: '0x68194a729C2450ad26072b3D33ADaCbcef39D574',
+        name: 'Dai Stablecoin',
+        symbol: 'DAI',
+        decimals: 18,
+        logoURI: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.svg?v=040',
+    },
+    {
+        chainId: 11155111,
+        address: '0x29f2D40B0605204364af54EC677bD022dA425d03',
+        name: 'Wrapped Bitcoin',
+        symbol: 'WBTC',
+        decimals: 8,
+        logoURI: 'https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.svg?v=040',
+    },
+    {
+        chainId: 11155111,
+        address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
+        name: 'Chainlink',
+        symbol: 'LINK',
+        decimals: 18,
+        logoURI: 'https://cryptologos.cc/logos/chainlink-link-logo.svg?v=040',
+    },
+    {
+        chainId: 11155111,
+        address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+        name: 'Uniswap',
+        symbol: 'UNI',
+        decimals: 18,
+        logoURI: 'https://cryptologos.cc/logos/uniswap-uni-logo.svg?v=040',
+    },
+    {
+        chainId: 11155111,
+        address: '0x88541670E55cC13bF6dCb5B22c54D12b9Ae8E20e',
+        name: 'Aave',
+        symbol: 'AAVE',
+        decimals: 18,
+        logoURI: 'https://cryptologos.cc/logos/aave-aave-logo.svg?v=040',
+    },
+    {
+        chainId: 11155111,
+        address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
+        name: 'Pepe',
+        symbol: 'PEPE',
+        decimals: 18,
+        logoURI: 'https://cryptologos.cc/logos/pepe-pepe-logo.svg?v=040',
+    },
 ]

@@ -34,7 +34,7 @@ export default function Swap() {
                 {/* Header */}
                 <div className={s.header}>
                     <h1 className={s.title}>Swap & Pool</h1>
-                    <button className={s.settingsBtn} onClick={() => setShowSettings(true)}>⚙️</button>
+                    <button className={s.settingsBtn} onClick={() => setShowSettings(true)}><img src="/gear-swap.svg" alt="Settings" className={s.iconSvg} /></button>
                 </div>
 
                 {/* Tabs */}
