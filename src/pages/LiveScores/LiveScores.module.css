@@ -176,6 +176,16 @@
     line-height: 1;
 }
 
+.dcTag {
+    font-size: 0.55rem;
+    font-weight: 800;
+    color: #fff;
+    background: #0e7490;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    line-height: 1;
+}
+
 .gwSelector {
     display: flex;
     align-items: center;

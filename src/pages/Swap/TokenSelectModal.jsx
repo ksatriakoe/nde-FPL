@@ -86,7 +86,7 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
                         <button className={s.modalClose} onClick={onClose}>&times;</button>
                     </div>
                     <div className={s.modalBody}>
-                        <input className={s.tokenSearch} placeholder="Search token name" value={search} onChange={e => setSearch(e.target.value)} autoFocus />
+                        <input className={s.tokenSearch} placeholder="Search token name" value={search} onChange={e => setSearch(e.target.value)} />
                         <div className={s.tokenList}>
                             {filtered.length === 0 ? (
                                 <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0', fontSize: '0.8rem' }}>No tokens found</div>

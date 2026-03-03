@@ -111,16 +111,26 @@ export default function LiveScores() {
                                     red_cards: '/red-card.svg',
                                     bonus: '/star.svg',
                                     own_goals: '/goal.svg',
+                                    defensive_contribution: '/shield-check.svg',
                                 }
                                 const isOG = (id) => id === 'own_goals'
+                                const isDC = (id) => id === 'defensive_contribution'
+                                const dcMeetsThreshold = (element, value) => {
+                                    const p = getPlayer(element)
+                                    if (!p) return false
+                                    // DEF(2): 10+, MID(3)/FWD(4): 12+
+                                    if (p.element_type === 2) return value >= 10
+                                    return value >= 12
+                                }
                                 const homeStats = []
                                 const awayStats = []
                                 fix.stats.forEach((stat, idx) => {
                                     const iconSrc = iconMap[stat.identifier]
                                     if (!iconSrc) return
                                         ; (stat.h || []).forEach((s, j) => {
+                                            if (isDC(stat.identifier) && !dcMeetsThreshold(s.element, s.value)) return
                                             const player = getPlayer(s.element)
-                                            const count = s.value || 1
+                                            const count = isDC(stat.identifier) ? 1 : (s.value || 1)
                                             homeStats.push(
                                                 <span key={`h-${idx}-${j}`} className={styles.statBadge}>
                                                     {Array.from({ length: count }, (_, k) => (
@@ -132,8 +142,9 @@ export default function LiveScores() {
                                             )
                                         })
                                         ; (stat.a || []).forEach((s, j) => {
+                                            if (isDC(stat.identifier) && !dcMeetsThreshold(s.element, s.value)) return
                                             const player = getPlayer(s.element)
-                                            const count = s.value || 1
+                                            const count = isDC(stat.identifier) ? 1 : (s.value || 1)
                                             awayStats.push(
                                                 <span key={`a-${idx}-${j}`} className={styles.statBadge}>
                                                     <span className={styles.playerLink} onClick={(e) => { e.stopPropagation(); navigate(`/players/${s.element}`) }}>{player?.web_name || 'Unknown'}</span>

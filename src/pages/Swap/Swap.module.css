@@ -1033,3 +1033,360 @@
     background: var(--border-light);
     border-radius: 3px;
 }
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    .page {
+        padding: 1rem 0.75rem;
+        min-height: calc(100vh - var(--header-height) - 2rem);
+    }
+
+    .card {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    /* Header */
+    .header {
+        margin-bottom: 1rem;
+    }
+
+    .title {
+        font-size: 1.2rem;
+    }
+
+    .settingsBtn {
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Tabs */
+    .tabs {
+        margin-bottom: 1rem;
+    }
+
+    .tab {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    /* Token Sections */
+    .tokenSection {
+        padding: 0.75rem;
+        border-radius: 12px;
+    }
+
+    .sectionHeader {
+        margin-bottom: 0.5rem;
+    }
+
+    .sectionLabel {
+        font-size: 0.8rem;
+    }
+
+    .balanceRow {
+        font-size: 0.75rem;
+        gap: 0.35rem;
+    }
+
+    .percentBtn {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .tokenBtn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        gap: 0.35rem;
+    }
+
+    .tokenIcon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .amountInput {
+        font-size: 1.3rem;
+    }
+
+    /* Switch Button */
+    .switchBtn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .switchIcon {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Price */
+    .priceRow {
+        font-size: 0.7rem;
+    }
+
+    /* Action Button */
+    .actionBtn {
+        padding: 0.65rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+        margin-top: 0.75rem;
+    }
+
+    /* Details */
+    .detailsBox {
+        font-size: 0.7rem;
+        padding: 0.6rem;
+        border-radius: 10px;
+    }
+
+    .routeSymbol {
+        font-size: 0.65rem;
+    }
+
+    /* Pool — Positions */
+    .poolTitle {
+        font-size: 0.8rem;
+    }
+
+    .positionToggle {
+        padding: 0.7rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .positionPair {
+        gap: 0.3rem;
+    }
+
+    .positionDetails {
+        padding: 0 0.75rem 0.75rem;
+    }
+
+    .positionRow {
+        font-size: 0.75rem;
+    }
+
+    .positionActionBtn {
+        padding: 0.4rem;
+        font-size: 0.75rem;
+        border-radius: 8px;
+    }
+
+    /* Pool — Remove Liquidity */
+    .backBtn {
+        font-size: 0.8rem;
+    }
+
+    .backArrowIcon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .removeHeader {
+        margin-bottom: 1rem;
+    }
+
+    .removeHeaderIcon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .removeHeaderText {
+        font-size: 0.95rem;
+    }
+
+    .removePercent {
+        font-size: 2.25rem;
+    }
+
+    .removeSub {
+        font-size: 0.7rem;
+    }
+
+    .percentBtns {
+        gap: 0.35rem;
+    }
+
+    .percentChoiceBtn {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 10px;
+    }
+
+    /* Slider */
+    .sliderWrap {
+        margin-top: 1rem;
+    }
+
+    /* Receive Box */
+    .receiveBox {
+        padding: 0.7rem;
+        border-radius: 10px;
+    }
+
+    .receiveTitle {
+        font-size: 0.8rem;
+    }
+
+    /* Pool Info */
+    .poolInfoBox {
+        padding: 0.7rem;
+        border-radius: 10px;
+    }
+
+    .poolInfoTitle {
+        font-size: 0.8rem;
+    }
+
+    .poolInfoValue {
+        font-size: 0.9rem;
+    }
+
+    .poolInfoLabel {
+        font-size: 0.6rem;
+    }
+
+    .plusIcon {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* Modals */
+    .modal {
+        max-width: 100%;
+        margin: 0 0.5rem;
+        border-radius: 12px;
+    }
+
+    .modalHeader {
+        padding: 0.85rem 1rem;
+    }
+
+    .modalTitle {
+        font-size: 0.9rem;
+    }
+
+    .modalBody {
+        padding: 1rem;
+    }
+
+    /* Token Select Modal */
+    .tokenSearch {
+        padding: 0.55rem 0.75rem;
+        font-size: 0.8rem;
+        border-radius: 10px;
+    }
+
+    .tokenList {
+        max-height: 240px;
+    }
+
+    .tokenListItem {
+        padding: 0.5rem 0.4rem;
+    }
+
+    .tokenListIcon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .tokenListName {
+        font-size: 0.8rem;
+    }
+
+    .tokenListAddr {
+        font-size: 0.65rem;
+    }
+
+    .tokenListBal {
+        font-size: 0.7rem;
+    }
+
+    /* Settings Modal */
+    .settingsLabel {
+        font-size: 0.85rem;
+    }
+
+    .settingsDesc {
+        font-size: 0.75rem;
+    }
+
+    .slippageGrid {
+        gap: 0.3rem;
+    }
+
+    .slippageBtn {
+        padding: 0.45rem;
+        font-size: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .customSlippage {
+        font-size: 0.8rem;
+        padding: 0.45rem 1.8rem 0.45rem 0.65rem;
+        border-radius: 10px;
+    }
+
+    .warningBox {
+        padding: 0.5rem 0.6rem;
+        border-radius: 10px;
+    }
+
+    .warningText {
+        font-size: 0.7rem;
+    }
+
+    /* Confirm Modal */
+    .confirmIcon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .confirmTitle {
+        font-size: 1rem;
+    }
+
+    .confirmText {
+        font-size: 0.8rem;
+    }
+
+    .confirmInput {
+        font-size: 0.8rem;
+        padding: 0.55rem;
+        border-radius: 10px;
+    }
+
+    .cancelBtn,
+    .dangerBtn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        border-radius: 10px;
+    }
+
+    /* Alerts */
+    .alertContainer {
+        right: 0.5rem;
+        left: 0.5rem;
+        top: 70px;
+    }
+
+    .alert {
+        max-width: 100%;
+        min-width: auto;
+        font-size: 0.75rem;
+        padding: 0.6rem 0.85rem;
+        border-radius: 10px;
+    }
+
+    /* SVG Icons */
+    .iconSvg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .walletIcon {
+        width: 12px;
+        height: 12px;
+    }
+}

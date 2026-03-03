@@ -63,7 +63,7 @@ export default function ConsistencyFixture() {
         if (!currentGw || consistencyMap) return
 
         const pastGWs = []
-        for (let i = 1; i < currentGw.id; i++) pastGWs.push(i)
+        for (let i = 1; i <= currentGw.id; i++) pastGWs.push(i)
         if (pastGWs.length === 0) {
             setConsistencyMap({})
             setDataLoading(false)
@@ -72,15 +72,16 @@ export default function ConsistencyFixture() {
 
         let cancelled = false
 
-        async function fetchWithRetry(gw, retries = 3) {
+        async function fetchWithRetry(gw, retries = 4, baseDelay = 400) {
             for (let attempt = 0; attempt < retries; attempt++) {
                 try {
                     const data = await fetchLive(gw)
-                    return data
+                    if (data?.elements) return data
                 } catch {
-                    if (attempt < retries - 1) {
-                        await new Promise(r => setTimeout(r, 300 * (attempt + 1)))
-                    }
+                    // fall through to retry
+                }
+                if (attempt < retries - 1) {
+                    await new Promise(r => setTimeout(r, baseDelay * (attempt + 1)))
                 }
             }
             return null
@@ -88,8 +89,8 @@ export default function ConsistencyFixture() {
 
         ; (async () => {
             try {
-                // Fetch in batches of 5 to avoid overwhelming the API
-                const results = []
+                // First pass: fetch in batches of 5
+                const results = new Array(pastGWs.length).fill(null)
                 const BATCH = 5
                 for (let i = 0; i < pastGWs.length; i += BATCH) {
                     if (cancelled) return
@@ -97,7 +98,23 @@ export default function ConsistencyFixture() {
                     const batchResults = await Promise.all(
                         batch.map(gw => fetchWithRetry(gw))
                     )
-                    results.push(...batchResults)
+                    batchResults.forEach((r, j) => { results[i + j] = r })
+                    // Small delay between batches to avoid API throttling
+                    if (i + BATCH < pastGWs.length) {
+                        await new Promise(r => setTimeout(r, 200))
+                    }
+                }
+                if (cancelled) return
+
+                // Second pass: retry any failed GWs individually with longer delays
+                const failedIndices = results.map((r, i) => r === null ? i : -1).filter(i => i >= 0)
+                if (failedIndices.length > 0) {
+                    for (const idx of failedIndices) {
+                        if (cancelled) return
+                        const data = await fetchWithRetry(pastGWs[idx], 3, 800)
+                        if (data) results[idx] = data
+                        await new Promise(r => setTimeout(r, 300))
+                    }
                 }
                 if (cancelled) return
 
