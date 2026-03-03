@@ -1037,47 +1037,57 @@
 /* Mobile Responsive */
 @media (max-width: 640px) {
     .page {
-        padding: 1rem 0.75rem;
-        min-height: calc(100vh - var(--header-height) - 2rem);
+        padding: 0.75rem 0.5rem;
+        padding-bottom: 5rem;
+        min-height: calc(100vh - var(--header-height));
+        justify-content: flex-start;
+        padding-top: 1rem;
+        max-width: 100%;
     }
 
     .card {
         padding: 1rem;
-        border-radius: 12px;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 100%;
     }
 
     /* Header */
     .header {
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
     }
 
     .title {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
     }
 
     .settingsBtn {
-        width: 30px;
-        height: 30px;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
     }
 
     /* Tabs */
     .tabs {
         margin-bottom: 1rem;
+        padding: 3px;
     }
 
     .tab {
-        padding: 0.5rem;
-        font-size: 0.8rem;
+        padding: 0.6rem;
+        font-size: 0.85rem;
     }
 
     /* Token Sections */
     .tokenSection {
-        padding: 0.75rem;
-        border-radius: 12px;
+        padding: 0.85rem;
+        border-radius: 14px;
     }
 
     .sectionHeader {
         margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.25rem;
     }
 
     .sectionLabel {
@@ -1086,33 +1096,63 @@
 
     .balanceRow {
         font-size: 0.75rem;
-        gap: 0.35rem;
+        gap: 0.4rem;
+        flex-wrap: nowrap;
+        overflow: hidden;
+    }
+
+    .balanceRow>span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 110px;
     }
 
     .percentBtn {
-        font-size: 0.65rem;
-        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 6px;
+        min-height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tokenRow {
+        gap: 0.5rem;
     }
 
     .tokenBtn {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.8rem;
-        gap: 0.35rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.85rem;
+        gap: 0.4rem;
+        min-height: 40px;
+    }
+
+    .tokenBtnSelect {
+        min-width: 120px;
     }
 
     .tokenIcon {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
+    }
+
+    .tokenIconPlaceholder {
+        width: 22px;
+        height: 22px;
     }
 
     .amountInput {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
+        min-width: 0;
     }
 
     /* Switch Button */
     .switchBtn {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
     }
 
     .switchIcon {
@@ -1122,59 +1162,76 @@
 
     /* Price */
     .priceRow {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.25rem;
     }
 
     /* Action Button */
     .actionBtn {
-        padding: 0.65rem;
-        font-size: 0.9rem;
-        border-radius: 10px;
+        padding: 0.85rem;
+        font-size: 0.95rem;
+        border-radius: 12px;
         margin-top: 0.75rem;
+        min-height: 48px;
+    }
+
+    .actionBtn:disabled {
+        opacity: 0.7;
+        background: rgba(29, 78, 216, 0.3);
+        color: #8bb4ff;
     }
 
     /* Details */
     .detailsBox {
-        font-size: 0.7rem;
-        padding: 0.6rem;
-        border-radius: 10px;
+        font-size: 0.75rem;
+        padding: 0.7rem;
+        border-radius: 12px;
+    }
+
+    .detailRow {
+        padding: 0.3rem 0;
     }
 
     .routeSymbol {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
     }
 
     /* Pool — Positions */
     .poolTitle {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .positionToggle {
-        padding: 0.7rem 0.75rem;
-        font-size: 0.8rem;
+        padding: 0.85rem;
+        font-size: 0.85rem;
+        min-height: 48px;
     }
 
     .positionPair {
-        gap: 0.3rem;
+        gap: 0.35rem;
     }
 
     .positionDetails {
-        padding: 0 0.75rem 0.75rem;
+        padding: 0 0.85rem 0.85rem;
     }
 
     .positionRow {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
+        padding: 0.35rem 0;
     }
 
     .positionActionBtn {
-        padding: 0.4rem;
-        font-size: 0.75rem;
-        border-radius: 8px;
+        padding: 0.6rem;
+        font-size: 0.8rem;
+        border-radius: 10px;
+        min-height: 44px;
     }
 
     /* Pool — Remove Liquidity */
     .backBtn {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        min-height: 36px;
     }
 
     .backArrowIcon {
@@ -1184,6 +1241,8 @@
 
     .removeHeader {
         margin-bottom: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
     .removeHeaderIcon {
@@ -1196,74 +1255,95 @@
     }
 
     .removePercent {
-        font-size: 2.25rem;
+        font-size: 2.5rem;
     }
 
     .removeSub {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
     .percentBtns {
-        gap: 0.35rem;
+        gap: 0.4rem;
     }
 
     .percentChoiceBtn {
-        padding: 0.5rem;
-        font-size: 0.75rem;
+        padding: 0.6rem;
+        font-size: 0.8rem;
         border-radius: 10px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Slider */
     .sliderWrap {
-        margin-top: 1rem;
+        margin-top: 1.25rem;
+        height: 12px;
+    }
+
+    .slider::-webkit-slider-thumb {
+        width: 28px;
+        height: 28px;
+        margin-top: -10px;
+    }
+
+    .slider::-moz-range-thumb {
+        width: 28px;
+        height: 28px;
     }
 
     /* Receive Box */
     .receiveBox {
-        padding: 0.7rem;
-        border-radius: 10px;
+        padding: 0.85rem;
+        border-radius: 12px;
     }
 
     .receiveTitle {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     /* Pool Info */
     .poolInfoBox {
-        padding: 0.7rem;
-        border-radius: 10px;
+        padding: 0.85rem;
+        border-radius: 12px;
     }
 
     .poolInfoTitle {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .poolInfoGrid {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
     .poolInfoValue {
-        font-size: 0.9rem;
+        font-size: 1rem;
     }
 
     .poolInfoLabel {
-        font-size: 0.6rem;
+        font-size: 0.7rem;
     }
 
     .plusIcon {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
     }
 
     /* Modals */
     .modal {
         max-width: 100%;
         margin: 0 0.5rem;
-        border-radius: 12px;
+        border-radius: 14px;
     }
 
     .modalHeader {
-        padding: 0.85rem 1rem;
+        padding: 1rem;
     }
 
     .modalTitle {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
     .modalBody {
@@ -1272,75 +1352,79 @@
 
     /* Token Select Modal */
     .tokenSearch {
-        padding: 0.55rem 0.75rem;
-        font-size: 0.8rem;
-        border-radius: 10px;
+        padding: 0.7rem 0.85rem;
+        font-size: 0.85rem;
+        border-radius: 12px;
+        min-height: 44px;
     }
 
     .tokenList {
-        max-height: 240px;
+        max-height: 50vh;
     }
 
     .tokenListItem {
-        padding: 0.5rem 0.4rem;
+        padding: 0.65rem 0.5rem;
+        min-height: 48px;
     }
 
     .tokenListIcon {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
     }
 
     .tokenListName {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .tokenListAddr {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
     }
 
     .tokenListBal {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
     /* Settings Modal */
     .settingsLabel {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
     }
 
     .settingsDesc {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
     }
 
     .slippageGrid {
-        gap: 0.3rem;
+        gap: 0.4rem;
     }
 
     .slippageBtn {
-        padding: 0.45rem;
-        font-size: 0.75rem;
+        padding: 0.6rem;
+        font-size: 0.8rem;
         border-radius: 10px;
+        min-height: 44px;
     }
 
     .customSlippage {
-        font-size: 0.8rem;
-        padding: 0.45rem 1.8rem 0.45rem 0.65rem;
+        font-size: 0.85rem;
+        padding: 0.6rem 2rem 0.6rem 0.75rem;
         border-radius: 10px;
+        min-height: 44px;
     }
 
     .warningBox {
-        padding: 0.5rem 0.6rem;
+        padding: 0.6rem 0.75rem;
         border-radius: 10px;
     }
 
     .warningText {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
     /* Confirm Modal */
     .confirmIcon {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2rem;
+        width: 44px;
+        height: 44px;
+        font-size: 1.3rem;
     }
 
     .confirmTitle {
@@ -1348,20 +1432,22 @@
     }
 
     .confirmText {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .confirmInput {
-        font-size: 0.8rem;
-        padding: 0.55rem;
+        font-size: 0.85rem;
+        padding: 0.65rem;
         border-radius: 10px;
+        min-height: 44px;
     }
 
     .cancelBtn,
     .dangerBtn {
-        padding: 0.5rem;
-        font-size: 0.8rem;
+        padding: 0.65rem;
+        font-size: 0.85rem;
         border-radius: 10px;
+        min-height: 44px;
     }
 
     /* Alerts */
@@ -1374,19 +1460,19 @@
     .alert {
         max-width: 100%;
         min-width: auto;
-        font-size: 0.75rem;
-        padding: 0.6rem 0.85rem;
+        font-size: 0.8rem;
+        padding: 0.7rem 0.85rem;
         border-radius: 10px;
     }
 
     /* SVG Icons */
     .iconSvg {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
     }
 
     .walletIcon {
-        width: 12px;
-        height: 12px;
+        width: 13px;
+        height: 13px;
     }
 }
