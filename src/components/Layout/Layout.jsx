@@ -29,8 +29,8 @@ const navItems = [
     { to: '/ownership', icon: <img src="/target.svg" alt="" className="nav-svg-icon" />, label: 'Ownership & EO' },
     { label: 'Account', section: true },
     { to: '/subscribe', icon: <img src="/premium.svg" alt="" className="nav-svg-icon" />, label: 'Subscribe' },
-    { to: '/swap', icon: <img src="/swap.svg" alt="" className="nav-svg-icon" />, label: 'Swap' },
-    { to: '/staking', icon: <img src="/staking.svg" alt="" className="nav-svg-icon" />, label: 'Staking' },
+    { to: '/swap', icon: <img src="/exchange.svg" alt="" className="nav-svg-icon" />, label: 'Swap' },
+    { to: '/staking', icon: <img src="/money-swap.svg" alt="" className="nav-svg-icon" />, label: 'Staking' },
 ]
 
 export default function Layout() {
