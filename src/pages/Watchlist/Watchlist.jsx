@@ -6,11 +6,16 @@ import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, normalizeText } 
 import styles from './Watchlist.module.css'
 
 export default function Watchlist() {
-    const { players, fixtures, teams, currentGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const watchlist = useWatchlist()
     const [search, setSearch] = useState('')
     const [posFilter, setPosFilter] = useState('ALL')
+
+    const gwRange = useMemo(() => {
+        if (!targetGw) return []
+        return Array.from({ length: 3 }, (_, i) => targetGw.id + i).filter(g => g <= 38)
+    }, [targetGw])
 
     const watchedPlayers = useMemo(() => {
         if (!players.length) return []
@@ -19,10 +24,11 @@ export default function Watchlist() {
             .filter(Boolean)
             .filter(p => posFilter === 'ALL' || getPositionShort(p.element_type) === posFilter)
             .map(p => {
-                if (!fixtures.length || !currentGw) return p
-                const upcoming = fixtures
-                    .filter(f => f.event >= currentGw.id && f.event <= currentGw.id + 2 && (f.team_h === p.team || f.team_a === p.team))
-                    .map(f => {
+                if (!fixtures.length || !targetGw) return p
+                const gwFixtures = {}
+                gwRange.forEach(gw => {
+                    const matches = fixtures.filter(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
+                    gwFixtures[gw] = matches.map(f => {
                         const isHome = f.team_h === p.team
                         return {
                             difficulty: isHome ? f.team_h_difficulty : f.team_a_difficulty,
@@ -30,9 +36,10 @@ export default function Watchlist() {
                             isHome
                         }
                     })
-                return { ...p, upcoming }
+                })
+                return { ...p, gwFixtures }
             })
-    }, [players, watchlist.ids, posFilter, fixtures, teams, currentGw])
+    }, [players, watchlist.ids, posFilter, fixtures, teams, targetGw, gwRange])
 
     const searchResults = useMemo(() => {
         if (!search || search.length < 2 || !players.length) return []
@@ -174,15 +181,22 @@ export default function Watchlist() {
                                         </td>
                                         <td>
                                             <div className={styles.fdrRow}>
-                                                {(p.upcoming || []).map((f, j) => (
-                                                    <span
-                                                        key={j}
-                                                        className={styles.fdrCell}
-                                                        style={{ background: getDifficultyColor(f.difficulty) }}
-                                                    >
-                                                        {f.opponent}({f.isHome ? 'H' : 'A'})
-                                                    </span>
-                                                ))}
+                                                {gwRange.map(gw => {
+                                                    const fxs = (p.gwFixtures || {})[gw] || []
+                                                    return fxs.length === 0 ? (
+                                                        <span key={gw} className={styles.fdrCell} style={{ background: 'transparent', color: 'var(--text-muted)' }}>—</span>
+                                                    ) : (
+                                                        fxs.map((f, j) => (
+                                                            <span
+                                                                key={`${gw}-${j}`}
+                                                                className={styles.fdrCell}
+                                                                style={{ background: getDifficultyColor(f.difficulty) }}
+                                                            >
+                                                                {f.opponent}({f.isHome ? 'H' : 'A'})
+                                                            </span>
+                                                        ))
+                                                    )
+                                                })}
                                             </div>
                                         </td>
                                         <td>

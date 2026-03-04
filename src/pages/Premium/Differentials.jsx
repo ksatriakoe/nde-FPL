@@ -32,9 +32,13 @@ export default function Differentials() {
         ? 'All Teams'
         : teams.find(t => t.id === Number(teamFilter))?.name || 'All Teams'
 
+    const gwRange = useMemo(() => {
+        if (!targetGw) return []
+        return Array.from({ length: 5 }, (_, i) => targetGw.id + i).filter(g => g <= 38)
+    }, [targetGw])
+
     const differentials = useMemo(() => {
         if (!players.length || !fixtures.length || !targetGw) return []
-        const gwStart = targetGw.id
 
         return players
             .filter(p => {
@@ -50,9 +54,10 @@ export default function Differentials() {
                 return true
             })
             .map(p => {
-                const upcoming = fixtures
-                    .filter(f => f.event >= gwStart && f.event <= gwStart + 4 && (f.team_h === p.team || f.team_a === p.team))
-                    .map(f => {
+                const gwFixtures = {}
+                gwRange.forEach(gw => {
+                    const matches = fixtures.filter(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
+                    gwFixtures[gw] = matches.map(f => {
                         const isHome = f.team_h === p.team
                         return {
                             gw: f.event,
@@ -61,13 +66,15 @@ export default function Differentials() {
                             opponent: teams.find(t => t.id === (isHome ? f.team_a : f.team_h))?.short_name || '?',
                         }
                     })
-                const avgFDR = upcoming.length > 0
-                    ? (upcoming.reduce((s, f) => s + f.difficulty, 0) / upcoming.length).toFixed(1)
+                })
+                const allDiffs = Object.values(gwFixtures).flat().map(f => f.difficulty)
+                const avgFDR = allDiffs.length > 0
+                    ? parseFloat((allDiffs.reduce((a, b) => a + b, 0) / allDiffs.length).toFixed(1))
                     : 5
-                return { ...p, upcoming, avgFDR: parseFloat(avgFDR) }
+                return { ...p, gwFixtures, avgFDR }
             })
             .sort((a, b) => a.avgFDR - b.avgFDR || parseFloat(b.form) - parseFloat(a.form))
-    }, [players, fixtures, teams, targetGw, posFilter, teamFilter, maxOwnership, search])
+    }, [players, fixtures, teams, targetGw, posFilter, teamFilter, maxOwnership, search, gwRange])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }
@@ -185,11 +192,18 @@ export default function Differentials() {
                                     <td className={fdrClass(p.avgFDR)}>{p.avgFDR}</td>
                                     <td>
                                         <div className={styles.fdrRow}>
-                                            {p.upcoming.map((f, j) => (
-                                                <span key={j} className={styles.fdrCell} style={{ background: getDifficultyColor(f.difficulty) }}>
-                                                    {f.opponent} ({f.isHome ? 'H' : 'A'})
-                                                </span>
-                                            ))}
+                                            {gwRange.map(gw => {
+                                                const fxs = p.gwFixtures[gw] || []
+                                                return fxs.length === 0 ? (
+                                                    <span key={gw} className={styles.fdrCell} style={{ background: 'transparent', color: 'var(--text-muted)' }}>—</span>
+                                                ) : (
+                                                    fxs.map((f, j) => (
+                                                        <span key={`${gw}-${j}`} className={styles.fdrCell} style={{ background: getDifficultyColor(f.difficulty) }}>
+                                                            {f.opponent} ({f.isHome ? 'H' : 'A'})
+                                                        </span>
+                                                    ))
+                                                )
+                                            })}
                                         </div>
                                     </td>
                                 </tr>

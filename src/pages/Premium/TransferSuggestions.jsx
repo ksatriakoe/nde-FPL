@@ -33,9 +33,13 @@ export default function TransferSuggestions() {
     }, [wallet])
 
     // Value picks: high form relative to price
+    const gwRange = useMemo(() => {
+        if (!targetGw) return []
+        return Array.from({ length: 4 }, (_, i) => targetGw.id + i).filter(g => g <= 38)
+    }, [targetGw])
+
     const valuePicks = useMemo(() => {
         if (!players.length || !fixtures.length || !targetGw) return []
-        const gw = targetGw.id
         return players
             .filter(p => p.status === 'a' && parseFloat(p.form) >= 3.5 && p.minutes > 200)
             .map(p => {
@@ -43,9 +47,10 @@ export default function TransferSuggestions() {
                 const form = parseFloat(p.form)
                 const valueScore = (form * p.total_points) / (price * price)
 
-                const upcoming = fixtures
-                    .filter(f => f.event >= gw && f.event <= gw + 3 && (f.team_h === p.team || f.team_a === p.team))
-                    .map(f => {
+                const gwFixtures = {}
+                gwRange.forEach(gw => {
+                    const matches = fixtures.filter(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
+                    gwFixtures[gw] = matches.map(f => {
                         const isHome = f.team_h === p.team
                         return {
                             difficulty: isHome ? f.team_h_difficulty : f.team_a_difficulty,
@@ -53,32 +58,34 @@ export default function TransferSuggestions() {
                             isHome,
                         }
                     })
+                })
 
-                return { ...p, valueScore, upcoming, price }
+                return { ...p, valueScore, gwFixtures, price }
             })
             .sort((a, b) => b.valueScore - a.valueScore)
             .slice(0, 15)
-    }, [players, fixtures, teams, targetGw])
+    }, [players, fixtures, teams, targetGw, gwRange])
 
     // Players to sell: bad form + hard fixtures
     const sellCandidates = useMemo(() => {
         if (!players.length || !fixtures.length || !targetGw) return []
-        const gw = targetGw.id
         return players
             .filter(p => parseFloat(p.selected_by_percent) > 10 && (parseFloat(p.form) < 3 || p.status !== 'a'))
             .map(p => {
-                const upcoming = fixtures
-                    .filter(f => f.event >= gw && f.event <= gw + 3 && (f.team_h === p.team || f.team_a === p.team))
-                    .map(f => {
-                        const isHome = f.team_h === p.team
-                        return { difficulty: isHome ? f.team_h_difficulty : f.team_a_difficulty }
-                    })
-                const avgFDR = upcoming.length > 0 ? upcoming.reduce((s, f) => s + f.difficulty, 0) / upcoming.length : 3
+                const allDiffs = []
+                gwRange.forEach(gw => {
+                    fixtures.filter(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
+                        .forEach(f => {
+                            const isHome = f.team_h === p.team
+                            allDiffs.push(isHome ? f.team_h_difficulty : f.team_a_difficulty)
+                        })
+                })
+                const avgFDR = allDiffs.length > 0 ? allDiffs.reduce((s, d) => s + d, 0) / allDiffs.length : 3
                 return { ...p, avgFDR, price: p.now_cost / 10 }
             })
             .sort((a, b) => parseFloat(a.form) - parseFloat(b.form))
             .slice(0, 10)
-    }, [players, fixtures, targetGw])
+    }, [players, fixtures, targetGw, gwRange])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }
@@ -189,11 +196,18 @@ Keep recommendations actionable and specific. Mention price and reasoning.`
                                             <td className={styles.formHigh}>{p.form}</td>
                                             <td>
                                                 <div style={{ display: 'flex', gap: 2 }}>
-                                                    {p.upcoming.map((f, j) => (
-                                                        <span key={j} className={styles.fdrCell} style={{ background: getDifficultyColor(f.difficulty), fontSize: '0.6rem' }}>
-                                                            {f.opponent}
-                                                        </span>
-                                                    ))}
+                                                    {gwRange.map(gw => {
+                                                        const fxs = p.gwFixtures[gw] || []
+                                                        return fxs.length === 0 ? (
+                                                            <span key={gw} className={styles.fdrCell} style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: '0.6rem' }}>—</span>
+                                                        ) : (
+                                                            fxs.map((f, j) => (
+                                                                <span key={`${gw}-${j}`} className={styles.fdrCell} style={{ background: getDifficultyColor(f.difficulty), fontSize: '0.6rem' }}>
+                                                                    {f.opponent}
+                                                                </span>
+                                                            ))
+                                                        )
+                                                    })}
                                                 </div>
                                             </td>
                                         </tr>
