@@ -50,7 +50,7 @@ export default function SwapTab({ showAlert, slippage }) {
             const idealAmounts = await routerContract.getAmountsOut(oneUnit, path)
             const idealRate = parseFloat(ethers.formatUnits(idealAmounts[idealAmounts.length - 1], toToken.decimals)) / 0.001
             const actualRate = parseFloat(formatted) / amount
-            const impact = ((idealRate - actualRate) / idealRate) * 100
+            const impact = Math.max(0, ((idealRate - actualRate) / idealRate) * 100)
             const minReceived = parseFloat(formatted) * (1 - slippage / 100)
             const lpFee = amount * 0.003
             setSwapDetails({ minReceived: formatSwapAmount(minReceived), priceImpact: formatSwapAmount(impact), lpFee: formatSwapAmount(lpFee), route: path })
@@ -78,7 +78,7 @@ export default function SwapTab({ showAlert, slippage }) {
             let tx
             if (isFromETH) {
                 showAlert('Swapping...', 'info')
-                tx = await routerContract.swapExactETHForTokens(amountOutMin, path, userAddress, deadline, { value: amountInParsed })
+                tx = await routerContract.swapExactETHForTokens(amountOutMin, path, userAddress, deadline, { value: amountInParsed, gasLimit: 500000n })
             } else if (isToETH) {
                 const tokenContract = new ethers.Contract(fromToken.address, erc20Abi, signer)
                 const allowance = await tokenContract.allowance(userAddress, swapAddresses.router)
@@ -88,7 +88,7 @@ export default function SwapTab({ showAlert, slippage }) {
                     await approveTx.wait()
                 }
                 showAlert('Swapping...', 'info')
-                tx = await routerContract.swapExactTokensForETH(amountInParsed, amountOutMin, path, userAddress, deadline)
+                tx = await routerContract.swapExactTokensForETH(amountInParsed, amountOutMin, path, userAddress, deadline, { gasLimit: 500000n })
             } else {
                 const tokenContract = new ethers.Contract(fromToken.address, erc20Abi, signer)
                 const allowance = await tokenContract.allowance(userAddress, swapAddresses.router)
@@ -98,7 +98,7 @@ export default function SwapTab({ showAlert, slippage }) {
                     await approveTx.wait()
                 }
                 showAlert('Swapping...', 'info')
-                tx = await routerContract.swapExactTokensForTokens(amountInParsed, amountOutMin, path, userAddress, deadline)
+                tx = await routerContract.swapExactTokensForTokens(amountInParsed, amountOutMin, path, userAddress, deadline, { gasLimit: 500000n })
             }
             await tx.wait()
             showAlert('Swap successful!', 'success')
@@ -106,7 +106,7 @@ export default function SwapTab({ showAlert, slippage }) {
             refreshBalances()
         } catch (err) {
             if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
-            else showAlert('Swap failed', 'error')
+            else showAlert(`Swap failed: ${err.reason || err.shortMessage || 'Unknown error'}`, 'error')
         } finally { setIsSwapping(false) }
     }
 
@@ -202,9 +202,9 @@ export default function SwapTab({ showAlert, slippage }) {
                             <span className={s.detailLabel}>Route</span>
                             <div className={s.routePath}>
                                 <TokenIcon token={fromToken} /><span className={s.routeSymbol}>{fromToken.symbol}</span>
-                                <span className={s.routeArrow}>→</span>
-                                <span className={s.routeSymbol}>ETH</span>
-                                <span className={s.routeArrow}>→</span>
+                                <img src="/right-swap.svg" alt="→" className={s.routeArrowIcon} />
+                                <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png" alt="ETH" className={s.tokenIcon} /><span className={s.routeSymbol}>ETH</span>
+                                <img src="/right-swap.svg" alt="→" className={s.routeArrowIcon} />
                                 <TokenIcon token={toToken} /><span className={s.routeSymbol}>{toToken.symbol}</span>
                             </div>
                         </div>

@@ -3,10 +3,12 @@ export function formatBalance(balance, maxDecimals = 4) {
         if (balance === null || balance === undefined || balance === '') return '0'
         const num = parseFloat(balance)
         if (isNaN(num) || num === 0) return '0'
-        if (Number.isInteger(num)) return num.toString()
         if (num < 0.0001 && num > 0) return '< 0.0001'
+        // Smart decimal: if effectively whole number, show without decimals
+        if (num % 1 === 0) return Math.round(num).toString()
         const fixed = num.toFixed(maxDecimals)
-        return parseFloat(fixed).toString()
+        // Strip trailing zeros: 1000.5000 → 1000.5, 0.1200 → 0.12
+        return fixed.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '')
     } catch {
         return '0'
     }
@@ -19,6 +21,8 @@ export function formatSwapAmount(amount) {
         if (isNaN(num)) return ''
         if (num === 0) return '0'
         if (num < 0.000001 && num > 0) return '< 0.000001'
+        // Smart decimal: if effectively whole number, show without decimals
+        if (num % 1 === 0) return Math.round(num).toString()
         const str = num.toString()
         if (str.includes('e')) return num.toFixed(6).replace(/\.?0+$/, '')
         const parts = str.split('.')

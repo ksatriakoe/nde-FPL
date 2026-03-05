@@ -33,7 +33,7 @@ function PositionCard({ position, isExpanded, onToggle, getDetails, onAddMore, o
                     <TokenIcon token={position.tokenB} />
                     <span>{position.tokenB.symbol}</span>
                 </div>
-                <span>{isExpanded ? '▲' : '▼'}</span>
+                <img src={isExpanded ? '/caret-top.svg' : '/caret-down.svg'} alt="" className={s.positionChevronIcon} />
             </button>
             {isExpanded && (
                 <div className={s.positionDetails}>
@@ -44,8 +44,8 @@ function PositionCard({ position, isExpanded, onToggle, getDetails, onAddMore, o
                             <div className={s.positionRow}><span className={s.positionLabel}>Your pool share</span><span className={s.positionValue}>{details.sharePercent}%</span></div>
                             <div className={s.positionRow} style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginTop: '0.25rem' }}><span className={s.positionLabel}>LP Tokens</span><span className={s.positionValue}>{formatBalance(position.lpBalance)}</span></div>
                             <div className={s.positionActions}>
-                                <button className={s.positionActionBtn} onClick={() => onAddMore(position)}>＋ Add</button>
-                                <button className={s.positionActionBtn} onClick={() => onRemove(position)}>－ Remove</button>
+                                <button className={s.positionActionBtn} onClick={() => onAddMore(position)}><img src="/plus-swap.svg" alt="" className={s.actionBtnIcon} /> Add</button>
+                                <button className={s.positionActionBtn} onClick={() => onRemove(position)}><img src="/dash-swap.svg" alt="" className={s.actionBtnIcon} /> Remove</button>
                             </div>
                         </>
                     ) : <div className={s.emptyPool}>Failed to load details</div>}
@@ -132,15 +132,24 @@ export default function PoolTab({ showAlert, slippage }) {
         try {
             const factoryContract = new ethers.Contract(swapAddresses.factory, factoryAbi, provider)
             const positions = []
-            const allTokens = [defaultSwapToken, ...swapTokenList]
-            for (let i = 0; i < allTokens.length; i++) {
-                for (let j = i + 1; j < allTokens.length; j++) {
+            const customTokens = JSON.parse(localStorage.getItem('customTokens') || '[]')
+            const allTokens = [defaultSwapToken, ...swapTokenList, ...customTokens]
+            // Deduplicate by address
+            const seen = new Set()
+            const uniqueTokens = allTokens.filter(t => {
+                const key = t.address.toLowerCase()
+                if (seen.has(key)) return false
+                seen.add(key)
+                return true
+            })
+            for (let i = 0; i < uniqueTokens.length; i++) {
+                for (let j = i + 1; j < uniqueTokens.length; j++) {
                     try {
-                        const pairAddress = await factoryContract.getPair(allTokens[i].address, allTokens[j].address)
+                        const pairAddress = await factoryContract.getPair(uniqueTokens[i].address, uniqueTokens[j].address)
                         if (pairAddress !== ethers.ZeroAddress) {
                             const pairContract = new ethers.Contract(pairAddress, pairAbi, provider)
                             const lpBalance = await pairContract.balanceOf(userAddress)
-                            if (lpBalance > 0n) positions.push({ tokenA: allTokens[i], tokenB: allTokens[j], lpBalance: ethers.formatUnits(lpBalance, 18), pairAddress })
+                            if (lpBalance > 0n) positions.push({ tokenA: uniqueTokens[i], tokenB: uniqueTokens[j], lpBalance: ethers.formatUnits(lpBalance, 18), pairAddress })
                         }
                     } catch { continue }
                 }
@@ -170,21 +179,21 @@ export default function PoolTab({ showAlert, slippage }) {
                 if (!isAETH) { const tc = new ethers.Contract(tokenA.address, erc20Abi, signer); const al = await tc.allowance(userAddress, swapAddresses.router); if (al < amountADesired) { showAlert(`Approving ${tokenA.symbol}...`, 'info'); await (await tc.approve(swapAddresses.router, ethers.MaxUint256)).wait() } }
                 if (!isBETH) { const tc = new ethers.Contract(tokenB.address, erc20Abi, signer); const al = await tc.allowance(userAddress, swapAddresses.router); if (al < amountBDesired) { showAlert(`Approving ${tokenB.symbol}...`, 'info'); await (await tc.approve(swapAddresses.router, ethers.MaxUint256)).wait() } }
                 showAlert('Adding liquidity...', 'info')
-                const tx = await routerContract.addLiquidityETH(otherToken.address, otherAmount, otherAmountMin, nativeAmount - (nativeAmount * slip) / BigInt(10000), userAddress, deadline, { value: nativeAmount })
+                const tx = await routerContract.addLiquidityETH(otherToken.address, otherAmount, otherAmountMin, nativeAmount - (nativeAmount * slip) / BigInt(10000), userAddress, deadline, { value: nativeAmount, gasLimit: 5000000n })
                 await tx.wait()
                 showAlert('Liquidity added!', 'success')
             } else {
                 const tcA = new ethers.Contract(tokenA.address, erc20Abi, signer); if ((await tcA.allowance(userAddress, swapAddresses.router)) < amountADesired) { showAlert(`Approving ${tokenA.symbol}...`, 'info'); await (await tcA.approve(swapAddresses.router, ethers.MaxUint256)).wait() }
                 const tcB = new ethers.Contract(tokenB.address, erc20Abi, signer); if ((await tcB.allowance(userAddress, swapAddresses.router)) < amountBDesired) { showAlert(`Approving ${tokenB.symbol}...`, 'info'); await (await tcB.approve(swapAddresses.router, ethers.MaxUint256)).wait() }
                 showAlert('Adding liquidity...', 'info')
-                const tx = await routerContract.addLiquidity(tokenA.address, tokenB.address, amountADesired, amountBDesired, amountAMin, amountBMin, userAddress, deadline)
+                const tx = await routerContract.addLiquidity(tokenA.address, tokenB.address, amountADesired, amountBDesired, amountAMin, amountBMin, userAddress, deadline, { gasLimit: 5000000n })
                 await tx.wait()
                 showAlert('Liquidity added!', 'success')
             }
             setAmountA(''); setAmountB(''); refreshBalances(); loadLiquidityPositions(); setView('list')
         } catch (err) {
             if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
-            else showAlert('Failed to add liquidity', 'error')
+            else showAlert(`Failed: ${err.reason || err.shortMessage || 'Unknown error'}`, 'error')
         } finally { setIsAdding(false) }
     }
 
@@ -301,7 +310,7 @@ export default function PoolTab({ showAlert, slippage }) {
                             <div className={s.balanceRow}>
                                 <button className={s.percentBtn} onClick={() => setAmountA((parseFloat(balanceA) * 0.5).toString())}>50%</button>
                                 <button className={s.percentBtn} onClick={() => setAmountA(balanceA)}>MAX</button>
-                                <span>Bal: {balAFmt} {tokenA.symbol}</span>
+                                <span><img src="/wallet.svg" alt="" className={s.walletIcon} /> {balAFmt} {tokenA.symbol}</span>
                             </div>
                         </div>
                         <div className={s.tokenRow}>
@@ -313,7 +322,7 @@ export default function PoolTab({ showAlert, slippage }) {
                     <div className={s.tokenSection}>
                         <div className={s.sectionHeader}>
                             <span className={s.sectionLabel}>Token B</span>
-                            {tokenB && <div className={s.balanceRow}><span>Bal: {balBFmt} {tokenB.symbol}</span></div>}
+                            {tokenB && <div className={s.balanceRow}><span><img src="/wallet.svg" alt="" className={s.walletIcon} /> {balBFmt} {tokenB.symbol}</span></div>}
                         </div>
                         <div className={s.tokenRow}>
                             <button className={`${s.tokenBtn} ${!tokenB ? s.tokenBtnSelect : ''}`} onClick={() => setSelectingFor('poolB')}>
@@ -356,7 +365,7 @@ export default function PoolTab({ showAlert, slippage }) {
     // LIST VIEW (default)
     return (
         <>
-            <button className={s.actionBtn} onClick={() => setView('add')}>＋ Add Liquidity</button>
+            <button className={s.actionBtn} onClick={() => setView('add')}><img src="/plus-swap.svg" alt="" className={s.actionBtnIcon} /> Add Liquidity</button>
             <div className={s.poolHeader} style={{ marginTop: '1rem' }}>
                 <div className={s.poolTitle}>Your Liquidity</div>
             </div>
