@@ -63,3 +63,22 @@ export const swapTokenList = [
         logoURI: '/NdeFPL.png',
     },
 ]
+
+// =============================================================
+// Staking Contract
+// =============================================================
+export const stakingAddress = '0x994b5BE0100C706ACfa962C71D23AccD139Cc7a5' // TODO: paste new deployed address
+
+export const stakingAbi = [
+    'function stake(uint256 amount) external',
+    'function unstake(uint256 amount) external',
+    'function claimRewards() external',
+    'function earned(address account) external view returns (uint256)',
+    'function getStakeInfo(address account) external view returns (uint256 _totalStaked, uint256 _userStaked, uint256 _userRewards, uint256 _apyBasisPoints, uint256 _minStake)',
+    'function stakedBalance(address) external view returns (uint256)',
+    'function totalStaked() external view returns (uint256)',
+    'function apyBasisPoints() external view returns (uint256)',
+    'function minStake() external view returns (uint256)',
+    'function rewardBalance() external view returns (uint256)',
+    'function stakingToken() external view returns (address)',
+]
