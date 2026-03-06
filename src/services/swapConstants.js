@@ -67,7 +67,7 @@ export const swapTokenList = [
 // =============================================================
 // Staking Contract
 // =============================================================
-export const stakingAddress = '0x994b5BE0100C706ACfa962C71D23AccD139Cc7a5' // TODO: paste new deployed address
+export const stakingAddress = '0x994b5BE0100C706ACfa962C71D23AccD139Cc7a5'
 
 export const stakingAbi = [
     'function stake(uint256 amount) external',

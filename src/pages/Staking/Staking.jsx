@@ -23,6 +23,8 @@ function TokenIcon({ token, size }) {
     return <img src={token.logoURI} alt={token.symbol} className={cls} onError={() => setErr(true)} />
 }
 
+const SEPOLIA_RPC = 'https://ethereum-sepolia-rpc.publicnode.com'
+
 function useStakingContract(signer, provider, userAddress) {
     const [data, setData] = useState({
         totalStaked: '0',
@@ -34,12 +36,20 @@ function useStakingContract(signer, provider, userAddress) {
     const [loading, setLoading] = useState(true)
 
     const fetchData = useCallback(async () => {
-        if (!stakingAddress || !provider) {
+        if (!stakingAddress) {
             setLoading(false)
             return
         }
+        // Use connected provider if available, otherwise fallback to public RPC
+        let readProvider = provider
+        if (!readProvider) {
+            readProvider = new ethers.JsonRpcProvider(SEPOLIA_RPC, {
+                chainId: 11155111,
+                name: 'sepolia',
+            }, { staticNetwork: true })
+        }
         try {
-            const contract = new ethers.Contract(stakingAddress, stakingAbi, provider)
+            const contract = new ethers.Contract(stakingAddress, stakingAbi, readProvider)
             const account = userAddress || ethers.ZeroAddress
             const info = await contract.getStakeInfo(account)
             setData({
@@ -267,7 +277,7 @@ export default function Staking() {
                         <div className={s.overviewGrid}>
                             <div className={s.overviewItem}>
                                 <div className={s.overviewLabel}>Total Staked</div>
-                                <div className={s.overviewValue}>{loading ? '...' : Math.floor(parseFloat(stakeData.totalStaked)).toLocaleString()}</div>
+                                <div className={s.overviewValue}>{loading ? '...' : formatSwapAmount(stakeData.totalStaked)}</div>
                                 <div className={s.overviewUnit}>TEST</div>
                             </div>
                             <div className={s.overviewItem}>
