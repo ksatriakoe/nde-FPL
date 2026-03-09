@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { useWeb3 } from '../../hooks/useWeb3'
-import { swapAddresses, erc20Abi, defaultSwapToken } from '../../services/swapConstants'
+import { WETH_ADDRESS, erc20Abi, customAddresses, uniswapAddresses, aggregatorAddress } from '../../services/swapConstants'
 import { useTokenBalance } from '../../hooks/useTokenBalance'
 import { formatSwapAmount } from '../../services/formatBalance'
 import TokenSelectModal from './TokenSelectModal'
@@ -9,8 +9,14 @@ import ConfirmModal from './ConfirmModal'
 import s from './Swap.module.css'
 
 export default function SwapTab({ showAlert, slippage }) {
-    const { provider, signer, userAddress, routerContract, refreshBalances } = useWeb3()
-    const [fromToken, setFromToken] = useState(defaultSwapToken)
+    const {
+        provider, signer, userAddress,
+        customRouter, uniswapRouter, aggregatorContract,
+        findRouter, findCrossRoute,
+        refreshBalances,
+    } = useWeb3()
+
+    const [fromToken, setFromToken] = useState(null)
     const [toToken, setToToken] = useState(null)
     const [amountIn, setAmountIn] = useState('')
     const [amountOut, setAmountOut] = useState('')
@@ -20,89 +26,246 @@ export default function SwapTab({ showAlert, slippage }) {
     const [isSwapping, setIsSwapping] = useState(false)
     const [priceReversed, setPriceReversed] = useState(false)
     const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [swapRoute, setSwapRoute] = useState(null) // { router, source } or { routerInFirst, source:'aggregator' }
 
     const { balance: fromBalance, formattedBalance: fromFmt, loading: fromLoading } = useTokenBalance(fromToken?.address)
     const { formattedBalance: toFmt, loading: toLoading } = useTokenBalance(toToken?.address)
 
+    // Set default fromToken after WETH_ADDRESS is available
     useEffect(() => {
-        if (amountIn && fromToken && toToken && routerContract) calculateAmountOut()
-        else { setAmountOut(''); setSwapDetails(null) }
-    }, [amountIn, fromToken, toToken, routerContract, slippage])
+        if (!fromToken) {
+            // Import defaultSwapToken dynamically to avoid circular issues
+            import('../../services/swapConstants').then(m => setFromToken(m.defaultSwapToken))
+        }
+    }, [])
 
-    const getPath = (a, b) => {
-        const isFromETH = a.address.toLowerCase() === swapAddresses.weth.toLowerCase()
-        const isToETH = b.address.toLowerCase() === swapAddresses.weth.toLowerCase()
+    useEffect(() => {
+        if (amountIn && fromToken && toToken && (customRouter || uniswapRouter)) calculateAmountOut()
+        else { setAmountOut(''); setSwapDetails(null); setSwapRoute(null) }
+    }, [amountIn, fromToken, toToken, customRouter, uniswapRouter, slippage])
+
+    const getPath = (a, b, wethAddr) => {
+        const isFromETH = a.address.toLowerCase() === wethAddr.toLowerCase()
+        const isToETH = b.address.toLowerCase() === wethAddr.toLowerCase()
         if (isFromETH || isToETH) return [ethers.getAddress(a.address), ethers.getAddress(b.address)]
-        return [ethers.getAddress(a.address), ethers.getAddress(swapAddresses.weth), ethers.getAddress(b.address)]
+        return [ethers.getAddress(a.address), ethers.getAddress(wethAddr), ethers.getAddress(b.address)]
     }
 
     const calculateAmountOut = async () => {
         try {
             const amount = parseFloat(amountIn)
             if (amount <= 0) { setAmountOut(''); return }
+
             const amountInParsed = ethers.parseUnits(amountIn, fromToken.decimals)
-            const path = getPath(fromToken, toToken)
-            const amounts = await routerContract.getAmountsOut(amountInParsed, path)
-            const outputAmount = amounts[amounts.length - 1]
-            const formatted = ethers.formatUnits(outputAmount, toToken.decimals)
-            setAmountOut(formatSwapAmount(formatted))
-            const oneUnit = ethers.parseUnits('0.001', fromToken.decimals)
-            const idealAmounts = await routerContract.getAmountsOut(oneUnit, path)
-            const idealRate = parseFloat(ethers.formatUnits(idealAmounts[idealAmounts.length - 1], toToken.decimals)) / 0.001
-            const actualRate = parseFloat(formatted) / amount
-            const impact = Math.max(0, ((idealRate - actualRate) / idealRate) * 100)
+
+            // Collect all candidate routes and pick the best output
+            let bestOut = 0n
+            let bestFormatted = ''
+            let bestRoute = null
+            let bestPath = null
+            let bestSource = null
+            let bestRouter = null
+            let bestRouterInFirst = null
+
+            // 1. Try direct route (custom or Uniswap)
+            const direct = await findRouter(fromToken.address, toToken.address)
+            if (direct) {
+                const isFromETH = fromToken.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
+                const isToETH = toToken.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
+
+                const directPath = [ethers.getAddress(fromToken.address), ethers.getAddress(toToken.address)]
+                const multiPath = (!isFromETH && !isToETH)
+                    ? [ethers.getAddress(fromToken.address), ethers.getAddress(WETH_ADDRESS), ethers.getAddress(toToken.address)]
+                    : null
+
+                // Attempt direct path [A, B]
+                try {
+                    const amounts = await direct.router.getAmountsOut(amountInParsed, directPath)
+                    const out = amounts[amounts.length - 1]
+                    if (out > bestOut) {
+                        bestOut = out
+                        bestFormatted = ethers.formatUnits(out, toToken.decimals)
+                        bestRoute = { ...direct, path: directPath }
+                        bestPath = directPath
+                        bestSource = direct.source
+                        bestRouter = direct.router
+                    }
+                } catch { /* direct path failed */ }
+
+                // Attempt multi-hop [A, WETH, B]
+                if (multiPath) {
+                    try {
+                        const amounts = await direct.router.getAmountsOut(amountInParsed, multiPath)
+                        const out = amounts[amounts.length - 1]
+                        if (out > bestOut) {
+                            bestOut = out
+                            bestFormatted = ethers.formatUnits(out, toToken.decimals)
+                            bestRoute = { ...direct, path: multiPath }
+                            bestPath = multiPath
+                            bestSource = direct.source
+                            bestRouter = direct.router
+                        }
+                    } catch { /* multi-hop failed */ }
+                }
+            }
+
+            // 2. Try cross-swap via Aggregator
+            const cross = await findCrossRoute(fromToken.address, toToken.address)
+            if (cross) {
+                try {
+                    const outAmount = await aggregatorContract.getAmountsOutCross(
+                        fromToken.address, toToken.address, amountInParsed, cross.routerInFirst
+                    )
+                    if (outAmount > bestOut) {
+                        bestOut = outAmount
+                        bestFormatted = ethers.formatUnits(outAmount, toToken.decimals)
+                        bestRoute = { ...cross }
+                        bestPath = null
+                        bestSource = 'aggregator'
+                        bestRouter = null
+                        bestRouterInFirst = cross.routerInFirst
+                    }
+                } catch { /* aggregator failed */ }
+            }
+
+            // Apply best route
+            if (bestOut > 0n) {
+                setAmountOut(formatSwapAmount(bestFormatted))
+                setSwapRoute(bestRoute)
+                computeSwapDetails(amount, bestFormatted, amountInParsed, bestPath, bestRouter, bestSource, bestRouterInFirst)
+            } else {
+                setAmountOut('')
+                setSwapDetails(null)
+                setSwapRoute(null)
+            }
+        } catch {
+            setAmountOut('')
+            setSwapDetails(null)
+            setSwapRoute(null)
+        }
+    }
+
+    const computeSwapDetails = (amount, formatted, amountInParsed, path, router, source, routerInFirst) => {
+        try {
             const minReceived = parseFloat(formatted) * (1 - slippage / 100)
-            const lpFee = amount * 0.003
-            setSwapDetails({ minReceived: formatSwapAmount(minReceived), priceImpact: formatSwapAmount(impact), lpFee: formatSwapAmount(lpFee), route: path })
+            const lpFee = amount * 0.003 * (source === 'aggregator' ? 2 : 1) // 2 hops for aggregator
+            setSwapDetails({
+                minReceived: formatSwapAmount(minReceived),
+                priceImpact: '0',
+                lpFee: formatSwapAmount(lpFee),
+                route: path,
+                source,
+            })
             setPriceInfo({
-                rate: priceReversed ? formatSwapAmount(amount / parseFloat(formatted)) : formatSwapAmount(parseFloat(formatted) / amount),
+                rate: priceReversed
+                    ? formatSwapAmount(amount / parseFloat(formatted))
+                    : formatSwapAmount(parseFloat(formatted) / amount),
                 fromSymbol: priceReversed ? toToken.symbol : fromToken.symbol,
                 toSymbol: priceReversed ? fromToken.symbol : toToken.symbol,
             })
-        } catch { setAmountOut('') }
+
+            // Compute real price impact for direct swaps
+            if (router && path) {
+                const refAmount = amount * 0.01 // 1% of actual trade for ideal rate
+                const refParsed = ethers.parseUnits(
+                    refAmount.toFixed(fromToken.decimals > 8 ? 8 : fromToken.decimals),
+                    fromToken.decimals
+                )
+                router.getAmountsOut(refParsed, path).then(idealAmounts => {
+                    const idealRate = parseFloat(ethers.formatUnits(idealAmounts[idealAmounts.length - 1], toToken.decimals)) / refAmount
+                    const actualRate = parseFloat(formatted) / amount
+                    const realImpact = Math.max(0, ((idealRate - actualRate) / idealRate) * 100)
+                    setSwapDetails(prev => prev ? { ...prev, priceImpact: formatSwapAmount(realImpact) } : prev)
+                }).catch(() => { })
+            }
+
+            // Compute real price impact for aggregator cross-swaps
+            if (source === 'aggregator' && aggregatorContract) {
+                // Use 1% of actual amount as reference (small enough for ideal rate, large enough for precision)
+                const refAmount = amount * 0.01
+                const refParsed = ethers.parseUnits(refAmount.toFixed(fromToken.decimals > 8 ? 8 : fromToken.decimals), fromToken.decimals)
+                aggregatorContract.getAmountsOutCross(
+                    fromToken.address, toToken.address, refParsed, routerInFirst ?? 0
+                ).then(idealOut => {
+                    const idealRate = parseFloat(ethers.formatUnits(idealOut, toToken.decimals)) / refAmount
+                    const actualRate = parseFloat(formatted) / amount
+                    const realImpact = Math.max(0, ((idealRate - actualRate) / idealRate) * 100)
+                    setSwapDetails(prev => prev ? { ...prev, priceImpact: formatSwapAmount(realImpact) } : prev)
+                }).catch((err) => { console.error('Aggregator price impact error:', err) })
+            }
+        } catch { /* ignore */ }
     }
 
     const executeSwap = async () => {
-        if (!signer || !fromToken || !toToken || !amountIn) return
+        if (!signer || !fromToken || !toToken || !amountIn || !swapRoute) return
         if (parseFloat(amountIn) > parseFloat(fromBalance)) { showAlert('Insufficient balance', 'error'); return }
         setIsSwapping(true)
         try {
             const amountInParsed = ethers.parseUnits(amountIn, fromToken.decimals)
-            const path = getPath(fromToken, toToken)
-            const amounts = await routerContract.getAmountsOut(amountInParsed, path)
-            const amountOutMin = amounts[amounts.length - 1] - (amounts[amounts.length - 1] * BigInt(Math.floor(slippage * 100))) / BigInt(10000)
             const block = await provider.getBlock('latest')
             const deadline = block.timestamp + 1800
-            const isFromETH = fromToken.address.toLowerCase() === swapAddresses.weth.toLowerCase()
-            const isToETH = toToken.address.toLowerCase() === swapAddresses.weth.toLowerCase()
-            let tx
-            if (isFromETH) {
-                showAlert('Swapping...', 'info')
-                tx = await routerContract.swapExactETHForTokens(amountOutMin, path, userAddress, deadline, { value: amountInParsed, gasLimit: 500000n })
-            } else if (isToETH) {
+
+            if (swapRoute.source === 'aggregator') {
+                // Cross-swap via Aggregator
                 const tokenContract = new ethers.Contract(fromToken.address, erc20Abi, signer)
-                const allowance = await tokenContract.allowance(userAddress, swapAddresses.router)
+                const allowance = await tokenContract.allowance(userAddress, aggregatorAddress)
                 if (allowance < amountInParsed) {
                     showAlert(`Approving ${fromToken.symbol}...`, 'info')
-                    const approveTx = await tokenContract.approve(swapAddresses.router, ethers.MaxUint256)
+                    const approveTx = await tokenContract.approve(aggregatorAddress, ethers.MaxUint256)
                     await approveTx.wait()
                 }
-                showAlert('Swapping...', 'info')
-                tx = await routerContract.swapExactTokensForETH(amountInParsed, amountOutMin, path, userAddress, deadline, { gasLimit: 500000n })
+                showAlert('Cross-swapping via Aggregator...', 'info')
+                const minOut = ethers.parseUnits(
+                    (parseFloat(amountOut) * (1 - slippage / 100)).toFixed(toToken.decimals > 6 ? 18 : toToken.decimals),
+                    toToken.decimals
+                )
+                const tx = await aggregatorContract.crossSwap(
+                    fromToken.address, toToken.address, amountInParsed, minOut, swapRoute.routerInFirst,
+                    { gasLimit: 800000n }
+                )
+                await tx.wait()
+                showAlert('Cross-swap successful!', 'success')
             } else {
-                const tokenContract = new ethers.Contract(fromToken.address, erc20Abi, signer)
-                const allowance = await tokenContract.allowance(userAddress, swapAddresses.router)
-                if (allowance < amountInParsed) {
-                    showAlert(`Approving ${fromToken.symbol}...`, 'info')
-                    const approveTx = await tokenContract.approve(swapAddresses.router, ethers.MaxUint256)
-                    await approveTx.wait()
+                // Direct swap via router (custom or Uniswap)
+                const router = swapRoute.router
+                const routerAddr = swapRoute.source === 'custom' ? customAddresses.router : uniswapAddresses.router
+                const path = swapRoute.path
+                const amounts = await router.getAmountsOut(amountInParsed, path)
+                const amountOutMin = amounts[amounts.length - 1] - (amounts[amounts.length - 1] * BigInt(Math.floor(slippage * 100))) / BigInt(10000)
+
+                const isFromETH = fromToken.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
+                const isToETH = toToken.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
+
+                let tx
+                if (isFromETH) {
+                    showAlert('Swapping...', 'info')
+                    tx = await router.swapExactETHForTokens(amountOutMin, path, userAddress, deadline, { value: amountInParsed, gasLimit: 500000n })
+                } else if (isToETH) {
+                    const tokenContract = new ethers.Contract(fromToken.address, erc20Abi, signer)
+                    const allowance = await tokenContract.allowance(userAddress, routerAddr)
+                    if (allowance < amountInParsed) {
+                        showAlert(`Approving ${fromToken.symbol}...`, 'info')
+                        const approveTx = await tokenContract.approve(routerAddr, ethers.MaxUint256)
+                        await approveTx.wait()
+                    }
+                    showAlert('Swapping...', 'info')
+                    tx = await router.swapExactTokensForETH(amountInParsed, amountOutMin, path, userAddress, deadline, { gasLimit: 500000n })
+                } else {
+                    const tokenContract = new ethers.Contract(fromToken.address, erc20Abi, signer)
+                    const allowance = await tokenContract.allowance(userAddress, routerAddr)
+                    if (allowance < amountInParsed) {
+                        showAlert(`Approving ${fromToken.symbol}...`, 'info')
+                        const approveTx = await tokenContract.approve(routerAddr, ethers.MaxUint256)
+                        await approveTx.wait()
+                    }
+                    showAlert('Swapping...', 'info')
+                    tx = await router.swapExactTokensForTokens(amountInParsed, amountOutMin, path, userAddress, deadline, { gasLimit: 500000n })
                 }
-                showAlert('Swapping...', 'info')
-                tx = await routerContract.swapExactTokensForTokens(amountInParsed, amountOutMin, path, userAddress, deadline, { gasLimit: 500000n })
+                await tx.wait()
+                showAlert('Swap successful!', 'success')
             }
-            await tx.wait()
-            showAlert('Swap successful!', 'success')
-            setAmountIn(''); setAmountOut('')
+
+            setAmountIn(''); setAmountOut(''); setSwapRoute(null)
             refreshBalances()
         } catch (err) {
             if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
@@ -134,6 +297,11 @@ export default function SwapTab({ showAlert, slippage }) {
         return <img src={token.logoURI} alt={token.symbol} className={s.tokenIcon} onError={() => setErr(true)} />
     }
 
+    const routeLabel = swapRoute?.source === 'aggregator' ? 'Cross-swap (Aggregator)'
+        : swapRoute?.source === 'uniswap' ? 'Uniswap V2'
+            : swapRoute?.source === 'custom' ? 'Nde-FPL DEX'
+                : null
+
     return (
         <>
             <div>
@@ -144,13 +312,12 @@ export default function SwapTab({ showAlert, slippage }) {
                         <div className={s.balanceRow}>
                             <button className={s.percentBtn} onClick={() => setAmountIn((parseFloat(fromBalance) * 0.5).toString())}>50%</button>
                             <button className={s.percentBtn} onClick={() => setAmountIn(fromBalance)}>MAX</button>
-                            <span><img src="/wallet.svg" alt="" className={s.walletIcon} /> {fromLoading ? '...' : `${fromFmt} ${fromToken.symbol}`}</span>
+                            <span><img src="/wallet.svg" alt="" className={s.walletIcon} /> {fromLoading ? '...' : `${fromFmt} ${fromToken?.symbol || ''}`}</span>
                         </div>
                     </div>
                     <div className={s.tokenRow}>
                         <button className={s.tokenBtn} onClick={() => setSelectingFor('from')}>
-                            <TokenIcon token={fromToken} />
-                            <span>{fromToken.symbol}</span>
+                            {fromToken ? <><TokenIcon token={fromToken} /><span>{fromToken.symbol}</span></> : <span>Select token</span>}
                             <img src="/down-arrow.svg" alt="" className={s.chevronIcon} />
                         </button>
                         <input className={s.amountInput} type="text" value={amountIn} onChange={e => setAmountIn(e.target.value)} placeholder="0.00" />
@@ -188,8 +355,8 @@ export default function SwapTab({ showAlert, slippage }) {
             )}
 
             <button className={s.actionBtn} onClick={handleSwap}
-                disabled={!signer || !fromToken || !toToken || !amountIn || isSwapping || (swapDetails && parseFloat(swapDetails.priceImpact) > 20)}>
-                {!signer ? 'Connect Wallet' : isSwapping ? 'Swapping...' : swapDetails && parseFloat(swapDetails.priceImpact) > 20 ? 'Price Impact Too High' : 'Swap'}
+                disabled={!signer || !fromToken || !toToken || !amountIn || !amountOut || isSwapping || (swapDetails && parseFloat(swapDetails.priceImpact) > 20)}>
+                {!signer ? 'Connect Wallet' : isSwapping ? 'Swapping...' : !amountOut && amountIn ? 'No route found' : swapDetails && parseFloat(swapDetails.priceImpact) > 20 ? 'Price Impact Too High' : 'Swap'}
             </button>
 
             {swapDetails && (
@@ -197,15 +364,30 @@ export default function SwapTab({ showAlert, slippage }) {
                     <div className={s.detailRow}><span className={s.detailLabel}>Min received</span><span className={s.detailValue}>{swapDetails.minReceived} {toToken.symbol}</span></div>
                     <div className={s.detailRow}><span className={s.detailLabel}>Price Impact</span><span className={parseFloat(swapDetails.priceImpact) > 5 ? s.impactBad : s.impactGood}>{swapDetails.priceImpact}%</span></div>
                     <div className={s.detailRow}><span className={s.detailLabel}>LP Fee</span><span className={s.detailValue}>{swapDetails.lpFee} {fromToken.symbol}</span></div>
-                    {swapDetails.route?.length > 2 && (
+                    {routeLabel && (
+                        <div className={s.detailRow}><span className={s.detailLabel}>Route</span><span className={s.detailValue} style={{ color: 'var(--accent-primary)' }}>{routeLabel}</span></div>
+                    )}
+                    {swapDetails.route?.length > 2 && swapDetails.source !== 'aggregator' && (
                         <div className={s.routeRow}>
-                            <span className={s.detailLabel}>Route</span>
+                            <span className={s.detailLabel}>Path</span>
                             <div className={s.routePath}>
                                 <TokenIcon token={fromToken} /><span className={s.routeSymbol}>{fromToken.symbol}</span>
                                 <img src="/right-swap.svg" alt="→" className={s.routeArrowIcon} />
                                 <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png" alt="ETH" className={s.tokenIcon} /><span className={s.routeSymbol}>ETH</span>
                                 <img src="/right-swap.svg" alt="→" className={s.routeArrowIcon} />
                                 <TokenIcon token={toToken} /><span className={s.routeSymbol}>{toToken.symbol}</span>
+                            </div>
+                        </div>
+                    )}
+                    {swapDetails.source === 'aggregator' && (
+                        <div className={s.routeRow}>
+                            <span className={s.detailLabel}>Path</span>
+                            <div className={s.routePath}>
+                                <TokenIcon token={fromToken} />
+                                <img src="/right-swap.svg" alt="→" className={s.routeArrowIcon} />
+                                <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png" alt="ETH" className={s.tokenIcon} />
+                                <img src="/right-swap.svg" alt="→" className={s.routeArrowIcon} />
+                                <TokenIcon token={toToken} />
                             </div>
                         </div>
                     )}

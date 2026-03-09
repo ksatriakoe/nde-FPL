@@ -1,7 +1,8 @@
 import { useMemo, useState, useEffect } from 'react'
 import { ethers } from 'ethers'
+import { createPortal } from 'react-dom'
 import { useWeb3 } from '../../hooks/useWeb3'
-import { swapAddresses, erc20Abi, factoryAbi, pairAbi, defaultSwapToken, swapTokenList } from '../../services/swapConstants'
+import { WETH_ADDRESS, erc20Abi, factoryAbi, pairAbi, defaultSwapToken, swapTokenList, customAddresses, listingManagerAddress, listingManagerAbi } from '../../services/swapConstants'
 import TokenSelectModal from './TokenSelectModal'
 import { useTokenBalance } from '../../hooks/useTokenBalance'
 import { formatBalance, formatSwapAmount } from '../../services/formatBalance'
@@ -55,8 +56,39 @@ function PositionCard({ position, isExpanded, onToggle, getDetails, onAddMore, o
     )
 }
 
+/* ===== LISTING FEE MODAL ===== */
+function ListingFeeModal({ fee, feeSymbol, onPay, onClose, isPaying }) {
+    const cleanFee = formatSwapAmount(fee)
+    return createPortal(
+        <>
+            <div className={s.modalBackdrop} onClick={onClose} />
+            <div className={s.modalCenter}>
+                <div className={s.modal}>
+                    <div className={s.modalHeader}>
+                        <span className={s.modalTitle}>New Pair</span>
+                        <button className={s.modalClose} onClick={onClose}>&times;</button>
+                    </div>
+                    <div className={s.modalBody}>
+                        <div className={s.listingFeeInfo}>
+                            <p className={s.listingFeeText}>This pair doesn't exist yet. A one-time listing fee is required to create it.</p>
+                            <div className={s.listingFeeAmount}>
+                                <span className={s.listingFeeValue}>{cleanFee}</span>
+                                <span className={s.listingFeeSymbol}>{feeSymbol}</span>
+                            </div>
+                        </div>
+                        <button className={s.actionBtn} onClick={onPay} disabled={isPaying} style={{ width: '100%' }}>
+                            {isPaying ? 'Creating pair...' : `Pay ${cleanFee} ${feeSymbol} & Create Pair`}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </>,
+        document.body
+    )
+}
+
 export default function PoolTab({ showAlert, slippage }) {
-    const { signer, userAddress, routerContract, provider, refreshBalances } = useWeb3()
+    const { signer, userAddress, routerContract, customFactory, provider, refreshBalances, listingManagerContract } = useWeb3()
     const [view, setView] = useState('list')
     const [tokenA, setTokenA] = useState(defaultSwapToken)
     const [tokenB, setTokenB] = useState(null)
@@ -74,8 +106,20 @@ export default function PoolTab({ showAlert, slippage }) {
     const [isRemoving, setIsRemoving] = useState(false)
     const [removeEstimate, setRemoveEstimate] = useState(null)
 
+    // Listing fee state
+    const [showListingFee, setShowListingFee] = useState(false)
+    const [listingFee, setListingFee] = useState('0')
+    const [isPayingFee, setIsPayingFee] = useState(false)
+
     const { balance: balanceA, formattedBalance: balAFmt } = useTokenBalance(tokenA?.address)
     const { formattedBalance: balBFmt } = useTokenBalance(tokenB?.address)
+
+    // Truncate decimal string to max allowed decimals (prevents parseUnits overflow for USDC etc.)
+    const truncDecimals = (val, decimals) => {
+        if (!val || !val.includes('.')) return val
+        const [int, frac] = val.split('.')
+        return frac.length <= decimals ? val : `${int}.${frac.slice(0, decimals)}`
+    }
 
     useEffect(() => { if (tokenA && tokenB && (amountA || amountB) && provider) calculatePoolQuote() }, [amountA, amountB, tokenA, tokenB, activeInput])
     useEffect(() => { if (signer) loadLiquidityPositions() }, [signer])
@@ -83,18 +127,18 @@ export default function PoolTab({ showAlert, slippage }) {
 
     const calculatePoolQuote = async () => {
         try {
-            const factoryContract = new ethers.Contract(swapAddresses.factory, factoryAbi, provider)
-            const pairAddress = await factoryContract.getPair(tokenA.address, tokenB.address)
+            if (!customFactory) return
+            const pairAddress = await customFactory.getPair(tokenA.address, tokenB.address)
             if (pairAddress === ethers.ZeroAddress) { setPoolInfo(null); return }
             const pairContract = new ethers.Contract(pairAddress, pairAbi, provider)
             const reserves = await pairContract.getReserves()
             const token0Address = await pairContract.token0()
             const [reserve0, reserve1] = token0Address.toLowerCase() === tokenA.address.toLowerCase() ? [reserves[0], reserves[1]] : [reserves[1], reserves[0]]
             if (activeInput === 'A' && amountA) {
-                const parsed = ethers.parseUnits(amountA, tokenA.decimals)
+                const parsed = ethers.parseUnits(truncDecimals(amountA, tokenA.decimals), tokenA.decimals)
                 setAmountB(ethers.formatUnits((parsed * reserve1) / reserve0, tokenB.decimals))
             } else if (activeInput === 'B' && amountB) {
-                const parsed = ethers.parseUnits(amountB, tokenB.decimals)
+                const parsed = ethers.parseUnits(truncDecimals(amountB, tokenB.decimals), tokenB.decimals)
                 setAmountA(ethers.formatUnits((parsed * reserve0) / reserve1, tokenA.decimals))
             }
             const priceAPerB = parseFloat(ethers.formatUnits(reserve1, tokenB.decimals)) / parseFloat(ethers.formatUnits(reserve0, tokenA.decimals))
@@ -127,14 +171,12 @@ export default function PoolTab({ showAlert, slippage }) {
     }
 
     const loadLiquidityPositions = async () => {
-        if (!signer || !provider || !userAddress) return
+        if (!signer || !provider || !userAddress || !customFactory) return
         setIsScanning(true)
         try {
-            const factoryContract = new ethers.Contract(swapAddresses.factory, factoryAbi, provider)
             const positions = []
             const customTokens = JSON.parse(localStorage.getItem('customTokens') || '[]')
             const allTokens = [defaultSwapToken, ...swapTokenList, ...customTokens]
-            // Deduplicate by address
             const seen = new Set()
             const uniqueTokens = allTokens.filter(t => {
                 const key = t.address.toLowerCase()
@@ -145,7 +187,7 @@ export default function PoolTab({ showAlert, slippage }) {
             for (let i = 0; i < uniqueTokens.length; i++) {
                 for (let j = i + 1; j < uniqueTokens.length; j++) {
                     try {
-                        const pairAddress = await factoryContract.getPair(uniqueTokens[i].address, uniqueTokens[j].address)
+                        const pairAddress = await customFactory.getPair(uniqueTokens[i].address, uniqueTokens[j].address)
                         if (pairAddress !== ethers.ZeroAddress) {
                             const pairContract = new ethers.Contract(pairAddress, pairAbi, provider)
                             const lpBalance = await pairContract.balanceOf(userAddress)
@@ -161,30 +203,89 @@ export default function PoolTab({ showAlert, slippage }) {
 
     const handleAddLiquidity = async () => {
         if (!signer || !tokenA || !tokenB || !amountA || !amountB) return
+
+        // Check if pair exists — if not, show listing fee modal
+        if (customFactory) {
+            try {
+                const pairAddr = await customFactory.getPair(tokenA.address, tokenB.address)
+                if (pairAddr === ethers.ZeroAddress) {
+                    // Pair doesn't exist — need listing fee
+                    if (listingManagerContract) {
+                        const fee = await listingManagerContract.listingFee()
+                        const feeToken = swapTokenList.find(t => t.symbol === 'TEST')
+                        setListingFee(ethers.formatUnits(fee, feeToken?.decimals || 18))
+                        setShowListingFee(true)
+                        return
+                    } else {
+                        showAlert('ListingManager not configured', 'error')
+                        return
+                    }
+                }
+            } catch (e) {
+                console.error('Pair check error:', e)
+            }
+        }
+
+        await doAddLiquidity()
+    }
+
+    const handlePayListingFee = async () => {
+        if (!listingManagerContract || !tokenA || !tokenB) return
+        setIsPayingFee(true)
+        try {
+            const fee = await listingManagerContract.listingFee()
+            const feeToken = swapTokenList.find(t => t.symbol === 'TEST')
+            if (!feeToken) { showAlert('TEST token not found', 'error'); return }
+
+            // Approve TEST to ListingManager
+            const testContract = new ethers.Contract(feeToken.address, erc20Abi, signer)
+            const allowance = await testContract.allowance(userAddress, listingManagerAddress)
+            if (allowance < fee) {
+                showAlert('Approving TEST for listing fee...', 'info')
+                const approveTx = await testContract.approve(listingManagerAddress, ethers.MaxUint256)
+                await approveTx.wait()
+            }
+
+            // Pay fee and create pair
+            showAlert('Paying listing fee & creating pair...', 'info')
+            const tx = await listingManagerContract.listToken(tokenA.address, tokenB.address)
+            await tx.wait()
+            showAlert('Pair created! Now add liquidity.', 'success')
+            setShowListingFee(false)
+
+            // Now add liquidity
+            await doAddLiquidity()
+        } catch (err) {
+            if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
+            else showAlert(`Listing failed: ${err.reason || err.shortMessage || 'Unknown error'}`, 'error')
+        } finally { setIsPayingFee(false) }
+    }
+
+    const doAddLiquidity = async () => {
         setIsAdding(true)
         try {
-            const amountADesired = ethers.parseUnits(amountA, tokenA.decimals)
-            const amountBDesired = ethers.parseUnits(amountB, tokenB.decimals)
+            const amountADesired = ethers.parseUnits(truncDecimals(amountA, tokenA.decimals), tokenA.decimals)
+            const amountBDesired = ethers.parseUnits(truncDecimals(amountB, tokenB.decimals), tokenB.decimals)
             const slip = BigInt(Math.floor(slippage * 100))
             const amountAMin = amountADesired - (amountADesired * slip) / BigInt(10000)
             const amountBMin = amountBDesired - (amountBDesired * slip) / BigInt(10000)
             const block = await provider.getBlock('latest')
             const deadline = block.timestamp + 1800
-            const isAETH = tokenA.address.toLowerCase() === swapAddresses.weth.toLowerCase()
-            const isBETH = tokenB.address.toLowerCase() === swapAddresses.weth.toLowerCase()
+            const isAETH = tokenA.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
+            const isBETH = tokenB.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
             if (isAETH || isBETH) {
                 const [, otherToken, nativeAmount, otherAmount, otherAmountMin] = isAETH
                     ? [tokenA, tokenB, amountADesired, amountBDesired, amountBMin]
                     : [tokenB, tokenA, amountBDesired, amountADesired, amountAMin]
-                if (!isAETH) { const tc = new ethers.Contract(tokenA.address, erc20Abi, signer); const al = await tc.allowance(userAddress, swapAddresses.router); if (al < amountADesired) { showAlert(`Approving ${tokenA.symbol}...`, 'info'); await (await tc.approve(swapAddresses.router, ethers.MaxUint256)).wait() } }
-                if (!isBETH) { const tc = new ethers.Contract(tokenB.address, erc20Abi, signer); const al = await tc.allowance(userAddress, swapAddresses.router); if (al < amountBDesired) { showAlert(`Approving ${tokenB.symbol}...`, 'info'); await (await tc.approve(swapAddresses.router, ethers.MaxUint256)).wait() } }
+                if (!isAETH) { const tc = new ethers.Contract(tokenA.address, erc20Abi, signer); const al = await tc.allowance(userAddress, customAddresses.router); if (al < amountADesired) { showAlert(`Approving ${tokenA.symbol}...`, 'info'); await (await tc.approve(customAddresses.router, ethers.MaxUint256)).wait() } }
+                if (!isBETH) { const tc = new ethers.Contract(tokenB.address, erc20Abi, signer); const al = await tc.allowance(userAddress, customAddresses.router); if (al < amountBDesired) { showAlert(`Approving ${tokenB.symbol}...`, 'info'); await (await tc.approve(customAddresses.router, ethers.MaxUint256)).wait() } }
                 showAlert('Adding liquidity...', 'info')
                 const tx = await routerContract.addLiquidityETH(otherToken.address, otherAmount, otherAmountMin, nativeAmount - (nativeAmount * slip) / BigInt(10000), userAddress, deadline, { value: nativeAmount, gasLimit: 5000000n })
                 await tx.wait()
                 showAlert('Liquidity added!', 'success')
             } else {
-                const tcA = new ethers.Contract(tokenA.address, erc20Abi, signer); if ((await tcA.allowance(userAddress, swapAddresses.router)) < amountADesired) { showAlert(`Approving ${tokenA.symbol}...`, 'info'); await (await tcA.approve(swapAddresses.router, ethers.MaxUint256)).wait() }
-                const tcB = new ethers.Contract(tokenB.address, erc20Abi, signer); if ((await tcB.allowance(userAddress, swapAddresses.router)) < amountBDesired) { showAlert(`Approving ${tokenB.symbol}...`, 'info'); await (await tcB.approve(swapAddresses.router, ethers.MaxUint256)).wait() }
+                const tcA = new ethers.Contract(tokenA.address, erc20Abi, signer); if ((await tcA.allowance(userAddress, customAddresses.router)) < amountADesired) { showAlert(`Approving ${tokenA.symbol}...`, 'info'); await (await tcA.approve(customAddresses.router, ethers.MaxUint256)).wait() }
+                const tcB = new ethers.Contract(tokenB.address, erc20Abi, signer); if ((await tcB.allowance(userAddress, customAddresses.router)) < amountBDesired) { showAlert(`Approving ${tokenB.symbol}...`, 'info'); await (await tcB.approve(customAddresses.router, ethers.MaxUint256)).wait() }
                 showAlert('Adding liquidity...', 'info')
                 const tx = await routerContract.addLiquidity(tokenA.address, tokenB.address, amountADesired, amountBDesired, amountAMin, amountBMin, userAddress, deadline, { gasLimit: 5000000n })
                 await tx.wait()
@@ -226,24 +327,24 @@ export default function PoolTab({ showAlert, slippage }) {
             const block = await provider.getBlock('latest')
             const deadline = block.timestamp + 1800
             const pairContract = new ethers.Contract(selectedPosition.pairAddress, pairAbi, signer)
-            const allowance = await pairContract.allowance(userAddress, swapAddresses.router)
-            if (allowance < liquidity) { showAlert('Approving LP tokens...', 'info'); await (await pairContract.approve(swapAddresses.router, ethers.MaxUint256)).wait() }
-            const isAETH = selectedPosition.tokenA.address.toLowerCase() === swapAddresses.weth.toLowerCase()
-            const isBETH = selectedPosition.tokenB.address.toLowerCase() === swapAddresses.weth.toLowerCase()
+            const allowance = await pairContract.allowance(userAddress, customAddresses.router)
+            if (allowance < liquidity) { showAlert('Approving LP tokens...', 'info'); await (await pairContract.approve(customAddresses.router, ethers.MaxUint256)).wait() }
+            const isAETH = selectedPosition.tokenA.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
+            const isBETH = selectedPosition.tokenB.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
             showAlert('Removing liquidity...', 'info')
             let tx
             if (isAETH || isBETH) {
                 const [tokenAddress, tokenMin, ethMin] = isAETH ? [selectedPosition.tokenB.address, amBSlip, amASlip] : [selectedPosition.tokenA.address, amASlip, amBSlip]
-                tx = await routerContract.removeLiquidityETH(tokenAddress, liquidity, tokenMin, ethMin, userAddress, deadline)
+                tx = await routerContract.removeLiquidityETH(tokenAddress, liquidity, tokenMin, ethMin, userAddress, deadline, { gasLimit: 5000000n })
             } else {
-                tx = await routerContract.removeLiquidity(selectedPosition.tokenA.address, selectedPosition.tokenB.address, liquidity, amASlip, amBSlip, userAddress, deadline)
+                tx = await routerContract.removeLiquidity(selectedPosition.tokenA.address, selectedPosition.tokenB.address, liquidity, amASlip, amBSlip, userAddress, deadline, { gasLimit: 5000000n })
             }
             await tx.wait()
             showAlert('Liquidity removed!', 'success')
             setRemovePercent(0); setRemoveEstimate(null); refreshBalances(); loadLiquidityPositions(); setView('list'); setSelectedPosition(null)
         } catch (err) {
             if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
-            else showAlert('Failed to remove liquidity', 'error')
+            else showAlert(`Failed: ${err.reason || err.shortMessage || 'Unknown error'}`, 'error')
         } finally { setIsRemoving(false) }
     }
 
@@ -356,6 +457,17 @@ export default function PoolTab({ showAlert, slippage }) {
                             setSelectingFor(null)
                         }}
                         excludeToken={selectingFor === 'poolA' ? tokenB : tokenA}
+                    />
+                )}
+
+                {/* Listing Fee Modal */}
+                {showListingFee && (
+                    <ListingFeeModal
+                        fee={listingFee}
+                        feeSymbol="TEST"
+                        onPay={handlePayListingFee}
+                        onClose={() => setShowListingFee(false)}
+                        isPaying={isPayingFee}
                     />
                 )}
             </>

@@ -1,7 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { useAccount } from 'wagmi'
-import { swapAddresses, routerAbi } from '../services/swapConstants'
+import {
+    customAddresses, uniswapAddresses, WETH_ADDRESS,
+    routerAbi, factoryAbi, pairAbi, aggregatorAbi, listingManagerAbi,
+    aggregatorAddress, listingManagerAddress,
+} from '../services/swapConstants'
 
 const Web3Context = createContext(null)
 
@@ -17,8 +21,18 @@ export function Web3Provider({ children }) {
     const [provider, setProvider] = useState(null)
     const [signer, setSigner] = useState(null)
     const [userAddress, setUserAddress] = useState(null)
-    const [routerContract, setRouterContract] = useState(null)
     const [balanceRefreshTrigger, setBalanceRefreshTrigger] = useState(0)
+
+    // Dual router contracts
+    const [customRouter, setCustomRouter] = useState(null)
+    const [uniswapRouter, setUniswapRouter] = useState(null)
+    const [customFactory, setCustomFactory] = useState(null)
+    const [uniswapFactory, setUniswapFactory] = useState(null)
+    const [aggregatorContract, setAggregatorContract] = useState(null)
+    const [listingManagerContract, setListingManagerContract] = useState(null)
+
+    // Legacy compat
+    const [routerContract, setRouterContract] = useState(null)
 
     useEffect(() => {
         if (isConnected && address && window.ethereum) {
@@ -27,13 +41,37 @@ export function Web3Provider({ children }) {
                 setProvider(web3Provider)
                 setSigner(web3Signer)
                 setUserAddress(address)
-                const router = new ethers.Contract(swapAddresses.router, routerAbi, web3Signer)
-                setRouterContract(router)
+
+                // Custom router & factory
+                const cRouter = new ethers.Contract(customAddresses.router, routerAbi, web3Signer)
+                setCustomRouter(cRouter)
+                setRouterContract(cRouter) // legacy compat
+                setCustomFactory(new ethers.Contract(customAddresses.factory, factoryAbi, web3Provider))
+
+                // Uniswap official router & factory
+                setUniswapRouter(new ethers.Contract(uniswapAddresses.router, routerAbi, web3Signer))
+                setUniswapFactory(new ethers.Contract(uniswapAddresses.factory, factoryAbi, web3Provider))
+
+                // Aggregator
+                if (aggregatorAddress !== ethers.ZeroAddress) {
+                    setAggregatorContract(new ethers.Contract(aggregatorAddress, aggregatorAbi, web3Signer))
+                }
+
+                // ListingManager
+                if (listingManagerAddress !== ethers.ZeroAddress) {
+                    setListingManagerContract(new ethers.Contract(listingManagerAddress, listingManagerAbi, web3Signer))
+                }
             }).catch(console.error)
         } else if (!isConnected) {
             setProvider(null)
             setSigner(null)
             setUserAddress(null)
+            setCustomRouter(null)
+            setUniswapRouter(null)
+            setCustomFactory(null)
+            setUniswapFactory(null)
+            setAggregatorContract(null)
+            setListingManagerContract(null)
             setRouterContract(null)
         }
     }, [isConnected, address])
@@ -42,10 +80,60 @@ export function Web3Provider({ children }) {
         setBalanceRefreshTrigger(prev => prev + 1)
     }
 
+    /**
+     * Find the right router for a given token pair.
+     * Skips pairs with negligible liquidity (e.g. after all LP removed).
+     * Uses totalSupply check instead of reserves — works for all token decimals.
+     * Returns: { router, factory, source: 'custom'|'uniswap' } or null
+     */
+    const MIN_LP_SUPPLY = 10n ** 9n // Skip pools with LP totalSupply below this
+
+    const findRouter = async (tokenA, tokenB) => {
+        if (!customFactory || !uniswapFactory || !provider) return null
+        try {
+            // Check custom factory first
+            const customPair = await customFactory.getPair(tokenA, tokenB)
+            if (customPair !== ethers.ZeroAddress) {
+                const pc = new ethers.Contract(customPair, pairAbi, provider)
+                const totalSupply = await pc.totalSupply()
+                if (totalSupply > MIN_LP_SUPPLY) {
+                    return { router: customRouter, factory: customFactory, source: 'custom' }
+                }
+            }
+            // Check Uniswap factory
+            const uniPair = await uniswapFactory.getPair(tokenA, tokenB)
+            if (uniPair !== ethers.ZeroAddress) {
+                const pc = new ethers.Contract(uniPair, pairAbi, provider)
+                const totalSupply = await pc.totalSupply()
+                if (totalSupply > MIN_LP_SUPPLY) {
+                    return { router: uniswapRouter, factory: uniswapFactory, source: 'uniswap' }
+                }
+            }
+        } catch { /* ignore */ }
+        return null
+    }
+
+    /**
+     * Check if a cross-swap route is available via the Aggregator.
+     * Returns: { routerInFirst: 0|1, source: 'aggregator' } or null
+     */
+    const findCrossRoute = async (tokenIn, tokenOut) => {
+        if (!aggregatorContract) return null
+        try {
+            const route = await aggregatorContract.findCrossRoute(tokenIn, tokenOut)
+            if (route < 2) return { routerInFirst: route, source: 'aggregator' }
+        } catch { /* ignore */ }
+        return null
+    }
+
     return (
         <Web3Context.Provider value={{
-            provider, signer, userAddress, routerContract,
+            provider, signer, userAddress,
+            customRouter, uniswapRouter, routerContract,
+            customFactory, uniswapFactory,
+            aggregatorContract, listingManagerContract,
             refreshBalances, balanceRefreshTrigger,
+            findRouter, findCrossRoute,
         }}>
             {children}
         </Web3Context.Provider>

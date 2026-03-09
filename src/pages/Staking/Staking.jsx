@@ -6,7 +6,7 @@ import { formatSwapAmount } from '../../services/formatBalance'
 import { stakingAddress, stakingAbi, erc20Abi } from '../../services/swapConstants'
 import s from './Staking.module.css'
 
-const TOKEN_ADDRESS = '0x91F193c3F24BaE45A0c592E7833354DE00A872C2'
+const TOKEN_ADDRESS = '0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C' // TEST on Base
 const TOKEN_INFO = {
     address: TOKEN_ADDRESS,
     name: 'TEST Token',
@@ -23,7 +23,7 @@ function TokenIcon({ token, size }) {
     return <img src={token.logoURI} alt={token.symbol} className={cls} onError={() => setErr(true)} />
 }
 
-const SEPOLIA_RPC = 'https://ethereum-sepolia-rpc.publicnode.com'
+const BASE_RPC = 'https://base-rpc.publicnode.com'
 
 function useStakingContract(signer, provider, userAddress) {
     const [data, setData] = useState({
@@ -43,22 +43,38 @@ function useStakingContract(signer, provider, userAddress) {
         // Use connected provider if available, otherwise fallback to public RPC
         let readProvider = provider
         if (!readProvider) {
-            readProvider = new ethers.JsonRpcProvider(SEPOLIA_RPC, {
-                chainId: 11155111,
-                name: 'sepolia',
+            readProvider = new ethers.JsonRpcProvider(BASE_RPC, {
+                chainId: 8453,
+                name: 'base',
             }, { staticNetwork: true })
         }
         try {
             const contract = new ethers.Contract(stakingAddress, stakingAbi, readProvider)
-            const account = userAddress || ethers.ZeroAddress
-            const info = await contract.getStakeInfo(account)
-            setData({
-                totalStaked: ethers.formatEther(info._totalStaked),
-                userStaked: ethers.formatEther(info._userStaked),
-                userRewards: ethers.formatEther(info._userRewards),
-                apyBasisPoints: Number(info._apyBasisPoints),
-                minStake: ethers.formatEther(info._minStake),
-            })
+            if (userAddress) {
+                const info = await contract.getStakeInfo(userAddress)
+                setData({
+                    totalStaked: ethers.formatEther(info._totalStaked),
+                    userStaked: ethers.formatEther(info._userStaked),
+                    userRewards: ethers.formatEther(info._userRewards),
+                    apyBasisPoints: Number(info._apyBasisPoints),
+                    minStake: ethers.formatEther(info._minStake),
+                })
+            } else {
+                // No wallet connected — fetch public data only
+                const [totalStaked, apyBP, minStake] = await Promise.all([
+                    contract.totalStaked(),
+                    contract.apyBasisPoints(),
+                    contract.minStake(),
+                ])
+                setData(prev => ({
+                    ...prev,
+                    totalStaked: ethers.formatEther(totalStaked),
+                    apyBasisPoints: Number(apyBP),
+                    minStake: ethers.formatEther(minStake),
+                    userStaked: '0',
+                    userRewards: '0',
+                }))
+            }
         } catch (err) {
             console.error('Staking data fetch error:', err)
         }

@@ -136,7 +136,7 @@ export default function Subscribe() {
                     {copied && <span className={styles.copiedToast}>Copied!</span>}
                     <div className={styles.walletMeta}>
                         <span>{balance} {sym}</span>
-                        <span>Sepolia Testnet</span>
+                        <span>Base Mainnet</span>
                     </div>
                 </div>
             )}
@@ -200,7 +200,7 @@ export default function Subscribe() {
                             {(approveTxHash || payTxHash) && (
                                 <div className={styles.txLink}>
                                     <span>{payTxHash ? 'Payment' : 'Approval'}: </span>
-                                    <a href={`https://sepolia.etherscan.io/tx/${payTxHash || approveTxHash}`}
+                                    <a href={`https://basescan.org/tx/${payTxHash || approveTxHash}`}
                                         target="_blank" rel="noopener noreferrer">
                                         {(payTxHash || approveTxHash)?.slice(0, 12)}…{(payTxHash || approveTxHash)?.slice(-8)}
                                     </a>

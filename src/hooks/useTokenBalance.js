@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { useWeb3 } from './useWeb3'
-import { swapAddresses, erc20Abi } from '../services/swapConstants'
+import { WETH_ADDRESS, erc20Abi } from '../services/swapConstants'
 import { formatBalance } from '../services/formatBalance'
 
 export function useTokenBalance(tokenAddress) {
@@ -23,7 +23,7 @@ export function useTokenBalance(tokenAddress) {
                 const web3Provider = new ethers.BrowserProvider(window.ethereum)
                 const checksumAddress = ethers.getAddress(tokenAddress)
 
-                if (checksumAddress.toLowerCase() === swapAddresses.weth.toLowerCase()) {
+                if (checksumAddress.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
                     const balanceHex = await window.ethereum.request({
                         method: 'eth_getBalance',
                         params: [userAddress, 'latest'],

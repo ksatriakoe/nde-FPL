@@ -1,12 +1,35 @@
 // =============================================================
-// UniswapV2 — Deployed Contract Addresses
+// Custom UniswapV2 — Deployed on Base Mainnet
+// Replace these with your deployed contract addresses
 // =============================================================
-export const swapAddresses = {
-    factory: '0x1EEd1a72fB7EFb4D695dd004B9BE017D6465E44F',
-    weth: '0x129c44a4b21B8Da08D33C457769707250B43eb6D',
-    router: '0xde15936D7d0C45058536bD0d5C270DAa488c3F3E',
-    multicall: '0xe2C52d3Bfb69a0Bff9bA6a1a1C28e24BE23AAE16',
+export const customAddresses = {
+    factory: '0xf42548Ba89dc2314408f44b16506F88769abDED5',
+    router: '0x313049192Cb0d4027A0De419a1dD169F9eFB48c7',
 }
+
+// =============================================================
+// Uniswap V2 Official — Base Mainnet
+// =============================================================
+export const uniswapAddresses = {
+    factory: '0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6',
+    router: '0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24',
+}
+
+// =============================================================
+// Shared
+// =============================================================
+export const WETH_ADDRESS = '0x4200000000000000000000000000000000000006' // Base WETH
+
+// =============================================================
+// Aggregator & ListingManager — Deployed on Base Mainnet
+// Replace these with your deployed contract addresses
+// =============================================================
+export const aggregatorAddress = '0xBd5447Ff67852627c841bC695b99626BB60AcC8a'
+export const listingManagerAddress = '0x3EF993BEe30c99A840c4b61fc1c9d08FCEdA3857'
+
+// =============================================================
+// ABIs
+// =============================================================
 
 export const erc20Abi = [
     'function approve(address spender, uint256 amount) external returns (bool)',
@@ -32,6 +55,8 @@ export const routerAbi = [
 
 export const factoryAbi = [
     'function getPair(address tokenA, address tokenB) external view returns (address pair)',
+    'function allPairsLength() external view returns (uint)',
+    'function setListingManager(address _listingManager) external',
 ]
 
 export const pairAbi = [
@@ -44,30 +69,81 @@ export const pairAbi = [
     'function allowance(address owner, address spender) external view returns (uint256)',
 ]
 
-// Native token Sepolia = ETH
+export const aggregatorAbi = [
+    'function crossSwap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint8 routerInFirst) external',
+    'function getAmountsOutCross(address tokenIn, address tokenOut, uint256 amountIn, uint8 routerInFirst) external view returns (uint256)',
+    'function findCrossRoute(address tokenIn, address tokenOut) external view returns (uint8)',
+]
+
+export const listingManagerAbi = [
+    'function listToken(address token, address pairedWith) external returns (address pair)',
+    'function listTokenFree(address token, address pairedWith) external returns (address pair)',
+    'function listingFee() external view returns (uint256)',
+    'function pairExists(address tokenA, address tokenB) external view returns (bool)',
+    'function setListingFee(uint256 _fee) external',
+    'function withdrawFees(address to) external',
+]
+
+// =============================================================
+// Default token (native ETH on Base, represented as WETH)
+// =============================================================
 export const defaultSwapToken = {
-    address: '0x129c44a4b21B8Da08D33C457769707250B43eb6D', // WETH9
+    address: WETH_ADDRESS,
     symbol: 'ETH',
     name: 'Ethereum',
     logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
     decimals: 18,
 }
 
-// Token list
+// =============================================================
+// Token list — Base Mainnet
+// Replace TEST address after deploying on Base
+// =============================================================
 export const swapTokenList = [
     {
-        address: '0x91F193c3F24BaE45A0c592E7833354DE00A872C2',
+        address: '0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C',
         name: 'TEST',
         symbol: 'TEST',
         decimals: 18,
         logoURI: '/NdeFPL.png',
     },
+    {
+        address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        name: 'USD Coin',
+        symbol: 'USDC',
+        decimals: 6,
+        logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    },
+    {
+        address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+        name: 'Dai Stablecoin',
+        symbol: 'DAI',
+        decimals: 18,
+        logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png',
+    },
+    {
+        address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2',
+        name: 'Tether USD',
+        symbol: 'USDT',
+        decimals: 6,
+        logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+    },
 ]
 
 // =============================================================
-// Staking Contract
+// Legacy compatibility alias
 // =============================================================
-export const stakingAddress = '0x994b5BE0100C706ACfa962C71D23AccD139Cc7a5'
+export const swapAddresses = {
+    factory: customAddresses.factory,
+    weth: WETH_ADDRESS,
+    router: customAddresses.router,
+}
+
+// =============================================================
+// Staking Contract — Base Mainnet
+// Replace with your deployed staking contract on Base
+// =============================================================
+export const stakingAddress = '0xe2C52d3Bfb69a0Bff9bA6a1a1C28e24BE23AAE16'
 
 export const stakingAbi = [
     'function stake(uint256 amount) external',

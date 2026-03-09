@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { ethers } from 'ethers'
 import { useWeb3 } from '../../hooks/useWeb3'
-import { swapTokenList, defaultSwapToken, erc20Abi, swapAddresses } from '../../services/swapConstants'
+import { swapTokenList, defaultSwapToken, erc20Abi, WETH_ADDRESS } from '../../services/swapConstants'
 import { formatBalance } from '../../services/formatBalance'
 import s from './Swap.module.css'
 
@@ -20,7 +20,6 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
         let cancelled = false
         const query = search.trim()
         if (query.startsWith('0x') && query.length === 42) {
-            // Check if already in list
             const exists = tokens.find(t => t.address.toLowerCase() === query.toLowerCase())
             if (exists) {
                 setImportToken(null)
@@ -68,7 +67,7 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
                 const withBal = await Promise.all(all.map(async (t) => {
                     try {
                         let bal = '0'
-                        if (t.address.toLowerCase() === swapAddresses.weth.toLowerCase()) {
+                        if (t.address.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
                             const hex = await window.ethereum.request({ method: 'eth_getBalance', params: [userAddress, 'latest'] })
                             bal = ethers.formatEther(BigInt(hex))
                         } else {
@@ -155,4 +154,3 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
         document.body
     )
 }
-
