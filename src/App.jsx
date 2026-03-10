@@ -30,6 +30,7 @@ import Watchlist from './pages/Watchlist/Watchlist'
 import Subscribe from './pages/Subscribe/Subscribe'
 import Swap from './pages/Swap/Swap'
 import Staking from './pages/Staking/Staking'
+import Admin from './pages/Admin/Admin'
 
 const queryClient = new QueryClient()
 
@@ -57,6 +58,7 @@ export default function App() {
                       <Route path="/subscribe" element={<Subscribe />} />
                       <Route path="/swap" element={<Swap />} />
                       <Route path="/staking" element={<Staking />} />
+                      <Route path="/admin" element={<Admin />} />
 
                       {/* Premium features — locked behind PremiumGate */}
                       <Route path="/captain-picks" element={<PremiumGate><CaptainPicks /></PremiumGate>} />

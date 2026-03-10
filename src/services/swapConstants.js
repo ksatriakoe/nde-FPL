@@ -157,4 +157,8 @@ export const stakingAbi = [
     'function minStake() external view returns (uint256)',
     'function rewardBalance() external view returns (uint256)',
     'function stakingToken() external view returns (address)',
+    // Owner functions (admin dashboard)
+    'function setAPY(uint256 _apyBasisPoints) external',
+    'function setMinStake(uint256 _minStake) external',
+    'function depositRewards(uint256 amount) external',
 ]

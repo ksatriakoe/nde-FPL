@@ -1,0 +1,782 @@
+/* Admin Dashboard — dark navy + blue accent */
+.page {
+    padding: 2rem 1rem;
+    max-width: 620px;
+    margin: 0 auto;
+    min-height: calc(100vh - var(--header-height) - 4rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Gate (not connected / access denied) ── */
+.gateWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    max-width: 400px;
+    margin: 3rem auto;
+    gap: 0.25rem;
+}
+
+.gateIcon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 1.25rem;
+}
+
+.gateTitle {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+}
+
+.gateMsg {
+    color: var(--text-secondary);
+    margin: 0.5rem 0 1.75rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    max-width: 300px;
+}
+
+/* ── Page Header ── */
+.pageHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.25rem;
+}
+
+.pageTitle {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.pageBadge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    background: rgba(29, 78, 216, 0.15);
+    border: 1px solid rgba(29, 78, 216, 0.4);
+    color: #1D4ED8;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+/* ── Card ── */
+.card {
+    background: #0F1626;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #1D4ED8;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.cardTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e8e8f0;
+}
+
+.cardIcon {
+    font-size: 1.2rem;
+}
+
+.cardIconSvg {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+    filter: brightness(0) saturate(100%) invert(77%) sepia(5%) saturate(450%) hue-rotate(182deg);
+}
+
+/* ── Form ── */
+.formGroup {
+    margin-bottom: 0.85rem;
+}
+
+.label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.35rem;
+}
+
+.input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    color: #e8e8f0;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input:focus {
+    border-color: rgba(29, 78, 216, 0.5);
+}
+
+.input::placeholder {
+    color: #4b5563;
+}
+
+.inputMono {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    color: #e8e8f0;
+    font-size: 0.8rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.select {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    color: #e8e8f0;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+}
+
+.select:focus {
+    border-color: rgba(29, 78, 216, 0.5);
+}
+
+.formRow {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.formRow>* {
+    flex: 1;
+}
+
+/* ── Duration Presets ── */
+.durationRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.durationPresets {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.presetBtn {
+    padding: 0.5rem 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #9ca3af;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.presetBtn:hover {
+    border-color: rgba(29, 78, 216, 0.4);
+    color: #60a5fa;
+}
+
+.presetBtnActive {
+    background: rgba(29, 78, 216, 0.15);
+    border-color: rgba(29, 78, 216, 0.5);
+    color: #60a5fa;
+}
+
+.durationInput {
+    width: 80px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 0.5rem 0.6rem;
+    color: #e8e8f0;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s;
+}
+
+.durationInput:focus {
+    border-color: rgba(29, 78, 216, 0.5);
+}
+
+.durationInput::placeholder {
+    color: #4b5563;
+}
+
+/* ── Input with Unit ── */
+.inputWithUnit {
+    position: relative;
+    flex: 1;
+}
+
+.inputWithUnit .input {
+    padding-right: 3.5rem;
+}
+
+.inputUnit {
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.inputHint {
+    font-size: 0.68rem;
+    color: #4b5563;
+    margin-top: 0.3rem;
+    line-height: 1.4;
+}
+
+/* ── Buttons ── */
+.primaryBtn {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    background: #1D4ED8;
+    color: #fff;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.primaryBtn:hover:not(:disabled) {
+    background: #2563EB;
+    transform: translateY(-1px);
+}
+
+.primaryBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.dangerBtn {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.dangerBtn:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.dangerBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.secondaryBtn {
+    width: 100%;
+    padding: 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #e8e8f0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.secondaryBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── Subscriber Table ── */
+.tableWrap {
+    margin-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.85rem;
+}
+
+.tableTitle {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.tableHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.searchInput {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    color: #e8e8f0;
+    font-size: 0.72rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    outline: none;
+    width: 160px;
+    transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+    border-color: rgba(29, 78, 216, 0.5);
+}
+
+.searchInput::placeholder {
+    color: #4b5563;
+}
+
+.tableScroll {
+    max-height: 220px;
+    overflow-y: auto;
+    border-radius: 8px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    top: 0;
+    background: #0F1626;
+    z-index: 1;
+}
+
+.table td {
+    font-size: 0.78rem;
+    color: #d1d5db;
+    padding: 0.5rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    vertical-align: middle;
+}
+
+.addrCell {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.72rem;
+    color: #9ca3af;
+}
+
+.manualBadge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    background: rgba(29, 78, 216, 0.12);
+    color: #60a5fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.cryptoBadge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.emptyRow {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.8rem;
+    padding: 1.5rem 0 !important;
+}
+
+/* ── Staking Stats Grid ── */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.statItem {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+}
+
+.statLabel {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.statValue {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e8e8f0;
+    margin-top: 0.15rem;
+}
+
+.statUnit {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #6b7280;
+    margin-left: 0.2rem;
+}
+
+.statValueAccent {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1D4ED8;
+    margin-top: 0.15rem;
+}
+
+/* ── Divider ── */
+.divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin: 0.85rem 0;
+}
+
+/* ── Alerts ── */
+.alertContainer {
+    position: fixed;
+    top: 80px;
+    right: 1rem;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert {
+    background: rgba(20, 20, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.8rem;
+    color: #e8e8f0;
+    min-width: 220px;
+    max-width: 340px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.alertSuccess {
+    border-left: 3px solid #10b981;
+}
+
+.alertError {
+    border-left: 3px solid #ef4444;
+}
+
+.alertInfo {
+    border-left: 3px solid #1D4ED8;
+}
+
+.alertClose {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+    .page {
+        padding: 0.75rem 0.5rem;
+        padding-bottom: 5rem;
+        gap: 1rem;
+        min-height: calc(100vh - var(--header-height));
+        justify-content: flex-start;
+        padding-top: 1.5rem;
+    }
+
+    .card {
+        padding: 1rem;
+        border-radius: 14px;
+    }
+
+    .pageHeader {
+        gap: 0.5rem;
+    }
+
+    .pageTitle {
+        font-size: 1.15rem;
+    }
+
+    .pageBadge {
+        font-size: 0.55rem;
+        padding: 2px 8px;
+    }
+
+    /* Duration presets — bigger touch targets */
+    .presetBtn {
+        padding: 0.55rem 0.85rem;
+        font-size: 0.82rem;
+        border-radius: 8px;
+        min-height: 40px;
+    }
+
+    .durationRow {
+        flex-wrap: wrap;
+    }
+
+    /* Form rows stay horizontal on mobile for APY/MinStake */
+    .formRow {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .primaryBtn,
+    .secondaryBtn {
+        min-height: 44px;
+        font-size: 0.85rem;
+        border-radius: 10px;
+    }
+
+    /* Search */
+    .tableHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
+
+    .searchInput {
+        width: 100%;
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+    }
+
+    /* Table scroll */
+    .tableScroll {
+        max-height: 200px;
+    }
+
+    /* Stats grid */
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+    }
+
+    .statItem {
+        padding: 0.5rem 0.6rem;
+    }
+
+    .statValue,
+    .statValueAccent {
+        font-size: 0.85rem;
+    }
+
+    .statLabel {
+        font-size: 0.55rem;
+    }
+
+    /* Table */
+    .table th {
+        font-size: 0.6rem;
+        padding: 0.3rem 0.35rem;
+    }
+
+    .table td {
+        font-size: 0.72rem;
+        padding: 0.4rem 0.35rem;
+    }
+
+    .addrCell {
+        font-size: 0.62rem;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .dangerBtn {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.65rem;
+    }
+
+    /* Access gate */
+    .gateWrap {
+        padding: 3rem 1.5rem;
+        margin: 2rem auto;
+    }
+
+    .gateIcon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .gateTitle {
+        font-size: 1.15rem;
+    }
+
+    .gateMsg {
+        font-size: 0.8rem;
+    }
+
+    /* Alerts */
+    .alertContainer {
+        right: 0.5rem;
+        left: 0.5rem;
+        top: 70px;
+    }
+
+    .alert {
+        max-width: 100%;
+        min-width: auto;
+    }
+
+    /* Hints */
+    .inputHint {
+        font-size: 0.62rem;
+    }
+
+    /* Input with unit */
+    .inputUnit {
+        font-size: 0.7rem;
+    }
+
+    .input {
+        font-size: 0.82rem;
+        padding: 0.6rem 0.7rem;
+    }
+
+    .inputMono {
+        font-size: 0.72rem;
+        padding: 0.6rem 0.7rem;
+    }
+
+    .label {
+        font-size: 0.7rem;
+    }
+
+    .cardTitle {
+        font-size: 0.92rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .statsGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .statValue,
+    .statValueAccent {
+        font-size: 0.8rem;
+    }
+
+    .presetBtn {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.75rem;
+    }
+
+    .formRow {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
