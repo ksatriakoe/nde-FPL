@@ -88,7 +88,7 @@ function ListingFeeModal({ fee, feeSymbol, onPay, onClose, isPaying }) {
 }
 
 export default function PoolTab({ showAlert, slippage }) {
-    const { signer, userAddress, routerContract, customFactory, provider, refreshBalances, listingManagerContract } = useWeb3()
+    const { signer, userAddress, routerContract, customFactory, provider, readProvider, refreshBalances, listingManagerContract } = useWeb3()
     const [view, setView] = useState('list')
     const [tokenA, setTokenA] = useState(defaultSwapToken)
     const [tokenB, setTokenB] = useState(null)
@@ -121,16 +121,16 @@ export default function PoolTab({ showAlert, slippage }) {
         return frac.length <= decimals ? val : `${int}.${frac.slice(0, decimals)}`
     }
 
-    useEffect(() => { if (tokenA && tokenB && (amountA || amountB) && provider) calculatePoolQuote() }, [amountA, amountB, tokenA, tokenB, activeInput])
+    useEffect(() => { if (tokenA && tokenB && (amountA || amountB) && readProvider) calculatePoolQuote() }, [amountA, amountB, tokenA, tokenB, activeInput])
     useEffect(() => { if (signer) loadLiquidityPositions() }, [signer])
-    useEffect(() => { if (selectedPosition && removePercent > 0 && provider) calculateRemoveEstimate(); else setRemoveEstimate(null) }, [selectedPosition, removePercent])
+    useEffect(() => { if (selectedPosition && removePercent > 0 && readProvider) calculateRemoveEstimate(); else setRemoveEstimate(null) }, [selectedPosition, removePercent])
 
     const calculatePoolQuote = async () => {
         try {
             if (!customFactory) return
             const pairAddress = await customFactory.getPair(tokenA.address, tokenB.address)
             if (pairAddress === ethers.ZeroAddress) { setPoolInfo(null); return }
-            const pairContract = new ethers.Contract(pairAddress, pairAbi, provider)
+            const pairContract = new ethers.Contract(pairAddress, pairAbi, readProvider)
             const reserves = await pairContract.getReserves()
             const token0Address = await pairContract.token0()
             const [reserve0, reserve1] = token0Address.toLowerCase() === tokenA.address.toLowerCase() ? [reserves[0], reserves[1]] : [reserves[1], reserves[0]]
@@ -157,7 +157,7 @@ export default function PoolTab({ showAlert, slippage }) {
 
     const getPositionDetails = async (position) => {
         try {
-            const pairContract = new ethers.Contract(position.pairAddress, pairAbi, provider)
+            const pairContract = new ethers.Contract(position.pairAddress, pairAbi, readProvider)
             const [reserves, totalSupply, token0Address] = await Promise.all([pairContract.getReserves(), pairContract.totalSupply(), pairContract.token0()])
             const lpBalance = ethers.parseUnits(position.lpBalance, 18)
             const isToken0A = token0Address.toLowerCase() === position.tokenA.address.toLowerCase()
@@ -171,7 +171,7 @@ export default function PoolTab({ showAlert, slippage }) {
     }
 
     const loadLiquidityPositions = async () => {
-        if (!signer || !provider || !userAddress || !customFactory) return
+        if (!signer || !readProvider || !userAddress || !customFactory) return
         setIsScanning(true)
         try {
             const positions = []
@@ -189,7 +189,7 @@ export default function PoolTab({ showAlert, slippage }) {
                     try {
                         const pairAddress = await customFactory.getPair(uniqueTokens[i].address, uniqueTokens[j].address)
                         if (pairAddress !== ethers.ZeroAddress) {
-                            const pairContract = new ethers.Contract(pairAddress, pairAbi, provider)
+                            const pairContract = new ethers.Contract(pairAddress, pairAbi, readProvider)
                             const lpBalance = await pairContract.balanceOf(userAddress)
                             if (lpBalance > 0n) positions.push({ tokenA: uniqueTokens[i], tokenB: uniqueTokens[j], lpBalance: ethers.formatUnits(lpBalance, 18), pairAddress })
                         }
@@ -300,7 +300,7 @@ export default function PoolTab({ showAlert, slippage }) {
 
     const calculateRemoveEstimate = async () => {
         try {
-            const pairContract = new ethers.Contract(selectedPosition.pairAddress, pairAbi, provider)
+            const pairContract = new ethers.Contract(selectedPosition.pairAddress, pairAbi, readProvider)
             const [reserves, totalSupply, token0Address] = await Promise.all([pairContract.getReserves(), pairContract.totalSupply(), pairContract.token0()])
             const lpBalance = ethers.parseUnits(selectedPosition.lpBalance, 18)
             const lpToRemove = (lpBalance * BigInt(removePercent)) / BigInt(100)

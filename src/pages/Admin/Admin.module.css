@@ -648,8 +648,10 @@
 
     .searchInput {
         width: 100%;
-        font-size: 0.7rem;
-        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+        padding: 0.6rem 0.75rem;
+        min-height: 42px;
+        border-radius: 8px;
     }
 
     /* Table scroll */
@@ -738,17 +740,21 @@
 
     /* Input with unit */
     .inputUnit {
-        font-size: 0.7rem;
+        font-size: 0.82rem;
     }
 
     .input {
-        font-size: 0.82rem;
-        padding: 0.6rem 0.7rem;
+        font-size: 0.95rem;
+        padding: 0.75rem 0.85rem;
+        min-height: 44px;
+        border-radius: 10px;
     }
 
     .inputMono {
-        font-size: 0.72rem;
-        padding: 0.6rem 0.7rem;
+        font-size: 0.88rem;
+        padding: 0.75rem 0.85rem;
+        min-height: 44px;
+        border-radius: 10px;
     }
 
     .label {

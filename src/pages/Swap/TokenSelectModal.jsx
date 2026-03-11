@@ -7,7 +7,7 @@ import { formatBalance } from '../../services/formatBalance'
 import s from './Swap.module.css'
 
 export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
-    const { userAddress, provider } = useWeb3()
+    const { userAddress, readProvider } = useWeb3()
     const [search, setSearch] = useState('')
     const [tokens, setTokens] = useState([])
     const [importToken, setImportToken] = useState(null)
@@ -29,9 +29,10 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
             setImportToken(null)
                 ; (async () => {
                     try {
-                        const web3Provider = new ethers.BrowserProvider(window.ethereum)
+                        // Use readProvider for token lookup (no wallet dependency)
+                        const rpcProvider = readProvider || new ethers.BrowserProvider(window.ethereum)
                         const addr = ethers.getAddress(query)
-                        const contract = new ethers.Contract(addr, erc20Abi, web3Provider)
+                        const contract = new ethers.Contract(addr, erc20Abi, rpcProvider)
                         const [name, symbol, decimals] = await Promise.all([contract.name(), contract.symbol(), contract.decimals()])
                         let balance = 0
                         if (userAddress) {
@@ -61,17 +62,16 @@ export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
         all = [...all, ...saved]
         if (excludeToken) all = all.filter(t => t.address.toLowerCase() !== excludeToken.address.toLowerCase())
 
-        if (userAddress && window.ethereum) {
+        if (userAddress && readProvider) {
             try {
-                const web3Provider = new ethers.BrowserProvider(window.ethereum)
                 const withBal = await Promise.all(all.map(async (t) => {
                     try {
                         let bal = '0'
                         if (t.address.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
-                            const hex = await window.ethereum.request({ method: 'eth_getBalance', params: [userAddress, 'latest'] })
-                            bal = ethers.formatEther(BigInt(hex))
+                            const b = await readProvider.getBalance(userAddress)
+                            bal = ethers.formatEther(b)
                         } else {
-                            const c = new ethers.Contract(t.address, erc20Abi, web3Provider)
+                            const c = new ethers.Contract(t.address, erc20Abi, readProvider)
                             const [dec, b] = await Promise.all([c.decimals(), c.balanceOf(userAddress)])
                             bal = ethers.formatUnits(b, dec)
                         }

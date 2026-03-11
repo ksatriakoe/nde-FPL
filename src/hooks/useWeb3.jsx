@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { ethers } from 'ethers'
 import { useAccount } from 'wagmi'
 import {
@@ -8,6 +8,11 @@ import {
 } from '../services/swapConstants'
 
 const Web3Context = createContext(null)
+
+// ── Public RPC for read-only calls (same approach as Uniswap) ──
+// Wallet provider is ONLY used for signing transactions.
+// All reads (balances, reserves, token info) go through this fast public RPC.
+const BASE_RPC = 'https://base-rpc.publicnode.com'
 
 export function useWeb3() {
     const ctx = useContext(Web3Context)
@@ -22,6 +27,11 @@ export function Web3Provider({ children }) {
     const [signer, setSigner] = useState(null)
     const [userAddress, setUserAddress] = useState(null)
     const [balanceRefreshTrigger, setBalanceRefreshTrigger] = useState(0)
+
+    // Public RPC read provider — created once, never depends on wallet
+    const readProvider = useMemo(() => new ethers.JsonRpcProvider(BASE_RPC, {
+        chainId: 8453, name: 'base',
+    }, { staticNetwork: true }), [])
 
     // Dual router contracts
     const [customRouter, setCustomRouter] = useState(null)
@@ -42,15 +52,15 @@ export function Web3Provider({ children }) {
                 setSigner(web3Signer)
                 setUserAddress(address)
 
-                // Custom router & factory
+                // Custom router & factory (factory uses readProvider for fast reads)
                 const cRouter = new ethers.Contract(customAddresses.router, routerAbi, web3Signer)
                 setCustomRouter(cRouter)
                 setRouterContract(cRouter) // legacy compat
-                setCustomFactory(new ethers.Contract(customAddresses.factory, factoryAbi, web3Provider))
+                setCustomFactory(new ethers.Contract(customAddresses.factory, factoryAbi, readProvider))
 
                 // Uniswap official router & factory
                 setUniswapRouter(new ethers.Contract(uniswapAddresses.router, routerAbi, web3Signer))
-                setUniswapFactory(new ethers.Contract(uniswapAddresses.factory, factoryAbi, web3Provider))
+                setUniswapFactory(new ethers.Contract(uniswapAddresses.factory, factoryAbi, readProvider))
 
                 // Aggregator
                 if (aggregatorAddress !== ethers.ZeroAddress) {
@@ -89,12 +99,12 @@ export function Web3Provider({ children }) {
     const MIN_LP_SUPPLY = 10n ** 9n // Skip pools with LP totalSupply below this
 
     const findRouter = async (tokenA, tokenB) => {
-        if (!customFactory || !uniswapFactory || !provider) return null
+        if (!customFactory || !uniswapFactory) return null
         try {
             // Check custom factory first
             const customPair = await customFactory.getPair(tokenA, tokenB)
             if (customPair !== ethers.ZeroAddress) {
-                const pc = new ethers.Contract(customPair, pairAbi, provider)
+                const pc = new ethers.Contract(customPair, pairAbi, readProvider)
                 const totalSupply = await pc.totalSupply()
                 if (totalSupply > MIN_LP_SUPPLY) {
                     return { router: customRouter, factory: customFactory, source: 'custom' }
@@ -103,7 +113,7 @@ export function Web3Provider({ children }) {
             // Check Uniswap factory
             const uniPair = await uniswapFactory.getPair(tokenA, tokenB)
             if (uniPair !== ethers.ZeroAddress) {
-                const pc = new ethers.Contract(uniPair, pairAbi, provider)
+                const pc = new ethers.Contract(uniPair, pairAbi, readProvider)
                 const totalSupply = await pc.totalSupply()
                 if (totalSupply > MIN_LP_SUPPLY) {
                     return { router: uniswapRouter, factory: uniswapFactory, source: 'uniswap' }
@@ -128,7 +138,7 @@ export function Web3Provider({ children }) {
 
     return (
         <Web3Context.Provider value={{
-            provider, signer, userAddress,
+            provider, readProvider, signer, userAddress,
             customRouter, uniswapRouter, routerContract,
             customFactory, uniswapFactory,
             aggregatorContract, listingManagerContract,

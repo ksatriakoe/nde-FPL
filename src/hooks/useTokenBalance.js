@@ -5,7 +5,7 @@ import { WETH_ADDRESS, erc20Abi } from '../services/swapConstants'
 import { formatBalance } from '../services/formatBalance'
 
 export function useTokenBalance(tokenAddress) {
-    const { userAddress, balanceRefreshTrigger } = useWeb3()
+    const { userAddress, readProvider, balanceRefreshTrigger } = useWeb3()
     const [balance, setBalance] = useState('0.0')
     const [loading, setLoading] = useState(false)
 
@@ -14,23 +14,22 @@ export function useTokenBalance(tokenAddress) {
         let retryCount = 0
 
         const fetchBalance = async () => {
-            if (!tokenAddress || !userAddress || !window.ethereum) {
+            if (!tokenAddress || !userAddress || !readProvider) {
                 if (isMounted) { setBalance('0.0'); setLoading(false) }
                 return
             }
+
             setLoading(true)
             try {
-                const web3Provider = new ethers.BrowserProvider(window.ethereum)
                 const checksumAddress = ethers.getAddress(tokenAddress)
 
                 if (checksumAddress.toLowerCase() === WETH_ADDRESS.toLowerCase()) {
-                    const balanceHex = await window.ethereum.request({
-                        method: 'eth_getBalance',
-                        params: [userAddress, 'latest'],
-                    })
-                    if (isMounted) { setBalance(ethers.formatEther(BigInt(balanceHex))); setLoading(false) }
+                    // ETH balance via public RPC — fast & reliable
+                    const bal = await readProvider.getBalance(userAddress)
+                    if (isMounted) { setBalance(ethers.formatEther(bal)); setLoading(false) }
                 } else {
-                    const tokenContract = new ethers.Contract(checksumAddress, erc20Abi, web3Provider)
+                    // Token balance via public RPC
+                    const tokenContract = new ethers.Contract(checksumAddress, erc20Abi, readProvider)
                     const [decimals, bal] = await Promise.all([
                         tokenContract.decimals(),
                         tokenContract.balanceOf(userAddress),
@@ -38,9 +37,9 @@ export function useTokenBalance(tokenAddress) {
                     if (isMounted) { setBalance(ethers.formatUnits(bal, decimals)); setLoading(false) }
                 }
             } catch {
-                if (retryCount < 3 && isMounted) {
+                if (retryCount < 2 && isMounted) {
                     retryCount++
-                    setTimeout(() => { if (isMounted) fetchBalance() }, retryCount * 1000)
+                    setTimeout(() => { if (isMounted) fetchBalance() }, retryCount * 1500)
                 } else if (isMounted) {
                     setBalance('0.0'); setLoading(false)
                 }
@@ -48,7 +47,9 @@ export function useTokenBalance(tokenAddress) {
         }
         fetchBalance()
         return () => { isMounted = false }
-    }, [userAddress, tokenAddress, balanceRefreshTrigger])
+    }, [userAddress, tokenAddress, readProvider, balanceRefreshTrigger])
 
     return { balance, formattedBalance: formatBalance(balance), loading }
 }
+
+
