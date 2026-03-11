@@ -33,13 +33,19 @@ export function Web3Provider({ children }) {
         chainId: 8453, name: 'base',
     }, { staticNetwork: true }), [])
 
-    // Dual router contracts
+    // Dual router contracts (signer-connected — for transactions)
     const [customRouter, setCustomRouter] = useState(null)
     const [uniswapRouter, setUniswapRouter] = useState(null)
     const [customFactory, setCustomFactory] = useState(null)
     const [uniswapFactory, setUniswapFactory] = useState(null)
     const [aggregatorContract, setAggregatorContract] = useState(null)
     const [listingManagerContract, setListingManagerContract] = useState(null)
+
+    // Read-only contracts (public RPC — for quotes, getAmountsOut, etc.)
+    const readCustomRouter = useMemo(() => new ethers.Contract(customAddresses.router, routerAbi, readProvider), [readProvider])
+    const readUniswapRouter = useMemo(() => new ethers.Contract(uniswapAddresses.router, routerAbi, readProvider), [readProvider])
+    const readAggregator = useMemo(() => aggregatorAddress !== ethers.ZeroAddress
+        ? new ethers.Contract(aggregatorAddress, aggregatorAbi, readProvider) : null, [readProvider])
 
     // Legacy compat
     const [routerContract, setRouterContract] = useState(null)
@@ -107,7 +113,7 @@ export function Web3Provider({ children }) {
                 const pc = new ethers.Contract(customPair, pairAbi, readProvider)
                 const totalSupply = await pc.totalSupply()
                 if (totalSupply > MIN_LP_SUPPLY) {
-                    return { router: customRouter, factory: customFactory, source: 'custom' }
+                    return { router: customRouter, readRouter: readCustomRouter, factory: customFactory, source: 'custom' }
                 }
             }
             // Check Uniswap factory
@@ -116,7 +122,7 @@ export function Web3Provider({ children }) {
                 const pc = new ethers.Contract(uniPair, pairAbi, readProvider)
                 const totalSupply = await pc.totalSupply()
                 if (totalSupply > MIN_LP_SUPPLY) {
-                    return { router: uniswapRouter, factory: uniswapFactory, source: 'uniswap' }
+                    return { router: uniswapRouter, readRouter: readUniswapRouter, factory: uniswapFactory, source: 'uniswap' }
                 }
             }
         } catch { /* ignore */ }
@@ -128,9 +134,9 @@ export function Web3Provider({ children }) {
      * Returns: { routerInFirst: 0|1, source: 'aggregator' } or null
      */
     const findCrossRoute = async (tokenIn, tokenOut) => {
-        if (!aggregatorContract) return null
+        if (!readAggregator) return null
         try {
-            const route = await aggregatorContract.findCrossRoute(tokenIn, tokenOut)
+            const route = await readAggregator.findCrossRoute(tokenIn, tokenOut)
             if (route < 2) return { routerInFirst: route, source: 'aggregator' }
         } catch { /* ignore */ }
         return null
@@ -140,6 +146,7 @@ export function Web3Provider({ children }) {
         <Web3Context.Provider value={{
             provider, readProvider, signer, userAddress,
             customRouter, uniswapRouter, routerContract,
+            readCustomRouter, readUniswapRouter, readAggregator,
             customFactory, uniswapFactory,
             aggregatorContract, listingManagerContract,
             refreshBalances, balanceRefreshTrigger,

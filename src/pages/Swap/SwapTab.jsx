@@ -12,6 +12,7 @@ export default function SwapTab({ showAlert, slippage }) {
     const {
         provider, signer, userAddress,
         customRouter, uniswapRouter, aggregatorContract,
+        readAggregator,
         findRouter, findCrossRoute,
         refreshBalances,
     } = useWeb3()
@@ -80,7 +81,7 @@ export default function SwapTab({ showAlert, slippage }) {
 
                 // Attempt direct path [A, B]
                 try {
-                    const amounts = await direct.router.getAmountsOut(amountInParsed, directPath)
+                    const amounts = await direct.readRouter.getAmountsOut(amountInParsed, directPath)
                     const out = amounts[amounts.length - 1]
                     if (out > bestOut) {
                         bestOut = out
@@ -88,14 +89,14 @@ export default function SwapTab({ showAlert, slippage }) {
                         bestRoute = { ...direct, path: directPath }
                         bestPath = directPath
                         bestSource = direct.source
-                        bestRouter = direct.router
+                        bestRouter = direct.readRouter
                     }
                 } catch { /* direct path failed */ }
 
                 // Attempt multi-hop [A, WETH, B]
                 if (multiPath) {
                     try {
-                        const amounts = await direct.router.getAmountsOut(amountInParsed, multiPath)
+                        const amounts = await direct.readRouter.getAmountsOut(amountInParsed, multiPath)
                         const out = amounts[amounts.length - 1]
                         if (out > bestOut) {
                             bestOut = out
@@ -103,7 +104,7 @@ export default function SwapTab({ showAlert, slippage }) {
                             bestRoute = { ...direct, path: multiPath }
                             bestPath = multiPath
                             bestSource = direct.source
-                            bestRouter = direct.router
+                            bestRouter = direct.readRouter
                         }
                     } catch { /* multi-hop failed */ }
                 }
@@ -111,9 +112,9 @@ export default function SwapTab({ showAlert, slippage }) {
 
             // 2. Try cross-swap via Aggregator
             const cross = await findCrossRoute(fromToken.address, toToken.address)
-            if (cross) {
+            if (cross && readAggregator) {
                 try {
-                    const outAmount = await aggregatorContract.getAmountsOutCross(
+                    const outAmount = await readAggregator.getAmountsOutCross(
                         fromToken.address, toToken.address, amountInParsed, cross.routerInFirst
                     )
                     if (outAmount > bestOut) {
@@ -180,11 +181,11 @@ export default function SwapTab({ showAlert, slippage }) {
             }
 
             // Compute real price impact for aggregator cross-swaps
-            if (source === 'aggregator' && aggregatorContract) {
+            if (source === 'aggregator' && readAggregator) {
                 // Use 1% of actual amount as reference (small enough for ideal rate, large enough for precision)
                 const refAmount = amount * 0.01
                 const refParsed = ethers.parseUnits(refAmount.toFixed(fromToken.decimals > 8 ? 8 : fromToken.decimals), fromToken.decimals)
-                aggregatorContract.getAmountsOutCross(
+                readAggregator.getAmountsOutCross(
                     fromToken.address, toToken.address, refParsed, routerInFirst ?? 0
                 ).then(idealOut => {
                     const idealRate = parseFloat(ethers.formatUnits(idealOut, toToken.decimals)) / refAmount
@@ -230,7 +231,8 @@ export default function SwapTab({ showAlert, slippage }) {
                 const router = swapRoute.router
                 const routerAddr = swapRoute.source === 'custom' ? customAddresses.router : uniswapAddresses.router
                 const path = swapRoute.path
-                const amounts = await router.getAmountsOut(amountInParsed, path)
+                // Use readRouter for quote (fast public RPC), signer router for tx
+                const amounts = await (swapRoute.readRouter || router).getAmountsOut(amountInParsed, path)
                 const amountOutMin = amounts[amounts.length - 1] - (amounts[amounts.length - 1] * BigInt(Math.floor(slippage * 100))) / BigInt(10000)
 
                 const isFromETH = fromToken.address.toLowerCase() === WETH_ADDRESS.toLowerCase()
