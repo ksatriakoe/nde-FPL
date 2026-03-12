@@ -112,13 +112,17 @@ export default function MyTeam() {
         ? Math.max(...history.current.map(g => g.points))
         : 1
 
+    const selectedGwHistory = picks?.gw && history?.current
+        ? history.current.find(g => g.event === picks.gw)
+        : null
+
     const stats = manager ? [
-        { label: 'Total Pts', value: manager.summary_overall_points?.toLocaleString() },
-        { label: 'Overall Rank', value: manager.summary_overall_rank?.toLocaleString() },
-        { label: 'GW Points', value: manager.summary_event_points },
-        { label: 'GW Rank', value: manager.summary_event_rank?.toLocaleString() },
-        { label: 'In Bank', value: `£${(manager.last_deadline_bank / 10).toFixed(1)}m` },
-        { label: 'Transfers', value: manager.last_deadline_total_transfers || 0 },
+        { label: 'Total Pts', value: (selectedGwHistory?.total_points ?? manager.summary_overall_points)?.toLocaleString() },
+        { label: 'Overall Rank', value: (selectedGwHistory?.overall_rank ?? manager.summary_overall_rank)?.toLocaleString() },
+        { label: 'GW Points', value: selectedGwHistory?.points ?? manager.summary_event_points },
+        { label: 'GW Rank', value: (selectedGwHistory?.rank ?? manager.summary_event_rank)?.toLocaleString() },
+        { label: 'In Bank', value: `£${((selectedGwHistory?.bank ?? manager.last_deadline_bank) / 10).toFixed(1)}m` },
+        { label: 'Transfers', value: selectedGwHistory?.event_transfers ?? manager.last_deadline_total_transfers ?? 0 },
     ] : []
 
     return (
