@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { fetchManager, fetchManagerPicks, fetchManagerHistory, getTeamBadgeUrl, getStatusInfo } from '../../services/fplApi'
+import { fetchManager, fetchManagerPicks, fetchManagerHistory, fetchLive, getTeamBadgeUrl, getStatusInfo } from '../../services/fplApi'
 import styles from './MyTeam.module.css'
 
 export default function MyTeam() {
@@ -12,7 +12,10 @@ export default function MyTeam() {
     const [picks, setPicks] = useState(null)
     const [history, setHistory] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [gwLoading, setGwLoading] = useState(false)
+    const [gwLiveData, setGwLiveData] = useState({})
     const [error, setError] = useState('')
+    const liveCache = useRef({})
 
     const loadTeam = useCallback(async () => {
         if (!fplId || !currentGw) return
@@ -34,7 +37,14 @@ export default function MyTeam() {
             const latestGw = historyData.current?.length > 0
                 ? historyData.current[historyData.current.length - 1].event
                 : currentGw.id
-            const picksData = await fetchManagerPicks(fplId, latestGw)
+            const [picksData, liveData] = await Promise.all([
+                fetchManagerPicks(fplId, latestGw),
+                fetchLive(latestGw).catch(() => null),
+            ])
+            if (liveData) {
+                liveCache.current[latestGw] = liveData
+                setGwLiveData(prev => ({ ...prev, [latestGw]: liveData }))
+            }
             setPicks({ ...picksData, gw: latestGw })
         } catch (err) {
             setError(err.message || 'Failed to load team data')
@@ -43,6 +53,42 @@ export default function MyTeam() {
     }, [fplId, currentGw])
 
     const getPlayer = (elementId) => players.find(p => p.id === elementId)
+
+    const minGw = history?.current?.length > 0 ? history.current[0].event : 1
+    const maxGw = history?.current?.length > 0 ? history.current[history.current.length - 1].event : 1
+
+    const changeGw = useCallback(async (newGw) => {
+        if (!fplId || gwLoading) return
+        setGwLoading(true)
+        try {
+            const [picksData, liveData] = await Promise.all([
+                fetchManagerPicks(fplId, newGw),
+                liveCache.current[newGw]
+                    ? Promise.resolve(liveCache.current[newGw])
+                    : fetchLive(newGw).catch(() => null),
+            ])
+            if (liveData && !liveCache.current[newGw]) {
+                liveCache.current[newGw] = liveData
+                setGwLiveData(prev => ({ ...prev, [newGw]: liveData }))
+            }
+            setPicks({ ...picksData, gw: newGw })
+        } catch {
+            // silently fail, keep current picks
+        }
+        setGwLoading(false)
+    }, [fplId, gwLoading])
+
+    const getGwPoints = (elementId, multiplier) => {
+        const gw = picks?.gw
+        const live = gwLiveData[gw]
+        if (live) {
+            const el = live.elements?.find(e => e.id === elementId)
+            if (el) return el.stats.total_points * (multiplier || 1)
+        }
+        // fallback to bootstrap event_points (only accurate for current GW)
+        const player = getPlayer(elementId)
+        return player ? player.event_points * (multiplier || 1) : 0
+    }
 
     const pitchLayout = picks ? (() => {
         const starting = picks.picks?.filter(p => p.position <= 11) || []
@@ -125,9 +171,24 @@ export default function MyTeam() {
 
             {pitchLayout && players.length > 0 && (
                 <div className={styles.pitch}>
-                    <div className={styles.pitchTitle}>
-                        GW{picks.gw} Squad
-                        {picks.active_chip && <span style={{ color: 'var(--accent-primary)', marginLeft: 8 }}>({picks.active_chip})</span>}
+                    <div className={styles.pitchNav}>
+                        <button
+                            className={styles.gwArrow}
+                            onClick={() => changeGw(picks.gw - 1)}
+                            disabled={picks.gw <= minGw || gwLoading}
+                            title="Previous GW"
+                        >‹</button>
+                        <div className={styles.pitchTitle}>
+                            GW{picks.gw} Squad
+                            {gwLoading && <span className={styles.gwSpinner} />}
+                            {picks.active_chip && <span style={{ color: 'var(--accent-primary)', marginLeft: 8 }}>({picks.active_chip})</span>}
+                        </div>
+                        <button
+                            className={styles.gwArrow}
+                            onClick={() => changeGw(picks.gw + 1)}
+                            disabled={picks.gw >= maxGw || gwLoading}
+                            title="Next GW"
+                        >›</button>
                     </div>
                     {[1, 2, 3, 4].map(pos => (
                         <div key={pos} className={styles.positionRow}>
@@ -145,7 +206,7 @@ export default function MyTeam() {
                                         onError={e => e.target.style.display = 'none'}
                                     />
                                     <div className={styles.playerCardName}>{pick.player.web_name}{getStatusInfo(pick.player.status) && <span className="status-dot" style={{ background: getStatusInfo(pick.player.status).color }} title={getStatusInfo(pick.player.status).label} />}</div>
-                                    <div className={styles.playerCardPts}>{pick.player.event_points * (pick.multiplier || 1)} pts{pick.multiplier > 1 && <span style={{ fontSize: '0.58rem', color: '#F59E0B', fontWeight: 800, marginLeft: 2 }}>×{pick.multiplier}</span>}</div>
+                                    <div className={styles.playerCardPts}>{getGwPoints(pick.element, pick.multiplier)} pts{pick.multiplier > 1 && <span style={{ fontSize: '0.58rem', color: '#F59E0B', fontWeight: 800, marginLeft: 2 }}>×{pick.multiplier}</span>}</div>
                                 </div>
                             ))}
                         </div>
@@ -166,7 +227,7 @@ export default function MyTeam() {
                                     onError={e => e.target.style.display = 'none'}
                                 />
                                 <div className={styles.playerCardName}>{pick.player.web_name}{getStatusInfo(pick.player.status) && <span className="status-dot" style={{ background: getStatusInfo(pick.player.status).color }} title={getStatusInfo(pick.player.status).label} />}</div>
-                                <div className={styles.playerCardPts}>{pick.player.event_points} pts</div>
+                                <div className={styles.playerCardPts}>{getGwPoints(pick.element, 1)} pts</div>
                             </div>
                         ))}
                     </div>

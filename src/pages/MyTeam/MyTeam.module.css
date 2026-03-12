@@ -149,12 +149,67 @@
     margin-bottom: 1.25rem;
 }
 
+.pitchNav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0 0.25rem;
+}
+
 .pitchTitle {
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--text-secondary);
-    margin-bottom: 1rem;
-    padding: 0 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.gwArrow {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: #16213A;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    line-height: 1;
+    padding: 0;
+}
+
+.gwArrow:hover:not(:disabled) {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.gwArrow:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.gwSpinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
 }
 
 .positionRow {
@@ -372,6 +427,12 @@
     .pitchTitle {
         padding: 0 0.15rem;
         font-size: 0.78rem;
+    }
+
+    .gwArrow {
+        width: 26px;
+        height: 26px;
+        font-size: 1rem;
     }
 
     .positionRow {
