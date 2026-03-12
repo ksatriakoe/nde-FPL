@@ -659,23 +659,27 @@
         max-height: 200px;
     }
 
-    /* Stats grid */
+    /* Stats grid — column on mobile */
     .statsGrid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 0.4rem;
     }
 
     .statItem {
-        padding: 0.5rem 0.6rem;
+        padding: 0.6rem 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .statValue,
     .statValueAccent {
-        font-size: 0.85rem;
+        font-size: 0.95rem;
     }
 
     .statLabel {
-        font-size: 0.55rem;
+        font-size: 0.7rem;
+        margin-bottom: 0;
     }
 
     /* Table */
@@ -768,12 +772,12 @@
 
 @media (max-width: 380px) {
     .statsGrid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
     }
 
     .statValue,
     .statValueAccent {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .presetBtn {
