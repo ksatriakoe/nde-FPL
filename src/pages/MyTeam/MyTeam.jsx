@@ -247,7 +247,7 @@ export default function MyTeam() {
                                 <div className={styles.barValue}>{gw.points}</div>
                                 <div
                                     className={styles.barFill}
-                                    style={{ height: `${(gw.points / maxGwPts) * 100}px` }}
+                                    style={{ height: `${(gw.points / maxGwPts) * 150}px` }}
                                 />
                                 <div className={styles.barLabel}>{gw.event}</div>
                             </div>
