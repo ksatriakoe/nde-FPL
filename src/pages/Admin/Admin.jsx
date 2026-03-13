@@ -3,6 +3,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
 import { ethers } from 'ethers'
 import { supabase } from '../../services/supabase'
+import { useTokenList } from '../../hooks/useTokenList'
 import { stakingAddress, stakingAbi, erc20Abi } from '../../services/swapConstants'
 import s from './Admin.module.css'
 
@@ -63,7 +64,6 @@ function ManualSubscriptionCard({ showAlert }) {
         setBusy(true)
         try {
             const now = new Date()
-            // Check if existing subscription still active, stack on top
             const existing = subscribers.find(
                 sub => sub.wallet_address === walletInput.toLowerCase() &&
                     new Date(sub.expires_at) > now
@@ -96,7 +96,6 @@ function ManualSubscriptionCard({ showAlert }) {
     const handleRevoke = async (address) => {
         if (!supabase) return
         try {
-            // Set expires_at to past to revoke (no DELETE policy in RLS)
             const { error } = await supabase
                 .from('subscriptions')
                 .update({
@@ -128,7 +127,6 @@ function ManualSubscriptionCard({ showAlert }) {
                 <img src="/calender.svg" alt="" className={s.cardIconSvg} />
             </div>
 
-            {/* Form */}
             <div className={s.formGroup}>
                 <label className={s.label}>Wallet Address</label>
                 <input
@@ -163,7 +161,6 @@ function ManualSubscriptionCard({ showAlert }) {
                 {busy ? 'Adding...' : `Add Subscription · ${duration || '—'} Days`}
             </button>
 
-            {/* Active Subscribers Table */}
             <div className={s.tableWrap}>
                 <div className={s.tableHeader}>
                     <div className={s.tableTitle}>Active Subscribers ({activeSubscribers.length})</div>
@@ -331,7 +328,6 @@ function StakingControlCard({ showAlert }) {
                 <img src="/gear-swap.svg" alt="" className={s.cardIconSvg} />
             </div>
 
-            {/* Current Stats */}
             <div className={s.statsGrid}>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Current APY</div>
@@ -349,7 +345,6 @@ function StakingControlCard({ showAlert }) {
 
             <hr className={s.divider} />
 
-            {/* Set APY */}
             <div className={s.formGroup}>
                 <label className={s.label}>Set New APY</label>
                 <div className={s.formRow}>
@@ -377,7 +372,6 @@ function StakingControlCard({ showAlert }) {
                 <div className={s.inputHint}>Enter percentage directly, e.g. 50 = 50% APY (auto-converts to {newApy ? Math.round(parseFloat(newApy) * 100) : '—'} basis points)</div>
             </div>
 
-            {/* Set Min Stake */}
             <div className={s.formGroup}>
                 <label className={s.label}>Set Min Stake</label>
                 <div className={s.formRow}>
@@ -410,6 +404,252 @@ function StakingControlCard({ showAlert }) {
 }
 
 /* ============================================================= */
+/*  Card 3 — Token Management (Supabase CRUD)                    */
+/* ============================================================= */
+function TokenManagementCard({ showAlert }) {
+    const { refresh: refreshTokenList } = useTokenList()
+    const [tokens, setTokens] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [showForm, setShowForm] = useState(false)
+    const [busy, setBusy] = useState(false)
+    const [form, setForm] = useState({ address: '', name: '', symbol: '', decimals: '18', logo_uri: '' })
+
+    const fetchTokens = useCallback(async () => {
+        if (!supabase) { setLoading(false); return }
+        try {
+            const { data, error } = await supabase
+                .from('swap_tokens')
+                .select('*')
+                .order('sort_order', { ascending: true })
+            if (!error && data) setTokens(data)
+        } catch { /* ignore */ }
+        setLoading(false)
+    }, [])
+
+    useEffect(() => { fetchTokens() }, [fetchTokens])
+
+    const resetForm = () => {
+        setForm({ address: '', name: '', symbol: '', decimals: '18', logo_uri: '' })
+        setShowForm(false)
+    }
+
+    const handleAdd = async () => {
+        if (!supabase) { showAlert('Supabase not configured', 'error'); return }
+        if (!form.address || !form.name || !form.symbol) {
+            showAlert('Address, name, and symbol are required', 'error'); return
+        }
+        if (!/^0x[a-fA-F0-9]{40}$/.test(form.address)) {
+            showAlert('Invalid contract address', 'error'); return
+        }
+        setBusy(true)
+        try {
+            const maxOrder = tokens.length > 0 ? Math.max(...tokens.map(t => t.sort_order || 0)) : 0
+            const { error } = await supabase.from('swap_tokens').insert({
+                address: form.address,
+                name: form.name,
+                symbol: form.symbol.toUpperCase(),
+                decimals: parseInt(form.decimals) || 18,
+                logo_uri: form.logo_uri || null,
+                sort_order: maxOrder + 1,
+                is_active: true,
+            })
+            if (error) {
+                if (error.code === '23505') showAlert('Token with this address already exists', 'error')
+                else showAlert('Failed: ' + error.message, 'error')
+            } else {
+                showAlert(`${form.symbol.toUpperCase()} added!`, 'success')
+                resetForm()
+                fetchTokens()
+                refreshTokenList()
+            }
+        } catch (err) {
+            showAlert('Error: ' + err.message, 'error')
+        }
+        setBusy(false)
+    }
+
+    const handleToggleActive = async (token) => {
+        if (!supabase) return
+        try {
+            const { error } = await supabase
+                .from('swap_tokens')
+                .update({ is_active: !token.is_active, updated_at: new Date().toISOString() })
+                .eq('id', token.id)
+            if (error) {
+                showAlert('Toggle failed: ' + error.message, 'error')
+            } else {
+                showAlert(`${token.symbol} ${token.is_active ? 'disabled' : 'enabled'}`, 'success')
+                fetchTokens()
+                refreshTokenList()
+            }
+        } catch (err) {
+            showAlert('Error: ' + err.message, 'error')
+        }
+    }
+
+    const handleDelete = async (token) => {
+        if (!supabase) return
+        try {
+            const { error } = await supabase
+                .from('swap_tokens')
+                .delete()
+                .eq('id', token.id)
+            if (error) {
+                showAlert('Delete failed: ' + error.message, 'error')
+            } else {
+                showAlert(`${token.symbol} deleted`, 'success')
+                fetchTokens()
+                refreshTokenList()
+            }
+        } catch (err) {
+            showAlert('Error: ' + err.message, 'error')
+        }
+    }
+
+    return (
+        <div className={s.card}>
+            <div className={s.cardHeader}>
+                <span className={s.cardTitle}>Token Management</span>
+                <img src="/gear-swap.svg" alt="" className={s.cardIconSvg} />
+            </div>
+
+            {!showForm ? (
+                <button className={s.primaryBtn} onClick={() => setShowForm(true)}>
+                    + Add Token
+                </button>
+            ) : (
+                <div style={{ marginBottom: '1rem' }}>
+                    <div className={s.formGroup}>
+                        <label className={s.label}>Contract Address</label>
+                        <input
+                            className={s.inputMono}
+                            type="text"
+                            value={form.address}
+                            onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                            placeholder="0x..."
+                        />
+                    </div>
+                    <div className={s.formRow}>
+                        <div className={s.formGroup}>
+                            <label className={s.label}>Name</label>
+                            <input
+                                className={s.input}
+                                type="text"
+                                value={form.name}
+                                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                                placeholder="e.g. My Token"
+                            />
+                        </div>
+                        <div className={s.formGroup}>
+                            <label className={s.label}>Symbol</label>
+                            <input
+                                className={s.input}
+                                type="text"
+                                value={form.symbol}
+                                onChange={e => setForm(f => ({ ...f, symbol: e.target.value }))}
+                                placeholder="e.g. MTK"
+                            />
+                        </div>
+                    </div>
+                    <div className={s.formRow}>
+                        <div className={s.formGroup}>
+                            <label className={s.label}>Decimals</label>
+                            <input
+                                className={s.input}
+                                type="number"
+                                value={form.decimals}
+                                onChange={e => setForm(f => ({ ...f, decimals: e.target.value }))}
+                                placeholder="18"
+                            />
+                        </div>
+                        <div className={s.formGroup}>
+                            <label className={s.label}>Logo URL</label>
+                            <input
+                                className={s.input}
+                                type="text"
+                                value={form.logo_uri}
+                                onChange={e => setForm(f => ({ ...f, logo_uri: e.target.value }))}
+                                placeholder="/logo.png or https://..."
+                            />
+                        </div>
+                    </div>
+                    <div className={s.formRow}>
+                        <button className={s.secondaryBtn} onClick={resetForm}>Cancel</button>
+                        <button
+                            className={s.primaryBtn}
+                            onClick={handleAdd}
+                            disabled={busy || !form.address || !form.name || !form.symbol}
+                        >
+                            {busy ? 'Adding...' : 'Add Token'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            <div className={s.tableWrap}>
+                <div className={s.tableHeader}>
+                    <div className={s.tableTitle}>Swap Tokens ({tokens.length})</div>
+                </div>
+                <div className={s.tableScroll}>
+                    <table className={s.table}>
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="4" className={s.emptyRow}>Loading...</td></tr>
+                            ) : tokens.length === 0 ? (
+                                <tr><td colSpan="4" className={s.emptyRow}>No tokens added</td></tr>
+                            ) : (
+                                tokens.map(token => (
+                                    <tr key={token.id} style={{ opacity: token.is_active ? 1 : 0.5 }}>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                {token.logo_uri ? (
+                                                    <img src={token.logo_uri} alt="" style={{ width: 18, height: 18, borderRadius: '50%' }} onError={e => e.target.style.display = 'none'} />
+                                                ) : (
+                                                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#1D4ED8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.5rem', color: '#fff', fontWeight: 700 }}>{token.symbol?.charAt(0)}</div>
+                                                )}
+                                                <span style={{ fontWeight: 600, fontSize: '0.8rem' }}>{token.symbol}</span>
+                                            </div>
+                                        </td>
+                                        <td className={s.addrCell}>
+                                            {token.address.slice(0, 6)}…{token.address.slice(-4)}
+                                        </td>
+                                        <td>
+                                            <button
+                                                onClick={() => handleToggleActive(token)}
+                                                className={token.is_active ? s.cryptoBadge : s.manualBadge}
+                                                style={{ cursor: 'pointer', border: 'none' }}
+                                            >
+                                                {token.is_active ? 'Active' : 'Disabled'}
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button
+                                                className={s.dangerBtn}
+                                                onClick={() => handleDelete(token)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+/* ============================================================= */
 /*  Main Admin Page                                               */
 /* ============================================================= */
 export default function Admin() {
@@ -420,7 +660,6 @@ export default function Admin() {
 
     return (
         <div className={s.page}>
-            {/* Alerts */}
             {alerts.length > 0 && (
                 <div className={s.alertContainer}>
                     {alerts.map(a => (
@@ -432,7 +671,6 @@ export default function Admin() {
                 </div>
             )}
 
-            {/* Not connected */}
             {!isConnected && (
                 <div className={s.gateWrap}>
                     <img src="/lock.svg" alt="" className={s.gateIcon} />
@@ -442,7 +680,6 @@ export default function Admin() {
                 </div>
             )}
 
-            {/* Connected but not admin */}
             {isConnected && !isAdmin && (
                 <div className={s.gateWrap}>
                     <img src="/lock.svg" alt="" className={s.gateIcon} />
@@ -451,7 +688,6 @@ export default function Admin() {
                 </div>
             )}
 
-            {/* Admin authenticated */}
             {isAdmin && (
                 <>
                     <div className={s.pageHeader}>
@@ -461,6 +697,7 @@ export default function Admin() {
 
                     <ManualSubscriptionCard showAlert={showAlert} />
                     <StakingControlCard showAlert={showAlert} />
+                    <TokenManagementCard showAlert={showAlert} />
                 </>
             )}
         </div>

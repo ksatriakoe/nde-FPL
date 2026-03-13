@@ -7,6 +7,7 @@ import { wagmiConfig } from './services/walletConfig'
 import { FplProvider } from './hooks/useFplData'
 import { AuthProvider } from './hooks/useAuth'
 import { Web3Provider } from './hooks/useWeb3'
+import { TokenListProvider } from './hooks/useTokenList'
 import PremiumGate from './components/PremiumGate'
 import Layout from './components/Layout/Layout'
 import Dashboard from './pages/Dashboard/Dashboard'
@@ -42,6 +43,7 @@ export default function App() {
           <FplProvider>
             <AuthProvider>
               <Web3Provider>
+                <TokenListProvider>
                 <BrowserRouter>
                   <Routes>
                     <Route element={<Layout />}>
@@ -73,6 +75,7 @@ export default function App() {
                     </Route>
                   </Routes>
                 </BrowserRouter>
+                </TokenListProvider>
               </Web3Provider>
             </AuthProvider>
           </FplProvider>

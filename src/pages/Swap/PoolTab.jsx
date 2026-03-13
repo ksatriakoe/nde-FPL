@@ -2,7 +2,8 @@ import { useMemo, useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { createPortal } from 'react-dom'
 import { useWeb3 } from '../../hooks/useWeb3'
-import { WETH_ADDRESS, erc20Abi, factoryAbi, pairAbi, defaultSwapToken, swapTokenList, customAddresses, listingManagerAddress, listingManagerAbi } from '../../services/swapConstants'
+import { useTokenList } from '../../hooks/useTokenList'
+import { WETH_ADDRESS, erc20Abi, factoryAbi, pairAbi, defaultSwapToken, customAddresses, listingManagerAddress, listingManagerAbi } from '../../services/swapConstants'
 import TokenSelectModal from './TokenSelectModal'
 import { useTokenBalance } from '../../hooks/useTokenBalance'
 import { formatBalance, formatSwapAmount } from '../../services/formatBalance'
@@ -89,6 +90,7 @@ function ListingFeeModal({ fee, feeSymbol, onPay, onClose, isPaying }) {
 
 export default function PoolTab({ showAlert, slippage }) {
     const { signer, userAddress, routerContract, customFactory, provider, readProvider, refreshBalances, listingManagerContract } = useWeb3()
+    const { tokens: swapTokenList } = useTokenList()
     const [view, setView] = useState('list')
     const [tokenA, setTokenA] = useState(defaultSwapToken)
     const [tokenB, setTokenB] = useState(null)

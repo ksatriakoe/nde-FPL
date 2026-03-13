@@ -2,18 +2,20 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { ethers } from 'ethers'
 import { useWeb3 } from '../../hooks/useWeb3'
-import { swapTokenList, defaultSwapToken, erc20Abi, WETH_ADDRESS } from '../../services/swapConstants'
+import { useTokenList } from '../../hooks/useTokenList'
+import { defaultSwapToken, erc20Abi, WETH_ADDRESS } from '../../services/swapConstants'
 import { formatBalance } from '../../services/formatBalance'
 import s from './Swap.module.css'
 
 export default function TokenSelectModal({ onClose, onSelect, excludeToken }) {
     const { userAddress, readProvider } = useWeb3()
+    const { tokens: swapTokenList } = useTokenList()
     const [search, setSearch] = useState('')
     const [tokens, setTokens] = useState([])
     const [importToken, setImportToken] = useState(null)
     const [importLoading, setImportLoading] = useState(false)
 
-    useEffect(() => { loadTokens() }, [])
+    useEffect(() => { loadTokens() }, [swapTokenList])
 
     // Auto-detect contract address in search and fetch token info
     useEffect(() => {
