@@ -1,15 +1,64 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFpl } from '../../hooks/useFplData'
-import { getTeamBadgeUrl } from '../../services/fplApi'
+import { getTeamBadgeUrl, fetchFixtures } from '../../services/fplApi'
 import styles from './LiveScores.module.css'
 
+/**
+ * Calculate a display label for match minutes.
+ * FPL fixture object has: minutes (int), started (bool), finished (bool), finished_provisional (bool)
+ */
+function getMatchMinutesLabel(fix) {
+    if (!fix.started) return null
+    if (fix.finished || fix.finished_provisional) return null
+
+    const mins = fix.minutes
+    // Half-time: minutes == 45 and the API sometimes keeps it at 45 during HT
+    // We detect HT by checking if minutes is 45 and no second-half flag
+    // Unfortunately FPL API doesn't have a direct HT field, but minutes stays at 45 during break
+    if (mins === 0 && fix.started) return "HT"
+    if (mins > 90) return `90+${mins - 90}'`
+    return `${mins}'`
+}
+
 export default function LiveScores() {
-    const { fixtures, teams, players, currentGw, events, loading } = useFpl()
+    const { fixtures: initialFixtures, teams, players, currentGw, events, loading } = useFpl()
     const navigate = useNavigate()
     const [selectedGw, setSelectedGw] = useState(null)
+    const [liveFixtures, setLiveFixtures] = useState(null)
+    const intervalRef = useRef(null)
+
+    // Use live-refreshed fixtures if available, otherwise use initial
+    const fixtures = liveFixtures || initialFixtures
 
     const gw = selectedGw || currentGw?.id || 1
+
+    // Check if there are any live matches in current GW
+    const hasLiveMatches = useMemo(() => {
+        if (!fixtures) return false
+        return fixtures.some(f => f.event === gw && f.started && !f.finished && !f.finished_provisional)
+    }, [fixtures, gw])
+
+    // Auto-refresh fixtures every 60s when live matches exist
+    const refreshFixtures = useCallback(async () => {
+        try {
+            const fresh = await fetchFixtures()
+            setLiveFixtures(fresh)
+        } catch { /* silent fail */ }
+    }, [])
+
+    useEffect(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+        }
+        if (hasLiveMatches) {
+            intervalRef.current = setInterval(refreshFixtures, 60000)
+        }
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current)
+        }
+    }, [hasLiveMatches, refreshFixtures])
 
     const gwFixtures = useMemo(() => {
         if (!fixtures) return []
@@ -67,7 +116,17 @@ export default function LiveScores() {
                                         })
                                         : 'TBC'}
                                 </span>
-                                {isLive && <span className={styles.matchLive}>LIVE</span>}
+                                {isLive && (
+                                    <span className={styles.matchLive}>
+                                        LIVE
+                                        {fix.minutes != null && fix.minutes > 0 && (
+                                            <span className={styles.matchMinutes}>{getMatchMinutesLabel(fix) || `${fix.minutes}'`}</span>
+                                        )}
+                                        {fix.minutes === 0 && fix.started && (
+                                            <span className={styles.matchMinutes}>HT</span>
+                                        )}
+                                    </span>
+                                )}
                                 {isFinished && <span className={styles.matchFinished}>FT</span>}
                             </div>
                             <div className={styles.matchBody}>

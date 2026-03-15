@@ -49,6 +49,13 @@
     animation: pulse 2s infinite;
 }
 
+.matchMinutes {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--green);
+    margin-left: 2px;
+}
+
 .matchFinished {
     color: var(--text-secondary);
 }
