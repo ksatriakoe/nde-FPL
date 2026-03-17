@@ -56,6 +56,7 @@ export const routerAbi = [
 export const factoryAbi = [
     'function getPair(address tokenA, address tokenB) external view returns (address pair)',
     'function allPairsLength() external view returns (uint)',
+    'function allPairs(uint) external view returns (address pair)',
     'function setListingManager(address _listingManager) external',
 ]
 

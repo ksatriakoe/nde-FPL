@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { ethers } from 'ethers'
 import { createPortal } from 'react-dom'
 import { useWeb3 } from '../../hooks/useWeb3'
@@ -113,6 +113,10 @@ export default function PoolTab({ showAlert, slippage }) {
     const [listingFee, setListingFee] = useState('0')
     const [isPayingFee, setIsPayingFee] = useState(false)
 
+    // All Pools state
+    const [allPools, setAllPools] = useState([])
+    const [isLoadingPools, setIsLoadingPools] = useState(false)
+
     const { balance: balanceA, formattedBalance: balAFmt } = useTokenBalance(tokenA?.address)
     const { formattedBalance: balBFmt } = useTokenBalance(tokenB?.address)
 
@@ -126,6 +130,7 @@ export default function PoolTab({ showAlert, slippage }) {
     useEffect(() => { if (tokenA && tokenB && (amountA || amountB) && readProvider) calculatePoolQuote() }, [amountA, amountB, tokenA, tokenB, activeInput])
     useEffect(() => { if (signer) loadLiquidityPositions() }, [signer])
     useEffect(() => { if (selectedPosition && removePercent > 0 && readProvider) calculateRemoveEstimate(); else setRemoveEstimate(null) }, [selectedPosition, removePercent])
+    useEffect(() => { if (readProvider) loadAllPools() }, [readProvider, swapTokenList])
 
     const calculatePoolQuote = async () => {
         try {
@@ -202,6 +207,66 @@ export default function PoolTab({ showAlert, slippage }) {
         } catch (e) { console.error('Load positions error:', e) }
         finally { setIsScanning(false) }
     }
+
+    /* ===== LOAD ALL POOLS ===== */
+    const loadAllPools = useCallback(async () => {
+        if (!readProvider) return
+        setIsLoadingPools(true)
+        try {
+            const factory = new ethers.Contract(customAddresses.factory, factoryAbi, readProvider)
+            const length = await factory.allPairsLength()
+            const count = Number(length)
+            if (count === 0) { setAllPools([]); setIsLoadingPools(false); return }
+
+            // Build known token map for quick lookup
+            const allKnownTokens = [defaultSwapToken, ...swapTokenList]
+            const tokenMap = {}
+            allKnownTokens.forEach(t => { tokenMap[t.address.toLowerCase()] = t })
+
+            const pools = []
+            for (let i = 0; i < count; i++) {
+                try {
+                    const pairAddress = await factory.allPairs(i)
+                    const pair = new ethers.Contract(pairAddress, pairAbi, readProvider)
+                    const [token0Addr, token1Addr, reserves] = await Promise.all([
+                        pair.token0(), pair.token1(), pair.getReserves()
+                    ])
+
+                    // Match to known tokens or fetch on-chain metadata
+                    let tokenInfo0 = tokenMap[token0Addr.toLowerCase()]
+                    let tokenInfo1 = tokenMap[token1Addr.toLowerCase()]
+
+                    if (!tokenInfo0) {
+                        try {
+                            const c = new ethers.Contract(token0Addr, erc20Abi, readProvider)
+                            const [sym, dec] = await Promise.all([c.symbol(), c.decimals()])
+                            tokenInfo0 = { address: token0Addr, symbol: sym, decimals: Number(dec), logoURI: '' }
+                        } catch { tokenInfo0 = { address: token0Addr, symbol: token0Addr.slice(0, 6) + '...', decimals: 18, logoURI: '' } }
+                    }
+                    if (!tokenInfo1) {
+                        try {
+                            const c = new ethers.Contract(token1Addr, erc20Abi, readProvider)
+                            const [sym, dec] = await Promise.all([c.symbol(), c.decimals()])
+                            tokenInfo1 = { address: token1Addr, symbol: sym, decimals: Number(dec), logoURI: '' }
+                        } catch { tokenInfo1 = { address: token1Addr, symbol: token1Addr.slice(0, 6) + '...', decimals: 18, logoURI: '' } }
+                    }
+
+                    const reserve0 = ethers.formatUnits(reserves[0], tokenInfo0.decimals)
+                    const reserve1 = ethers.formatUnits(reserves[1], tokenInfo1.decimals)
+
+                    pools.push({
+                        pairAddress,
+                        token0: tokenInfo0,
+                        token1: tokenInfo1,
+                        reserve0,
+                        reserve1,
+                    })
+                } catch { continue }
+            }
+            setAllPools(pools)
+        } catch (e) { console.error('Load all pools error:', e) }
+        finally { setIsLoadingPools(false) }
+    }, [readProvider, swapTokenList])
 
     const handleAddLiquidity = async () => {
         if (!signer || !tokenA || !tokenB || !amountA || !amountB) return
@@ -477,10 +542,54 @@ export default function PoolTab({ showAlert, slippage }) {
     }
 
     // LIST VIEW (default)
+    const PoolTokenIcon = ({ token }) => {
+        const [err, setErr] = useState(false)
+        if (err || !token?.logoURI) return <div className={s.tokenIconPlaceholder}>?</div>
+        return <img src={token.logoURI} alt={token.symbol} className={s.tokenIcon} onError={() => setErr(true)} />
+    }
+
     return (
         <>
             <button className={s.actionBtn} onClick={() => setView('add')}><img src="/plus-swap.svg" alt="" className={s.actionBtnIcon} /> Add Liquidity</button>
+
+            {/* ===== ALL POOLS SECTION ===== */}
             <div className={s.poolHeader} style={{ marginTop: '1rem' }}>
+                <div className={s.poolTitle}>All Pools</div>
+            </div>
+            {isLoadingPools ? (
+                <div className={s.scanningPool}>Loading pools...</div>
+            ) : allPools.length === 0 ? (
+                <div className={s.emptyPool}>No pools found.</div>
+            ) : (
+                <div className={s.allPoolsList}>
+                    {allPools.map((pool, i) => (
+                        <div key={i} className={s.allPoolCard}>
+                            <div className={s.allPoolPair}>
+                                <div className={s.allPoolIcons}>
+                                    <PoolTokenIcon token={pool.token0} />
+                                    <PoolTokenIcon token={pool.token1} />
+                                </div>
+                                <span className={s.allPoolName}>{pool.token0.symbol} / {pool.token1.symbol}</span>
+                            </div>
+                            <div className={s.allPoolReserves}>
+                                <div className={s.allPoolReserveRow}>
+                                    <PoolTokenIcon token={pool.token0} />
+                                    <span className={s.allPoolReserveValue}>{formatSwapAmount(pool.reserve0)}</span>
+                                    <span className={s.allPoolReserveSymbol}>{pool.token0.symbol}</span>
+                                </div>
+                                <div className={s.allPoolReserveRow}>
+                                    <PoolTokenIcon token={pool.token1} />
+                                    <span className={s.allPoolReserveValue}>{formatSwapAmount(pool.reserve1)}</span>
+                                    <span className={s.allPoolReserveSymbol}>{pool.token1.symbol}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* ===== YOUR LIQUIDITY SECTION ===== */}
+            <div className={s.poolHeader} style={{ marginTop: '1.25rem' }}>
                 <div className={s.poolTitle}>Your Liquidity</div>
             </div>
             {isScanning ? (

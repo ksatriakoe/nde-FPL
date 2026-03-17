@@ -1537,3 +1537,118 @@
         height: 13px;
     }
 }
+
+/* ===== All Pools ===== */
+.allPoolsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.allPoolCard {
+    background: rgba(10, 10, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.2s ease;
+}
+
+.allPoolCard:hover {
+    border-color: rgba(29, 78, 216, 0.3);
+}
+
+.allPoolPair {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.allPoolIcons {
+    display: flex;
+    align-items: center;
+}
+
+.allPoolIcons > *:nth-child(2) {
+    margin-left: -8px;
+}
+
+.allPoolName {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #e8e8f0;
+}
+
+.allPoolReserves {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+}
+
+.allPoolReserveRow {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.allPoolReserveRow .tokenIcon,
+.allPoolReserveRow .tokenIconPlaceholder {
+    width: 16px;
+    height: 16px;
+}
+
+.allPoolReserveValue {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e8e8f0;
+}
+
+.allPoolReserveSymbol {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    min-width: 36px;
+}
+
+/* All Pools — Mobile */
+@media (max-width: 640px) {
+    .allPoolCard {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.75rem 0.85rem;
+    }
+
+    .allPoolPair {
+        gap: 0.5rem;
+    }
+
+    .allPoolName {
+        font-size: 0.9rem;
+    }
+
+    .allPoolReserves {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding-top: 0.4rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .allPoolReserveRow {
+        gap: 0.25rem;
+    }
+
+    .allPoolReserveValue {
+        font-size: 0.8rem;
+    }
+
+    .allPoolReserveSymbol {
+        font-size: 0.7rem;
+        min-width: unset;
+    }
+}
