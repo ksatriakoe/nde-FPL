@@ -8,28 +8,32 @@ interface IERC20 {
 }
 
 /**
- * @title FPLStaking
- * @notice Stake TEST tokens to earn TEST rewards at a fixed APY.
+ * @title FPLStaking V2
+ * @notice Stake TEST tokens to earn TEST rewards with dynamic APR.
  *         - No lock period: stake/unstake anytime
- *         - Owner sets APY in basis points (e.g. 4800 = 48%)
+ *         - APR = (rewardPool / totalStaked) × 100%
+ *         - APR auto-adjusts when owner deposits rewards or when stakers join/leave
  *         - Owner deposits reward tokens into the contract
- *         - rewardRate auto-recalculates when APY or totalStaked changes
+ *         - Rewards are distributed proportionally from the available pool over 1 year
  *
  *         Uses Synthetix RewardPerToken accumulator pattern
- *         with APY-derived rewardRate.
+ *         with pool-derived rewardRate.
  */
 contract FPLStaking {
     IERC20 public stakingToken;
     address public owner;
 
-    // --- APY & Reward state ---
-    uint256 public apyBasisPoints;            // e.g. 4800 = 48%
+    // --- Reward state ---
     uint256 public rewardPerTokenStored;
     uint256 public lastUpdateTime;
 
     // --- Staking state ---
     uint256 public totalStaked;
     uint256 public minStake;
+
+    // --- Reward pool tracking ---
+    // Tracks reward tokens deposited minus rewards already distributed
+    uint256 public rewardPool;
 
     mapping(address => uint256) public stakedBalance;
     mapping(address => uint256) public userRewardPerTokenPaid;
@@ -42,7 +46,6 @@ contract FPLStaking {
     event Staked(address indexed user, uint256 amount);
     event Unstaked(address indexed user, uint256 amount);
     event RewardsClaimed(address indexed user, uint256 amount);
-    event APYUpdated(uint256 newAPY);
     event RewardsDeposited(uint256 amount);
     event MinStakeUpdated(uint256 newMinStake);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -60,8 +63,22 @@ contract FPLStaking {
     }
 
     modifier updateReward(address account) {
-        rewardPerTokenStored = rewardPerToken();
+        // Settle any accrued rewards before state changes
+        uint256 newRewardPerToken = rewardPerToken();
+        
+        // Calculate how much reward was distributed since last update
+        if (totalStaked > 0) {
+            uint256 rewardDistributed = (block.timestamp - lastUpdateTime) * _currentRewardRate();
+            // Decrease rewardPool by the amount distributed
+            if (rewardDistributed > rewardPool) {
+                rewardDistributed = rewardPool;
+            }
+            rewardPool -= rewardDistributed;
+        }
+        
+        rewardPerTokenStored = newRewardPerToken;
         lastUpdateTime = block.timestamp;
+        
         if (account != address(0)) {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
@@ -72,13 +89,11 @@ contract FPLStaking {
     /**
      * @param _stakingToken  Address of the TEST ERC-20 token
      * @param _minStake      Minimum stake amount (in wei)
-     * @param _apyBasisPoints  APY in basis points (4800 = 48%)
      */
-    constructor(address _stakingToken, uint256 _minStake, uint256 _apyBasisPoints) {
+    constructor(address _stakingToken, uint256 _minStake) {
         owner = msg.sender;
         stakingToken = IERC20(_stakingToken);
         minStake = _minStake;
-        apyBasisPoints = _apyBasisPoints;
         lastUpdateTime = block.timestamp;
     }
 
@@ -87,12 +102,13 @@ contract FPLStaking {
     // =====================================================================
 
     /**
-     * @dev Derives rewardRate (wei/sec) from APY and current totalStaked.
-     *      rewardRate = totalStaked * apyBasisPoints / 10000 / 365.25 days
+     * @dev Derives rewardRate (wei/sec) from rewardPool and totalStaked.
+     *      Distributes the entire rewardPool over 1 year proportionally.
+     *      rewardRate = rewardPool / 365 days
      */
     function _currentRewardRate() internal view returns (uint256) {
-        if (totalStaked == 0 || apyBasisPoints == 0) return 0;
-        return (totalStaked * apyBasisPoints) / 10000 / 365 days;
+        if (totalStaked == 0 || rewardPool == 0) return 0;
+        return rewardPool / 365 days;
     }
 
     // =====================================================================
@@ -104,8 +120,16 @@ contract FPLStaking {
             return rewardPerTokenStored;
         }
         uint256 rate = _currentRewardRate();
+        uint256 elapsed = block.timestamp - lastUpdateTime;
+        uint256 rewardAccrued = elapsed * rate;
+        
+        // Cap reward accrued at remaining pool
+        if (rewardAccrued > rewardPool) {
+            rewardAccrued = rewardPool;
+        }
+        
         return rewardPerTokenStored + (
-            (block.timestamp - lastUpdateTime) * rate * 1e18 / totalStaked
+            rewardAccrued * 1e18 / totalStaked
         );
     }
 
@@ -115,18 +139,30 @@ contract FPLStaking {
         ) + rewards[account];
     }
 
+    /**
+     * @notice Returns the current APR in basis points.
+     *         APR = (rewardPool / totalStaked) * 10000
+     *         e.g. 5000 = 50% APR
+     */
+    function getAPR() public view returns (uint256) {
+        if (totalStaked == 0) return 0;
+        return (rewardPool * 10000) / totalStaked;
+    }
+
     function getStakeInfo(address account) external view returns (
         uint256 _totalStaked,
         uint256 _userStaked,
         uint256 _userRewards,
-        uint256 _apyBasisPoints,
-        uint256 _minStake
+        uint256 _rewardPool,
+        uint256 _minStake,
+        uint256 _apr
     ) {
         _totalStaked = totalStaked;
         _userStaked = stakedBalance[account];
         _userRewards = earned(account);
-        _apyBasisPoints = apyBasisPoints;
+        _rewardPool = rewardPool;
         _minStake = minStake;
+        _apr = getAPR();
     }
 
     // =====================================================================
@@ -167,22 +203,15 @@ contract FPLStaking {
     // =====================================================================
 
     /**
-     * @notice Set APY. Can be changed anytime.
-     * @param _apyBasisPoints APY in basis points (4800 = 48%, 10000 = 100%)
-     */
-    function setAPY(uint256 _apyBasisPoints) external onlyOwner updateReward(address(0)) {
-        apyBasisPoints = _apyBasisPoints;
-        emit APYUpdated(_apyBasisPoints);
-    }
-
-    /**
      * @notice Owner deposits reward tokens into the contract.
      *         Must approve this contract first.
+     *         Depositing more tokens increases APR automatically.
      */
-    function depositRewards(uint256 amount) external onlyOwner {
+    function depositRewards(uint256 amount) external onlyOwner updateReward(address(0)) {
         require(amount > 0, "Cannot deposit 0");
         bool success = stakingToken.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer failed");
+        rewardPool += amount;
         emit RewardsDeposited(amount);
     }
 
@@ -198,16 +227,33 @@ contract FPLStaking {
     }
 
     /**
-     * @notice Emergency: withdraw excess reward tokens.
+     * @notice Emergency: withdraw excess reward tokens from pool.
      */
-    function emergencyWithdraw(uint256 amount) external onlyOwner {
+    function emergencyWithdraw(uint256 amount) external onlyOwner updateReward(address(0)) {
+        require(amount <= rewardPool, "Exceeds reward pool");
+        rewardPool -= amount;
         bool success = stakingToken.transfer(owner, amount);
         require(success, "Transfer failed");
     }
 
     /**
+     * @notice Sync rewardPool with actual contract balance.
+     *         Use this if tokens were sent directly via transfer()
+     *         instead of depositRewards().
+     */
+    function syncRewardPool() external onlyOwner updateReward(address(0)) {
+        uint256 contractBalance = stakingToken.balanceOf(address(this));
+        uint256 accounted = totalStaked + rewardPool;
+        if (contractBalance > accounted) {
+            uint256 unaccounted = contractBalance - accounted;
+            rewardPool += unaccounted;
+            emit RewardsDeposited(unaccounted);
+        }
+    }
+
+    /**
      * @notice View how many reward tokens are available in the contract
-     *         (excluding staked tokens).
+     *         (excluding staked tokens). Uses the tracked rewardPool.
      */
     function rewardBalance() external view returns (uint256) {
         uint256 contractBalance = stakingToken.balanceOf(address(this));

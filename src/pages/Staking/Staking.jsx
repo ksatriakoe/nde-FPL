@@ -30,8 +30,9 @@ function useStakingContract(signer, provider, userAddress) {
         totalStaked: '0',
         userStaked: '0',
         userRewards: '0',
-        apyBasisPoints: 0,
+        rewardPool: '0',
         minStake: '0',
+        apr: 0,
     })
     const [loading, setLoading] = useState(true)
 
@@ -40,7 +41,6 @@ function useStakingContract(signer, provider, userAddress) {
             setLoading(false)
             return
         }
-        // Use connected provider if available, otherwise fallback to public RPC
         let readProvider = provider
         if (!readProvider) {
             readProvider = new ethers.JsonRpcProvider(BASE_RPC, {
@@ -56,21 +56,23 @@ function useStakingContract(signer, provider, userAddress) {
                     totalStaked: ethers.formatEther(info._totalStaked),
                     userStaked: ethers.formatEther(info._userStaked),
                     userRewards: ethers.formatEther(info._userRewards),
-                    apyBasisPoints: Number(info._apyBasisPoints),
+                    rewardPool: ethers.formatEther(info._rewardPool),
                     minStake: ethers.formatEther(info._minStake),
+                    apr: Number(info._apr) / 100, // basis points → percentage
                 })
             } else {
-                // No wallet connected — fetch public data only
-                const [totalStaked, apyBP, minStake] = await Promise.all([
+                const [totalStaked, minStake, rewardPoolVal, aprBP] = await Promise.all([
                     contract.totalStaked(),
-                    contract.apyBasisPoints(),
                     contract.minStake(),
+                    contract.rewardPool(),
+                    contract.getAPR(),
                 ])
                 setData(prev => ({
                     ...prev,
                     totalStaked: ethers.formatEther(totalStaked),
-                    apyBasisPoints: Number(apyBP),
                     minStake: ethers.formatEther(minStake),
+                    rewardPool: ethers.formatEther(rewardPoolVal),
+                    apr: Number(aprBP) / 100,
                     userStaked: '0',
                     userRewards: '0',
                 }))
@@ -83,7 +85,7 @@ function useStakingContract(signer, provider, userAddress) {
 
     useEffect(() => {
         fetchData()
-        const iv = setInterval(fetchData, 10000) // refresh every 10s
+        const iv = setInterval(fetchData, 10000)
         return () => clearInterval(iv)
     }, [fetchData])
 
@@ -111,7 +113,6 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
             const parsedAmount = ethers.parseEther(amount)
 
             if (mode === 'stake') {
-                // Check and do approval
                 const tokenContract = new ethers.Contract(TOKEN_ADDRESS, erc20Abi, signer)
                 const allowance = await tokenContract.allowance(userAddress, stakingAddress)
                 if (allowance < parsedAmount) {
@@ -139,7 +140,6 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
         setBusy(false)
     }
 
-    // Check if stake amount meets minimum
     const belowMin = mode === 'stake' && amount && parseFloat(amount) > 0 &&
         parseFloat(amount) < parseFloat(stakeData.minStake)
 
@@ -190,6 +190,10 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                                 <div className={s.modalInfoRow}>
                                     <span className={s.modalInfoLabel}>Min Stake</span>
                                     <span className={s.modalInfoValue}>{formatSwapAmount(stakeData.minStake)} TEST</span>
+                                </div>
+                                <div className={s.modalInfoRow}>
+                                    <span className={s.modalInfoLabel}>Current APR</span>
+                                    <span className={s.modalInfoValueGreen}>{stakeData.apr > 0 ? `${formatSwapAmount(stakeData.apr.toString())}%` : '—'}</span>
                                 </div>
                             </div>
                         )}
@@ -250,9 +254,6 @@ export default function Staking() {
         setClaimBusy(false)
     }
 
-    // APY from contract (basis points → percentage)
-    const apy = stakeData.apyBasisPoints / 100
-
     const contractReady = !!stakingAddress
 
     return (
@@ -278,7 +279,10 @@ export default function Staking() {
                             <div className={s.subtitle}>Stake TEST to earn rewards</div>
                         </div>
                     </div>
-                    <span className={s.aprText}>{apy > 0 ? `${formatSwapAmount(apy.toString())}%` : '—'} <span className={s.aprTextLabel}>APY</span></span>
+                    <span className={s.aprText}>
+                        <span className={s.aprValueGreen}>{stakeData.apr > 0 ? `${formatSwapAmount(stakeData.apr.toString())}%` : '—'}</span>
+                        {' '}<span className={s.aprLabel}>APR</span>
+                    </span>
                 </div>
 
                 {!contractReady && (
@@ -289,23 +293,41 @@ export default function Staking() {
 
                 {contractReady && (
                     <>
-                        {/* Overview Stats */}
+                        {/* Overview Stats - 2x2 Grid */}
                         <div className={s.overviewGrid}>
                             <div className={s.overviewItem}>
+                                <img src="/stats-staking.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Total Staked</div>
                                 <div className={s.overviewValue}>{loading ? '...' : formatSwapAmount(stakeData.totalStaked)}</div>
                                 <div className={s.overviewUnit}>TEST</div>
                             </div>
                             <div className={s.overviewItem}>
+                                <img src="/money-staking.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Your Staked</div>
                                 <div className={s.overviewValue}>{loading ? '...' : formatSwapAmount(stakeData.userStaked)}</div>
                                 <div className={s.overviewUnit}>TEST</div>
                             </div>
                             <div className={s.overviewItem}>
+                                <img src="/box.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Your Rewards</div>
                                 <div className={s.overviewValueReward}>{loading ? '...' : formatSwapAmount(stakeData.userRewards)}</div>
                                 <div className={s.overviewUnit}>TEST</div>
                             </div>
+                            <div className={s.overviewItem}>
+                                <img src="/bank.svg" alt="" className={s.overviewSvgIcon} />
+                                <div className={s.overviewLabel}>Reward Pool</div>
+                                <div className={s.overviewValuePool}>{loading ? '...' : formatSwapAmount(stakeData.rewardPool)}</div>
+                                <div className={s.overviewUnit}>TEST</div>
+                            </div>
+                        </div>
+
+                        {/* APR Info Banner */}
+                        <div className={s.aprInfoBanner}>
+                            <div className={s.aprInfoLeft}>
+                                <img src="/flash.svg" alt="" className={s.aprInfoSvgIcon} />
+                                <span className={s.aprInfoText}>Dynamic APR</span>
+                            </div>
+                            <span className={s.aprInfoDesc}>Rate adjusts based on reward pool & total staked</span>
                         </div>
 
                         {/* Pool Details */}

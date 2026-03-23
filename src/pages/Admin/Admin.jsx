@@ -226,18 +226,20 @@ function ManualSubscriptionCard({ showAlert }) {
 }
 
 /* ============================================================= */
-/*  Card 2 — Set APY Staking (on-chain)                          */
+/*  Card 2 — Staking Control (on-chain, Dynamic APR)              */
 /* ============================================================= */
 function StakingControlCard({ showAlert }) {
     const [stakingData, setStakingData] = useState({
-        totalStaked: '0', rewardBalance: '0',
-        apyBasisPoints: 0, minStake: '0',
+        totalStaked: '0', rewardPool: '0',
+        apr: 0, minStake: '0',
     })
     const [loading, setLoading] = useState(true)
-    const [newApy, setNewApy] = useState('')
     const [newMinStake, setNewMinStake] = useState('')
-    const [busyApy, setBusyApy] = useState(false)
+    const [depositAmount, setDepositAmount] = useState('')
     const [busyMin, setBusyMin] = useState(false)
+    const [busyDeposit, setBusyDeposit] = useState(false)
+
+    const [busySync, setBusySync] = useState(false)
 
     const fetchStakingData = useCallback(async () => {
         if (!stakingAddress) { setLoading(false); return }
@@ -246,17 +248,17 @@ function StakingControlCard({ showAlert }) {
                 chainId: 8453, name: 'base',
             }, { staticNetwork: true })
             const contract = new ethers.Contract(stakingAddress, stakingAbi, rpcProvider)
-            const [totalStaked, apyBP, minStake, rewardBal] = await Promise.all([
+            const [totalStaked, minStake, rewardPoolVal, aprBP] = await Promise.all([
                 contract.totalStaked(),
-                contract.apyBasisPoints(),
                 contract.minStake(),
-                contract.rewardBalance(),
+                contract.rewardPool(),
+                contract.getAPR(),
             ])
             setStakingData({
                 totalStaked: ethers.formatEther(totalStaked),
-                apyBasisPoints: Number(apyBP),
                 minStake: ethers.formatEther(minStake),
-                rewardBalance: ethers.formatEther(rewardBal),
+                rewardPool: ethers.formatEther(rewardPoolVal),
+                apr: Number(aprBP) / 100,
             })
         } catch (err) {
             console.error('Staking read error:', err)
@@ -272,26 +274,6 @@ function StakingControlCard({ showAlert }) {
         if (!window.ethereum) throw new Error('No wallet detected')
         const provider = new ethers.BrowserProvider(window.ethereum)
         return provider.getSigner()
-    }
-
-    const handleSetApy = async () => {
-        if (!newApy || parseFloat(newApy) < 0) return
-        setBusyApy(true)
-        try {
-            const signer = await getSigner()
-            const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
-            const basisPoints = Math.round(parseFloat(newApy) * 100)
-            showAlert(`Setting APY to ${newApy}%...`, 'info')
-            const tx = await contract.setAPY(basisPoints)
-            await tx.wait()
-            showAlert(`APY updated to ${newApy}%!`, 'success')
-            setNewApy('')
-            fetchStakingData()
-        } catch (err) {
-            const msg = err?.reason || err?.message || 'Transaction failed'
-            showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
-        }
-        setBusyApy(false)
     }
 
     const handleSetMinStake = async () => {
@@ -314,12 +296,67 @@ function StakingControlCard({ showAlert }) {
         setBusyMin(false)
     }
 
-    const apy = stakingData.apyBasisPoints / 100
+    const handleDepositRewards = async () => {
+        if (!depositAmount || parseFloat(depositAmount) <= 0) return
+        setBusyDeposit(true)
+        try {
+            const signer = await getSigner()
+            const signerAddress = await signer.getAddress()
+            const tokenContract = new ethers.Contract(TOKEN_ADDRESS, erc20Abi, signer)
+            const parsedAmount = ethers.parseEther(depositAmount)
+
+            // Check and do approval
+            const allowance = await tokenContract.allowance(signerAddress, stakingAddress)
+            if (allowance < parsedAmount) {
+                showAlert('Approving tokens...', 'info')
+                const approveTx = await tokenContract.approve(stakingAddress, ethers.MaxUint256)
+                await approveTx.wait()
+            }
+
+            showAlert(`Depositing ${depositAmount} TEST rewards...`, 'info')
+            const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
+            const tx = await contract.depositRewards(parsedAmount)
+            await tx.wait()
+            showAlert(`Deposited ${depositAmount} TEST into reward pool!`, 'success')
+            setDepositAmount('')
+            fetchStakingData()
+        } catch (err) {
+            const msg = err?.reason || err?.message || 'Transaction failed'
+            showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+        }
+        setBusyDeposit(false)
+    }
+
+    const handleSyncPool = async () => {
+        setBusySync(true)
+        try {
+            const signer = await getSigner()
+            const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
+            showAlert('Syncing reward pool...', 'info')
+            const tx = await contract.syncRewardPool()
+            await tx.wait()
+            showAlert('Reward pool synced!', 'success')
+            fetchStakingData()
+        } catch (err) {
+            const msg = err?.reason || err?.message || 'Transaction failed'
+            showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+        }
+        setBusySync(false)
+    }
+
     const fmt = (v) => {
         const n = parseFloat(v)
         if (isNaN(n)) return '0'
-        return n % 1 === 0 ? n.toLocaleString() : n.toLocaleString(undefined, { maximumFractionDigits: 4 })
+        if (n % 1 === 0) return n.toString()
+        // Up to 4 decimal places, remove trailing zeros
+        return parseFloat(n.toFixed(4)).toString()
     }
+
+    // Estimate days remaining
+    const totalStakedNum = parseFloat(stakingData.totalStaked)
+    const rewardPoolNum = parseFloat(stakingData.rewardPool)
+    const dailyRate = totalStakedNum > 0 ? (rewardPoolNum / 365) : 0
+    const estimatedDays = dailyRate > 0 ? Math.floor(rewardPoolNum / dailyRate) : 0
 
     return (
         <div className={s.card}>
@@ -330,8 +367,12 @@ function StakingControlCard({ showAlert }) {
 
             <div className={s.statsGrid}>
                 <div className={s.statItem}>
-                    <div className={s.statLabel}>Current APY</div>
-                    <div className={s.statValueAccent}>{loading ? '...' : `${fmt(apy.toString())}%`}</div>
+                    <div className={s.statLabel}>Current APR</div>
+                    <div className={s.statValueAccent}>{loading ? '...' : `${fmt(stakingData.apr.toString())}%`}</div>
+                </div>
+                <div className={s.statItem}>
+                    <div className={s.statLabel}>Reward Pool</div>
+                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.rewardPool)}<span className={s.statUnit}>TEST</span></div>
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Total Staked</div>
@@ -343,33 +384,47 @@ function StakingControlCard({ showAlert }) {
                 </div>
             </div>
 
+            {!loading && estimatedDays > 0 && (
+                <div className={s.inputHint} style={{ marginBottom: '0.75rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                    <img src="/clock-admin.svg" alt="" style={{ width: '14px', height: '14px', opacity: 0.7 }} /> Reward pool estimated to last ~{estimatedDays} days at current rate
+                </div>
+            )}
+
             <hr className={s.divider} />
 
             <div className={s.formGroup}>
-                <label className={s.label}>Set New APY</label>
+                <label className={s.label}>Deposit Rewards</label>
                 <div className={s.formRow}>
                     <div className={s.inputWithUnit}>
                         <input
                             className={s.input}
                             type="number"
-                            step="0.1"
+                            step="1"
                             min="0"
-                            value={newApy}
-                            onChange={e => setNewApy(e.target.value)}
-                            placeholder={`${apy}`}
+                            value={depositAmount}
+                            onChange={e => setDepositAmount(e.target.value)}
+                            placeholder="Amount"
                         />
-                        <span className={s.inputUnit}>%</span>
+                        <span className={s.inputUnit}>TEST</span>
                     </div>
                     <button
                         className={s.primaryBtn}
-                        onClick={handleSetApy}
-                        disabled={busyApy || !newApy}
+                        onClick={handleDepositRewards}
+                        disabled={busyDeposit || !depositAmount || parseFloat(depositAmount) <= 0}
                         style={{ maxWidth: '140px' }}
                     >
-                        {busyApy ? 'Sending...' : 'Update APY'}
+                        {busyDeposit ? 'Sending...' : 'Deposit'}
                     </button>
                 </div>
-                <div className={s.inputHint}>Enter percentage directly, e.g. 50 = 50% APY (auto-converts to {newApy ? Math.round(parseFloat(newApy) * 100) : '—'} basis points)</div>
+                <div className={s.inputHint}>Depositing more tokens will increase APR automatically</div>
+                <button
+                    className={s.secondaryBtn}
+                    onClick={handleSyncPool}
+                    disabled={busySync}
+                    style={{ marginTop: '0.5rem', width: '100%' }}
+                >
+                    {busySync ? 'Syncing...' : <><img src="/reload.svg" alt="" style={{ width: '14px', height: '14px', verticalAlign: 'middle', marginRight: '0.3rem' }} />Sync Reward Pool (if tokens sent via direct transfer)</>}
+                </button>
             </div>
 
             <div className={s.formGroup}>

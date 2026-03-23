@@ -144,22 +144,24 @@ export const swapAddresses = {
 // Staking Contract — Base Mainnet
 // Replace with your deployed staking contract on Base
 // =============================================================
-export const stakingAddress = '0xe2C52d3Bfb69a0Bff9bA6a1a1C28e24BE23AAE16'
+export const stakingAddress = '0x87df1B485a88f4Cebe6dD4443AE86f0D67ce7CA7'
 
 export const stakingAbi = [
     'function stake(uint256 amount) external',
     'function unstake(uint256 amount) external',
     'function claimRewards() external',
     'function earned(address account) external view returns (uint256)',
-    'function getStakeInfo(address account) external view returns (uint256 _totalStaked, uint256 _userStaked, uint256 _userRewards, uint256 _apyBasisPoints, uint256 _minStake)',
+    'function getStakeInfo(address account) external view returns (uint256 _totalStaked, uint256 _userStaked, uint256 _userRewards, uint256 _rewardPool, uint256 _minStake, uint256 _apr)',
     'function stakedBalance(address) external view returns (uint256)',
     'function totalStaked() external view returns (uint256)',
-    'function apyBasisPoints() external view returns (uint256)',
     'function minStake() external view returns (uint256)',
+    'function rewardPool() external view returns (uint256)',
     'function rewardBalance() external view returns (uint256)',
+    'function getAPR() external view returns (uint256)',
     'function stakingToken() external view returns (address)',
     // Owner functions (admin dashboard)
-    'function setAPY(uint256 _apyBasisPoints) external',
     'function setMinStake(uint256 _minStake) external',
     'function depositRewards(uint256 amount) external',
+    'function emergencyWithdraw(uint256 amount) external',
+    'function syncRewardPool() external',
 ]
