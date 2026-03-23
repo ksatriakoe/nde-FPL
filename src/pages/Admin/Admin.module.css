@@ -518,6 +518,17 @@
     margin-top: 0.15rem;
 }
 
+/* ── Fee Withdraw Row ── */
+.feeWithdrawRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.feeBalanceInfo {
+    flex: 1;
+}
+
 /* ── Divider ── */
 .divider {
     border: none;
@@ -767,6 +778,21 @@
 
     .cardTitle {
         font-size: 0.92rem;
+    }
+
+    /* Fee withdraw — stack on mobile */
+    .feeWithdrawRow {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+    }
+
+    .feeBalanceInfo {
+        text-align: center;
+    }
+
+    .feeWithdrawRow .primaryBtn {
+        max-width: 100% !important;
     }
 }
 

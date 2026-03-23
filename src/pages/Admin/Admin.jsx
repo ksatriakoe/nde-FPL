@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi'
 import { ethers } from 'ethers'
 import { supabase } from '../../services/supabase'
 import { useTokenList } from '../../hooks/useTokenList'
-import { stakingAddress, stakingAbi, erc20Abi } from '../../services/swapConstants'
+import { stakingAddress, stakingAbi, erc20Abi, listingManagerAddress, listingManagerAbi } from '../../services/swapConstants'
 import s from './Admin.module.css'
 
 // ── Admin wallet (deployer) — change to your deployer address ──
@@ -469,6 +469,11 @@ function TokenManagementCard({ showAlert }) {
     const [busy, setBusy] = useState(false)
     const [form, setForm] = useState({ address: '', name: '', symbol: '', decimals: '18', logo_uri: '' })
 
+    // Listing fee withdraw state
+    const [feeBalance, setFeeBalance] = useState('0')
+    const [loadingFee, setLoadingFee] = useState(true)
+    const [busyWithdraw, setBusyWithdraw] = useState(false)
+
     const fetchTokens = useCallback(async () => {
         if (!supabase) { setLoading(false); return }
         try {
@@ -482,6 +487,43 @@ function TokenManagementCard({ showAlert }) {
     }, [])
 
     useEffect(() => { fetchTokens() }, [fetchTokens])
+
+    const fetchFeeBalance = useCallback(async () => {
+        if (!listingManagerAddress) { setLoadingFee(false); return }
+        try {
+            const rpcProvider = new ethers.JsonRpcProvider(BASE_RPC, { chainId: 8453, name: 'base' }, { staticNetwork: true })
+            const testTokenAddr = TOKEN_ADDRESS
+            const tokenContract = new ethers.Contract(testTokenAddr, erc20Abi, rpcProvider)
+            const balance = await tokenContract.balanceOf(listingManagerAddress)
+            setFeeBalance(ethers.formatEther(balance))
+        } catch (err) { console.error('Fee balance error:', err) }
+        setLoadingFee(false)
+    }, [])
+
+    useEffect(() => { fetchFeeBalance() }, [fetchFeeBalance])
+
+    const handleWithdrawFees = async () => {
+        setBusyWithdraw(true)
+        try {
+            if (!window.ethereum) throw new Error('No wallet detected')
+            const provider = new ethers.BrowserProvider(window.ethereum)
+            const signer = await provider.getSigner()
+            const signerAddress = await signer.getAddress()
+            const lmContract = new ethers.Contract(listingManagerAddress, listingManagerAbi, signer)
+            showAlert('Withdrawing listing fees...', 'info')
+            const tx = await lmContract.withdrawFees(signerAddress)
+            await tx.wait()
+            showAlert('Listing fees withdrawn!', 'success')
+            fetchFeeBalance()
+        } catch (err) {
+            if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
+            else {
+                const msg = err?.reason || err?.shortMessage || err?.message || 'Transaction failed'
+                showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+            }
+        }
+        setBusyWithdraw(false)
+    }
 
     const resetForm = () => {
         setForm({ address: '', name: '', symbol: '', decimals: '18', logo_uri: '' })
@@ -698,6 +740,29 @@ function TokenManagementCard({ showAlert }) {
                             )}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {/* ===== LISTING FEE WITHDRAW ===== */}
+            <hr className={s.divider} />
+            <div className={s.formGroup}>
+                <label className={s.label}>Listing Fees (ListingManager)</label>
+                <div className={s.feeWithdrawRow}>
+                    <div className={s.feeBalanceInfo}>
+                        <div className={s.statValueAccent} style={{ fontSize: '1.25rem' }}>
+                            {loadingFee ? '...' : parseFloat(feeBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                            <span className={s.statUnit}>TEST</span>
+                        </div>
+                        <div className={s.inputHint}>Accumulated from new pair listing fees</div>
+                    </div>
+                    <button
+                        className={s.primaryBtn}
+                        onClick={handleWithdrawFees}
+                        disabled={busyWithdraw || loadingFee || parseFloat(feeBalance) <= 0}
+                        style={{ maxWidth: '160px' }}
+                    >
+                        {busyWithdraw ? 'Withdrawing...' : 'Withdraw Fees'}
+                    </button>
                 </div>
             </div>
         </div>

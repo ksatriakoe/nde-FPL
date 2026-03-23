@@ -108,6 +108,9 @@ export default function PoolTab({ showAlert, slippage }) {
     const [isRemoving, setIsRemoving] = useState(false)
     const [removeEstimate, setRemoveEstimate] = useState(null)
 
+    // Pool sub-tab switch: 'yours' or 'all'
+    const [poolSubTab, setPoolSubTab] = useState('yours')
+
     // Listing fee state
     const [showListingFee, setShowListingFee] = useState(false)
     const [listingFee, setListingFee] = useState('0')
@@ -552,61 +555,71 @@ export default function PoolTab({ showAlert, slippage }) {
         <>
             <button className={s.actionBtn} onClick={() => setView('add')}><img src="/plus-swap.svg" alt="" className={s.actionBtnIcon} /> Add Liquidity</button>
 
-            {/* ===== ALL POOLS SECTION ===== */}
-            <div className={s.poolHeader} style={{ marginTop: '1rem' }}>
-                <div className={s.poolTitle}>All Pools</div>
+            {/* ===== POOL SUB-TAB SWITCH ===== */}
+            <div className={s.poolSubTabs}>
+                <button className={`${s.poolSubTab} ${poolSubTab === 'yours' ? s.poolSubTabActive : ''}`} onClick={() => setPoolSubTab('yours')}>
+                    Your Liquidity {!isScanning && <span className={s.poolSectionCount}>({liquidityPositions.length})</span>}
+                </button>
+                <button className={`${s.poolSubTab} ${poolSubTab === 'all' ? s.poolSubTabActive : ''}`} onClick={() => setPoolSubTab('all')}>
+                    All Pools {!isLoadingPools && <span className={s.poolSectionCount}>({allPools.length})</span>}
+                </button>
             </div>
-            {isLoadingPools ? (
-                <div className={s.scanningPool}>Loading pools...</div>
-            ) : allPools.length === 0 ? (
-                <div className={s.emptyPool}>No pools found.</div>
-            ) : (
-                <div className={s.allPoolsList}>
-                    {allPools.map((pool, i) => (
-                        <div key={i} className={s.allPoolCard}>
-                            <div className={s.allPoolPair}>
-                                <div className={s.allPoolIcons}>
-                                    <PoolTokenIcon token={pool.token0} />
-                                    <PoolTokenIcon token={pool.token1} />
+
+            {/* ===== ALL POOLS CONTENT ===== */}
+            {poolSubTab === 'all' && (
+                isLoadingPools ? (
+                    <div className={s.scanningPool}>Loading pools...</div>
+                ) : allPools.length === 0 ? (
+                    <div className={s.emptyPool}>No pools found.</div>
+                ) : (
+                    <div className={`${s.allPoolsList} ${s.poolScrollArea}`}>
+                        {allPools.map((pool, i) => (
+                            <div key={i} className={s.allPoolCard} onClick={() => { setTokenA(pool.token0); setTokenB(pool.token1); setView('add') }}>
+                                <div className={s.allPoolPair}>
+                                    <div className={s.allPoolIcons}>
+                                        <PoolTokenIcon token={pool.token0} />
+                                        <PoolTokenIcon token={pool.token1} />
+                                    </div>
+                                    <span className={s.allPoolName}>{pool.token0.symbol} / {pool.token1.symbol}</span>
                                 </div>
-                                <span className={s.allPoolName}>{pool.token0.symbol} / {pool.token1.symbol}</span>
+                                <div className={s.allPoolReserves}>
+                                    <div className={s.allPoolReserveRow}>
+                                        <PoolTokenIcon token={pool.token0} />
+                                        <span className={s.allPoolReserveValue}>{formatSwapAmount(pool.reserve0)}</span>
+                                        <span className={s.allPoolReserveSymbol}>{pool.token0.symbol}</span>
+                                    </div>
+                                    <div className={s.allPoolReserveRow}>
+                                        <PoolTokenIcon token={pool.token1} />
+                                        <span className={s.allPoolReserveValue}>{formatSwapAmount(pool.reserve1)}</span>
+                                        <span className={s.allPoolReserveSymbol}>{pool.token1.symbol}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className={s.allPoolReserves}>
-                                <div className={s.allPoolReserveRow}>
-                                    <PoolTokenIcon token={pool.token0} />
-                                    <span className={s.allPoolReserveValue}>{formatSwapAmount(pool.reserve0)}</span>
-                                    <span className={s.allPoolReserveSymbol}>{pool.token0.symbol}</span>
-                                </div>
-                                <div className={s.allPoolReserveRow}>
-                                    <PoolTokenIcon token={pool.token1} />
-                                    <span className={s.allPoolReserveValue}>{formatSwapAmount(pool.reserve1)}</span>
-                                    <span className={s.allPoolReserveSymbol}>{pool.token1.symbol}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )
             )}
 
-            {/* ===== YOUR LIQUIDITY SECTION ===== */}
-            <div className={s.poolHeader} style={{ marginTop: '1.25rem' }}>
-                <div className={s.poolTitle}>Your Liquidity</div>
-            </div>
-            {isScanning ? (
-                <div className={s.scanningPool}>Loading positions...</div>
-            ) : liquidityPositions.length === 0 ? (
-                <div className={s.emptyPool}>Your liquidity positions will appear here.</div>
-            ) : (
-                liquidityPositions.map((pos, i) => (
-                    <PositionCard
-                        key={i} position={pos}
-                        isExpanded={expandedPosition === i}
-                        onToggle={() => setExpandedPosition(expandedPosition === i ? null : i)}
-                        getDetails={getPositionDetails}
-                        onAddMore={p => { setTokenA(p.tokenA); setTokenB(p.tokenB); setView('add') }}
-                        onRemove={p => { setSelectedPosition(p); setView('remove') }}
-                    />
-                ))
+            {/* ===== YOUR LIQUIDITY CONTENT ===== */}
+            {poolSubTab === 'yours' && (
+                isScanning ? (
+                    <div className={s.scanningPool}>Loading positions...</div>
+                ) : liquidityPositions.length === 0 ? (
+                    <div className={s.emptyPool}>Your liquidity positions will appear here.</div>
+                ) : (
+                    <div className={s.poolScrollArea}>
+                        {liquidityPositions.map((pos, i) => (
+                            <PositionCard
+                                key={i} position={pos}
+                                isExpanded={expandedPosition === i}
+                                onToggle={() => setExpandedPosition(expandedPosition === i ? null : i)}
+                                getDetails={getPositionDetails}
+                                onAddMore={p => { setTokenA(p.tokenA); setTokenB(p.tokenB); setView('add') }}
+                                onRemove={p => { setSelectedPosition(p); setView('remove') }}
+                            />
+                        ))}
+                    </div>
+                )
             )}
         </>
     )
