@@ -6,7 +6,7 @@ import { formatSwapAmount } from '../../services/formatBalance'
 import { stakingAddress, stakingAbi, erc20Abi } from '../../services/swapConstants'
 import s from './Staking.module.css'
 
-const TOKEN_ADDRESS = '0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C' // TEST on Base
+const TOKEN_ADDRESS = '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067' // TEST on Base
 const TOKEN_INFO = {
     address: TOKEN_ADDRESS,
     name: 'TEST Token',

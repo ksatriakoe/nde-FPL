@@ -3,8 +3,8 @@
 // Replace these with your deployed contract addresses
 // =============================================================
 export const customAddresses = {
-    factory: '0xf42548Ba89dc2314408f44b16506F88769abDED5',
-    router: '0x313049192Cb0d4027A0De419a1dD169F9eFB48c7',
+    factory: '0x599B458f6f5722491f20C1572d67E122d9f4CE28',
+    router: '0x4e47b5B5707928696BC74F8b5a359a7a9FeF0b61',
 }
 
 // =============================================================
@@ -25,7 +25,7 @@ export const WETH_ADDRESS = '0x4200000000000000000000000000000000000006' // Base
 // Replace these with your deployed contract addresses
 // =============================================================
 export const aggregatorAddress = '0xBd5447Ff67852627c841bC695b99626BB60AcC8a'
-export const listingManagerAddress = '0x3EF993BEe30c99A840c4b61fc1c9d08FCEdA3857'
+export const listingManagerAddress = '0x9B3A75E5bE3d6a546619C3EC1320a71d1E5C0BDf'
 
 // =============================================================
 // ABIs
@@ -102,9 +102,9 @@ export const defaultSwapToken = {
 // =============================================================
 export const swapTokenList = [
     {
-        address: '0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C',
-        name: 'TEST',
-        symbol: 'TEST',
+        address: '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067',
+        name: 'TESTV2',
+        symbol: 'TESTV2',
         decimals: 18,
         logoURI: '/NdeFPL.png',
     },

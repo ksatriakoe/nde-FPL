@@ -149,7 +149,11 @@ export default function SwapTab({ showAlert, slippage }) {
     const computeSwapDetails = (amount, formatted, amountInParsed, path, router, source, routerInFirst) => {
         try {
             const minReceived = parseFloat(formatted) * (1 - slippage / 100)
-            const lpFee = amount * 0.003 * (source === 'aggregator' ? 2 : 1) // 2 hops for aggregator
+            const lpFee = source === 'aggregator'
+                ? amount * (0.005 + 0.003) // custom 0.5% + uniswap 0.3%
+                : source === 'custom'
+                    ? amount * 0.005  // custom DEX 0.5%
+                    : amount * 0.003  // uniswap 0.3%
             setSwapDetails({
                 minReceived: formatSwapAmount(minReceived),
                 priceImpact: '0',

@@ -10,7 +10,7 @@ import s from './Admin.module.css'
 // ── Admin wallet (deployer) — change to your deployer address ──
 const ADMIN_WALLET = '0x484E0cAA0e211309771d1Be3A59EbC5F4cD0Cb4c'.toLowerCase()
 
-const TOKEN_ADDRESS = '0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C'
+const TOKEN_ADDRESS = '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067'
 const BASE_RPC = 'https://base-rpc.publicnode.com'
 
 /* ============================================================= */

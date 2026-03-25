@@ -70,7 +70,7 @@ export const ERC20_ABI = [
 ]
 
 // TEST token on Base
-export const TOKEN_ADDRESS = '0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C'
+export const TOKEN_ADDRESS = '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067'
 
 // Replace with your deployed contract address after deploying
 export const FPL_SUBSCRIPTION_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || '0x6fB4931995931b5E4bf821088fe4C3e6bf092054'
