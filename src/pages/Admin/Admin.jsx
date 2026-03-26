@@ -226,18 +226,20 @@ function ManualSubscriptionCard({ showAlert }) {
 }
 
 /* ============================================================= */
-/*  Card 2 — Staking Control (on-chain, Dynamic APR)              */
+/*  Card 2 — Staking Control (on-chain, Fixed APY)               */
 /* ============================================================= */
 function StakingControlCard({ showAlert }) {
     const [stakingData, setStakingData] = useState({
         totalStaked: '0', rewardPool: '0',
-        apr: 0, minStake: '0',
+        apy: 0, minStake: '0',
     })
     const [loading, setLoading] = useState(true)
     const [newMinStake, setNewMinStake] = useState('')
     const [depositAmount, setDepositAmount] = useState('')
+    const [newApy, setNewApy] = useState('')
     const [busyMin, setBusyMin] = useState(false)
     const [busyDeposit, setBusyDeposit] = useState(false)
+    const [busyApy, setBusyApy] = useState(false)
 
     const [busySync, setBusySync] = useState(false)
 
@@ -248,17 +250,17 @@ function StakingControlCard({ showAlert }) {
                 chainId: 8453, name: 'base',
             }, { staticNetwork: true })
             const contract = new ethers.Contract(stakingAddress, stakingAbi, rpcProvider)
-            const [totalStaked, minStake, rewardPoolVal, aprBP] = await Promise.all([
+            const [totalStaked, minStake, rewardPoolVal, apyBP] = await Promise.all([
                 contract.totalStaked(),
                 contract.minStake(),
                 contract.rewardPool(),
-                contract.getAPR(),
+                contract.getAPY(),
             ])
             setStakingData({
                 totalStaked: ethers.formatEther(totalStaked),
                 minStake: ethers.formatEther(minStake),
                 rewardPool: ethers.formatEther(rewardPoolVal),
-                apr: Number(aprBP) / 100,
+                apy: Number(apyBP) / 100,
             })
         } catch (err) {
             console.error('Staking read error:', err)
@@ -274,6 +276,27 @@ function StakingControlCard({ showAlert }) {
         if (!window.ethereum) throw new Error('No wallet detected')
         const provider = new ethers.BrowserProvider(window.ethereum)
         return provider.getSigner()
+    }
+
+    const handleSetAPY = async () => {
+        const apyNum = parseFloat(newApy)
+        if (isNaN(apyNum) || apyNum < 0) return
+        setBusyApy(true)
+        try {
+            const signer = await getSigner()
+            const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
+            const basisPoints = Math.round(apyNum * 100) // e.g. 12.5% → 1250 BP
+            showAlert(`Setting APY to ${apyNum}%...`, 'info')
+            const tx = await contract.setAPY(basisPoints)
+            await tx.wait()
+            showAlert(`APY updated to ${apyNum}%!`, 'success')
+            setNewApy('')
+            fetchStakingData()
+        } catch (err) {
+            const msg = err?.reason || err?.message || 'Transaction failed'
+            showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+        }
+        setBusyApy(false)
     }
 
     const handleSetMinStake = async () => {
@@ -352,10 +375,11 @@ function StakingControlCard({ showAlert }) {
         return parseFloat(n.toFixed(4)).toString()
     }
 
-    // Estimate days remaining
+    // Estimate days remaining based on fixed APY
     const totalStakedNum = parseFloat(stakingData.totalStaked)
     const rewardPoolNum = parseFloat(stakingData.rewardPool)
-    const dailyRate = totalStakedNum > 0 ? (rewardPoolNum / 365) : 0
+    const apyDecimal = stakingData.apy / 100 // percentage to decimal
+    const dailyRate = totalStakedNum > 0 && apyDecimal > 0 ? (totalStakedNum * apyDecimal / 365) : 0
     const estimatedDays = dailyRate > 0 ? Math.floor(rewardPoolNum / dailyRate) : 0
 
     return (
@@ -367,8 +391,8 @@ function StakingControlCard({ showAlert }) {
 
             <div className={s.statsGrid}>
                 <div className={s.statItem}>
-                    <div className={s.statLabel}>Current APR</div>
-                    <div className={s.statValueAccent}>{loading ? '...' : `${fmt(stakingData.apr.toString())}%`}</div>
+                    <div className={s.statLabel}>Current APY</div>
+                    <div className={s.statValueAccent}>{loading ? '...' : `${fmt(stakingData.apy.toString())}%`}</div>
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Reward Pool</div>
@@ -386,11 +410,38 @@ function StakingControlCard({ showAlert }) {
 
             {!loading && estimatedDays > 0 && (
                 <div className={s.inputHint} style={{ marginBottom: '0.75rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
-                    <img src="/clock-admin.svg" alt="" style={{ width: '14px', height: '14px', opacity: 0.7 }} /> Reward pool estimated to last ~{estimatedDays} days at current rate
+                    <img src="/clock-admin.svg" alt="" style={{ width: '14px', height: '14px', opacity: 0.7 }} /> Reward pool estimated to last ~{estimatedDays} days at current APY
                 </div>
             )}
 
             <hr className={s.divider} />
+
+            <div className={s.formGroup}>
+                <label className={s.label}>Set APY (%)</label>
+                <div className={s.formRow}>
+                    <div className={s.inputWithUnit}>
+                        <input
+                            className={s.input}
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={newApy}
+                            onChange={e => setNewApy(e.target.value)}
+                            placeholder={`${fmt(stakingData.apy.toString())}`}
+                        />
+                        <span className={s.inputUnit}>%</span>
+                    </div>
+                    <button
+                        className={s.primaryBtn}
+                        onClick={handleSetAPY}
+                        disabled={busyApy || !newApy || parseFloat(newApy) < 0}
+                        style={{ maxWidth: '140px' }}
+                    >
+                        {busyApy ? 'Sending...' : 'Set APY'}
+                    </button>
+                </div>
+                <div className={s.inputHint}>Enter percentage, e.g. 12 = 12% APY, 5.5 = 5.5% APY</div>
+            </div>
 
             <div className={s.formGroup}>
                 <label className={s.label}>Deposit Rewards</label>
@@ -416,7 +467,7 @@ function StakingControlCard({ showAlert }) {
                         {busyDeposit ? 'Sending...' : 'Deposit'}
                     </button>
                 </div>
-                <div className={s.inputHint}>Depositing more tokens will increase APR automatically</div>
+                <div className={s.inputHint}>Deposit tokens to fund the reward pool. APY rate is set separately.</div>
                 <button
                     className={s.secondaryBtn}
                     onClick={handleSyncPool}

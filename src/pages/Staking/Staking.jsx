@@ -32,7 +32,7 @@ function useStakingContract(signer, provider, userAddress) {
         userRewards: '0',
         rewardPool: '0',
         minStake: '0',
-        apr: 0,
+        apy: 0,
     })
     const [loading, setLoading] = useState(true)
 
@@ -58,21 +58,21 @@ function useStakingContract(signer, provider, userAddress) {
                     userRewards: ethers.formatEther(info._userRewards),
                     rewardPool: ethers.formatEther(info._rewardPool),
                     minStake: ethers.formatEther(info._minStake),
-                    apr: Number(info._apr) / 100, // basis points → percentage
+                    apy: Number(info._apy) / 100, // basis points → percentage
                 })
             } else {
-                const [totalStaked, minStake, rewardPoolVal, aprBP] = await Promise.all([
+                const [totalStaked, minStake, rewardPoolVal, apyBP] = await Promise.all([
                     contract.totalStaked(),
                     contract.minStake(),
                     contract.rewardPool(),
-                    contract.getAPR(),
+                    contract.getAPY(),
                 ])
                 setData(prev => ({
                     ...prev,
                     totalStaked: ethers.formatEther(totalStaked),
                     minStake: ethers.formatEther(minStake),
                     rewardPool: ethers.formatEther(rewardPoolVal),
-                    apr: Number(aprBP) / 100,
+                    apy: Number(apyBP) / 100,
                     userStaked: '0',
                     userRewards: '0',
                 }))
@@ -192,8 +192,8 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                                     <span className={s.modalInfoValue}>{formatSwapAmount(stakeData.minStake)} TEST</span>
                                 </div>
                                 <div className={s.modalInfoRow}>
-                                    <span className={s.modalInfoLabel}>Current APR</span>
-                                    <span className={s.modalInfoValueGreen}>{stakeData.apr > 0 ? `${formatSwapAmount(stakeData.apr.toString())}%` : '—'}</span>
+                                    <span className={s.modalInfoLabel}>Current APY</span>
+                                    <span className={s.modalInfoValueGreen}>{stakeData.apy > 0 ? `${formatSwapAmount(stakeData.apy.toString())}%` : '—'}</span>
                                 </div>
                             </div>
                         )}
@@ -280,8 +280,8 @@ export default function Staking() {
                         </div>
                     </div>
                     <span className={s.aprText}>
-                        <span className={s.aprValueGreen}>{stakeData.apr > 0 ? `${formatSwapAmount(stakeData.apr.toString())}%` : '—'}</span>
-                        {' '}<span className={s.aprLabel}>APR</span>
+                        <span className={s.aprValueGreen}>{stakeData.apy > 0 ? `${formatSwapAmount(stakeData.apy.toString())}%` : '—'}</span>
+                        {' '}<span className={s.aprLabel}>APY</span>
                     </span>
                 </div>
 
@@ -298,7 +298,7 @@ export default function Staking() {
                             <div className={s.overviewItem}>
                                 <img src="/stats-staking.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Total Staked</div>
-                                <div className={s.overviewValue}>{loading ? '...' : formatSwapAmount(stakeData.totalStaked)}</div>
+                                <div className={s.overviewValue}>{loading ? '...' : Math.floor(parseFloat(stakeData.totalStaked)).toString()}</div>
                                 <div className={s.overviewUnit}>TEST</div>
                             </div>
                             <div className={s.overviewItem}>
@@ -321,13 +321,13 @@ export default function Staking() {
                             </div>
                         </div>
 
-                        {/* APR Info Banner */}
+                        {/* APY Info Banner */}
                         <div className={s.aprInfoBanner}>
                             <div className={s.aprInfoLeft}>
                                 <img src="/flash.svg" alt="" className={s.aprInfoSvgIcon} />
-                                <span className={s.aprInfoText}>Dynamic APR</span>
+                                <span className={s.aprInfoText}>Fixed APY</span>
                             </div>
-                            <span className={s.aprInfoDesc}>Rate adjusts based on reward pool & total staked</span>
+                            <span className={s.aprInfoDesc}>Earn a fixed annual yield on your staked tokens</span>
                         </div>
 
                         {/* Pool Details */}
