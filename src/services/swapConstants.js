@@ -144,7 +144,7 @@ export const swapAddresses = {
 // Staking Contract — Base Mainnet
 // Replace with your deployed staking contract on Base
 // =============================================================
-export const stakingAddress = '0xf9dFcB834f8caF697d63cEC35E34EE948FF2FDA5'
+export const stakingAddress = '0xF505Ed90D77c496f60006f42871c32e02D7Ab708'
 
 export const stakingAbi = [
     'function stake(uint256 amount) external',

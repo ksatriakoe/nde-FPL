@@ -240,6 +240,8 @@ function StakingControlCard({ showAlert }) {
     const [busyMin, setBusyMin] = useState(false)
     const [busyDeposit, setBusyDeposit] = useState(false)
     const [busyApy, setBusyApy] = useState(false)
+    const [withdrawAmount, setWithdrawAmount] = useState('')
+    const [busyEmergency, setBusyEmergency] = useState(false)
 
     const [busySync, setBusySync] = useState(false)
 
@@ -503,6 +505,53 @@ function StakingControlCard({ showAlert }) {
                     </button>
                 </div>
                 <div className={s.inputHint}>Enter token amount directly, e.g. 100 = 100 TEST (auto-converts to wei)</div>
+            </div>
+
+            <hr className={s.divider} />
+
+            <div className={s.formGroup}>
+                <label className={s.label} style={{ color: '#ef4444' }}>Emergency Withdraw</label>
+                <div className={s.formRow}>
+                    <div className={s.inputWithUnit}>
+                        <input
+                            className={s.input}
+                            type="number"
+                            step="1"
+                            min="0"
+                            value={withdrawAmount}
+                            onChange={e => setWithdrawAmount(e.target.value)}
+                            placeholder={`Max: ${fmt(stakingData.rewardPool)}`}
+                        />
+                        <span className={s.inputUnit}>TEST</span>
+                    </div>
+                    <button
+                        className={s.dangerBtn}
+                        onClick={async () => {
+                            if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) return
+                            setBusyEmergency(true)
+                            try {
+                                const signer = await getSigner()
+                                const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
+                                const parsedAmount = ethers.parseEther(withdrawAmount)
+                                showAlert(`Emergency withdrawing ${withdrawAmount} TEST...`, 'info')
+                                const tx = await contract.emergencyWithdraw(parsedAmount)
+                                await tx.wait()
+                                showAlert(`Withdrawn ${withdrawAmount} TEST from reward pool!`, 'success')
+                                setWithdrawAmount('')
+                                fetchStakingData()
+                            } catch (err) {
+                                const msg = err?.reason || err?.message || 'Transaction failed'
+                                showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+                            }
+                            setBusyEmergency(false)
+                        }}
+                        disabled={busyEmergency || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
+                        style={{ maxWidth: '140px' }}
+                    >
+                        {busyEmergency ? 'Sending...' : 'Withdraw'}
+                    </button>
+                </div>
+                <div className={s.inputHint}>Withdraw reward tokens from the pool back to owner wallet</div>
             </div>
 
         </div>
