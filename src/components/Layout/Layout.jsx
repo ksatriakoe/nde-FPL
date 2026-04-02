@@ -27,6 +27,7 @@ const navItems = [
     { to: '/form-fixture', icon: <img src="/calender.svg" alt="" className="nav-svg-icon" />, label: 'Form×Fixture' },
     { to: '/consistency-fixture', icon: <img src="/card.svg" alt="" className="nav-svg-icon" />, label: 'Con×Fixture' },
     { to: '/ownership', icon: <img src="/target.svg" alt="" className="nav-svg-icon" />, label: 'Ownership & EO' },
+    { to: '/crypto-charts', icon: <img src="/chart-line.svg" alt="" className="nav-svg-icon" />, label: 'Crypto Charts' },
     { label: 'Account', section: true },
     { to: '/subscribe', icon: <img src="/premium.svg" alt="" className="nav-svg-icon" />, label: 'Subscribe' },
     { to: '/swap', icon: <img src="/exchange.svg" alt="" className="nav-svg-icon" />, label: 'Swap' },

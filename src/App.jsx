@@ -26,6 +26,7 @@ import InjuryAlerts from './pages/Premium/InjuryAlerts'
 import FormFixtureMatrix from './pages/Premium/FormFixtureMatrix'
 import ConsistencyFixture from './pages/Premium/ConsistencyFixture'
 import OwnershipEO from './pages/Premium/OwnershipEO'
+import CryptoCharts from './pages/Premium/CryptoCharts'
 import MyTeam from './pages/MyTeam/MyTeam'
 import Watchlist from './pages/Watchlist/Watchlist'
 import Subscribe from './pages/Subscribe/Subscribe'
@@ -72,6 +73,7 @@ export default function App() {
                       <Route path="/form-fixture" element={<PremiumGate><FormFixtureMatrix /></PremiumGate>} />
                       <Route path="/consistency-fixture" element={<PremiumGate><ConsistencyFixture /></PremiumGate>} />
                       <Route path="/ownership" element={<PremiumGate><OwnershipEO /></PremiumGate>} />
+                      <Route path="/crypto-charts" element={<PremiumGate><CryptoCharts /></PremiumGate>} />
                     </Route>
                   </Routes>
                 </BrowserRouter>

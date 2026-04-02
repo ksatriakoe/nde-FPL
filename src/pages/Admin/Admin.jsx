@@ -5,6 +5,7 @@ import { ethers } from 'ethers'
 import { supabase } from '../../services/supabase'
 import { useTokenList } from '../../hooks/useTokenList'
 import { stakingAddress, stakingAbi, erc20Abi, listingManagerAddress, listingManagerAbi } from '../../services/swapConstants'
+import { FPL_SUBSCRIPTION_ABI, FPL_SUBSCRIPTION_ADDRESS, ERC20_ABI } from '../../services/contractConfig'
 import s from './Admin.module.css'
 
 // ── Admin wallet (deployer) — change to your deployer address ──
@@ -226,7 +227,190 @@ function ManualSubscriptionCard({ showAlert }) {
 }
 
 /* ============================================================= */
-/*  Card 2 — Staking Control (on-chain, Fixed APY)               */
+/*  Card 2 — Subscription Price Control (on-chain)               */
+/* ============================================================= */
+function SubscriptionPriceCard({ showAlert }) {
+    const [currentPrice, setCurrentPrice] = useState('0')
+    const [tokenSymbol, setTokenSymbol] = useState('TOKEN')
+    const [tokenDecimals, setTokenDecimals] = useState(18)
+    const [contractBalance, setContractBalance] = useState('0')
+    const [loading, setLoading] = useState(true)
+    const [newPrice, setNewPrice] = useState('')
+    const [busyPrice, setBusyPrice] = useState(false)
+    const [busyWithdraw, setBusyWithdraw] = useState(false)
+
+    const fetchContractData = useCallback(async () => {
+        try {
+            const rpcProvider = new ethers.JsonRpcProvider(BASE_RPC, {
+                chainId: 8453, name: 'base',
+            }, { staticNetwork: true })
+
+            const subContract = new ethers.Contract(FPL_SUBSCRIPTION_ADDRESS, FPL_SUBSCRIPTION_ABI, rpcProvider)
+            const [priceRaw, paymentTokenAddr] = await Promise.all([
+                subContract.price(),
+                subContract.paymentToken(),
+            ])
+
+            const tokenContract = new ethers.Contract(paymentTokenAddr, ERC20_ABI, rpcProvider)
+            const [decimals, symbol, balance] = await Promise.all([
+                tokenContract.decimals(),
+                tokenContract.symbol(),
+                tokenContract.balanceOf(FPL_SUBSCRIPTION_ADDRESS),
+            ])
+
+            const dec = Number(decimals)
+            setTokenDecimals(dec)
+            setTokenSymbol(symbol)
+            setCurrentPrice(ethers.formatUnits(priceRaw, dec))
+            setContractBalance(ethers.formatUnits(balance, dec))
+        } catch (err) {
+            console.error('Subscription read error:', err)
+        }
+        setLoading(false)
+    }, [])
+
+    useEffect(() => { fetchContractData() }, [fetchContractData])
+
+    const getSigner = async () => {
+        if (!window.ethereum) throw new Error('No wallet detected')
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        return provider.getSigner()
+    }
+
+    const handleSetPrice = async () => {
+        const priceNum = parseFloat(newPrice)
+        if (isNaN(priceNum) || priceNum <= 0) return
+        setBusyPrice(true)
+        try {
+            const signer = await getSigner()
+            const contract = new ethers.Contract(FPL_SUBSCRIPTION_ADDRESS, FPL_SUBSCRIPTION_ABI, signer)
+            const priceWei = ethers.parseUnits(newPrice, tokenDecimals)
+            showAlert(`Setting price to ${newPrice} ${tokenSymbol}...`, 'info')
+            const tx = await contract.setPrice(priceWei)
+            await tx.wait()
+            showAlert(`Price updated to ${newPrice} ${tokenSymbol}!`, 'success')
+            setNewPrice('')
+            fetchContractData()
+        } catch (err) {
+            if (err.code === 4001 || err.code === 'ACTION_REJECTED') {
+                showAlert('User rejected', 'error')
+            } else {
+                const msg = err?.reason || err?.shortMessage || err?.message || 'Transaction failed'
+                showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+            }
+        }
+        setBusyPrice(false)
+    }
+
+    const handleWithdraw = async () => {
+        setBusyWithdraw(true)
+        try {
+            const signer = await getSigner()
+            const signerAddress = await signer.getAddress()
+            const contract = new ethers.Contract(FPL_SUBSCRIPTION_ADDRESS, FPL_SUBSCRIPTION_ABI, signer)
+            showAlert('Withdrawing subscription fees...', 'info')
+            const tx = await contract.withdraw(signerAddress)
+            await tx.wait()
+            showAlert('Subscription fees withdrawn!', 'success')
+            fetchContractData()
+        } catch (err) {
+            if (err.code === 4001 || err.code === 'ACTION_REJECTED') {
+                showAlert('User rejected', 'error')
+            } else {
+                const msg = err?.reason || err?.shortMessage || err?.message || 'Transaction failed'
+                showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+            }
+        }
+        setBusyWithdraw(false)
+    }
+
+    const fmtBal = (v) => {
+        const n = parseFloat(v)
+        if (isNaN(n)) return '0'
+        return n.toLocaleString(undefined, { maximumFractionDigits: 4 })
+    }
+
+    return (
+        <div className={s.card}>
+            <div className={s.cardHeader}>
+                <span className={s.cardTitle}>Subscription Price</span>
+                <img src="/calender.svg" alt="" className={s.cardIconSvg} />
+            </div>
+
+            <div className={s.statsGrid}>
+                <div className={s.statItem}>
+                    <div className={s.statLabel}>Current Price</div>
+                    <div className={s.statValueAccent}>
+                        {loading ? '...' : `${fmtBal(currentPrice)}`}
+                        <span className={s.statUnit}>{tokenSymbol}</span>
+                    </div>
+                </div>
+                <div className={s.statItem}>
+                    <div className={s.statLabel}>Contract Balance</div>
+                    <div className={s.statValue}>
+                        {loading ? '...' : fmtBal(contractBalance)}
+                        <span className={s.statUnit}>{tokenSymbol}</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr className={s.divider} />
+
+            <div className={s.formGroup}>
+                <label className={s.label}>Set New Price</label>
+                <div className={s.formRow}>
+                    <div className={s.inputWithUnit}>
+                        <input
+                            className={s.input}
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={newPrice}
+                            onChange={e => setNewPrice(e.target.value)}
+                            placeholder={currentPrice}
+                        />
+                        <span className={s.inputUnit}>{tokenSymbol}</span>
+                    </div>
+                    <button
+                        className={s.primaryBtn}
+                        onClick={handleSetPrice}
+                        disabled={busyPrice || !newPrice || parseFloat(newPrice) <= 0}
+                        style={{ maxWidth: '140px' }}
+                    >
+                        {busyPrice ? 'Sending...' : 'Update'}
+                    </button>
+                </div>
+                <div className={s.inputHint}>Enter token amount, e.g. 100 = 100 {tokenSymbol} per subscription</div>
+            </div>
+
+            <hr className={s.divider} />
+
+            <div className={s.formGroup}>
+                <label className={s.label}>Withdraw Subscription Fees</label>
+                <div className={s.feeWithdrawRow}>
+                    <div className={s.feeBalanceInfo}>
+                        <div className={s.statValueAccent} style={{ fontSize: '1.25rem' }}>
+                            {loading ? '...' : fmtBal(contractBalance)}
+                            <span className={s.statUnit}>{tokenSymbol}</span>
+                        </div>
+                        <div className={s.inputHint}>Accumulated from subscription payments</div>
+                    </div>
+                    <button
+                        className={s.primaryBtn}
+                        onClick={handleWithdraw}
+                        disabled={busyWithdraw || loading || parseFloat(contractBalance) <= 0}
+                        style={{ maxWidth: '160px' }}
+                    >
+                        {busyWithdraw ? 'Withdrawing...' : 'Withdraw'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+/* ============================================================= */
+/*  Card 3 — Staking Control (on-chain, Fixed APY)               */
 /* ============================================================= */
 function StakingControlCard({ showAlert }) {
     const [stakingData, setStakingData] = useState({
@@ -916,6 +1100,7 @@ export default function Admin() {
                     </div>
 
                     <ManualSubscriptionCard showAlert={showAlert} />
+                    <SubscriptionPriceCard showAlert={showAlert} />
                     <StakingControlCard showAlert={showAlert} />
                     <TokenManagementCard showAlert={showAlert} />
                 </>

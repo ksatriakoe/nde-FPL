@@ -15,6 +15,34 @@ export const FPL_SUBSCRIPTION_ABI = [
         outputs: [{ name: '', type: 'uint256' }],
     },
     {
+        name: 'setPrice',
+        type: 'function',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'newPrice', type: 'uint256' }],
+        outputs: [],
+    },
+    {
+        name: 'owner',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [],
+        outputs: [{ name: '', type: 'address' }],
+    },
+    {
+        name: 'paymentToken',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [],
+        outputs: [{ name: '', type: 'address' }],
+    },
+    {
+        name: 'withdraw',
+        type: 'function',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'to', type: 'address' }],
+        outputs: [],
+    },
+    {
         name: 'Paid',
         type: 'event',
         inputs: [
