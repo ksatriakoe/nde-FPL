@@ -39,6 +39,7 @@ export default function Layout() {
     const { isPremium, wallet } = useAuth()
     const navigate = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [desktopCollapsed, setDesktopCollapsed] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_key') || '')
     const settingsRef = useRef(null)
@@ -65,8 +66,8 @@ export default function Layout() {
     return (
         <div className={styles.layout}>
             {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
-            <aside className={`${styles.sidebar} ${mobileOpen ? styles.sidebarOpen : ''}`}>
-                <div className={styles.logo}>
+            <aside className={`${styles.sidebar} ${mobileOpen ? styles.sidebarOpen : ''} ${desktopCollapsed ? styles.sidebarCollapsed : ''}`}>
+                <div className={styles.logo} onClick={() => { if (window.innerWidth > 768) setDesktopCollapsed(true) }} role="button" title="Hide sidebar">
                     <img src="/NdeFPL.png" alt="Nde-FPL" className={styles.logoImg} />
                     <div className={styles.logoText}><span>Nde</span>-FPL</div>
                 </div>
@@ -107,6 +108,12 @@ export default function Layout() {
                         >
                             ☰
                         </button>
+                        {desktopCollapsed && (
+                            <div className={styles.headerLogo} onClick={() => setDesktopCollapsed(false)} role="button" title="Show sidebar">
+                                <img src="/NdeFPL.png" alt="Nde-FPL" className={styles.headerLogoImg} />
+                                <span className={styles.headerLogoText}><span>Nde</span>-FPL</span>
+                            </div>
+                        )}
                         {gwLabel && <span className={styles.gwBadge}>{gwLabel}</span>}
                         <span className={styles.seasonFull}>Fantasy Premier League 2025/26</span>
                         <span className={styles.seasonMobile}>FPL 25/26</span>
