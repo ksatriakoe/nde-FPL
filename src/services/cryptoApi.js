@@ -13,7 +13,7 @@ export { COINS }
 /* ── Fetch from CoinGecko directly (for dev mode) ── */
 async function fetchFromCoinGecko(coin, days) {
     const headers = { Accept: 'application/json' }
-    const apiKey = 'CG-CnWXQpRGmUpQiAQiM14Ze2De'
+    const apiKey = 'CGCGCG'
     const keyParam = `x_cg_demo_api_key=${apiKey}`
 
     // Market chart (price + volume history)

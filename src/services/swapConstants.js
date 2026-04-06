@@ -3,8 +3,8 @@
 // Replace these with your deployed contract addresses
 // =============================================================
 export const customAddresses = {
-    factory: '0x599B458f6f5722491f20C1572d67E122d9f4CE28',
-    router: '0x4e47b5B5707928696BC74F8b5a359a7a9FeF0b61',
+    factory: '0x07c146756A3e1DA885eACd5649637794763364C7',
+    router: '0x6402e94a426CcB1624c1C69c57B114a5ba663634',
 }
 
 // =============================================================
@@ -24,8 +24,8 @@ export const WETH_ADDRESS = '0x4200000000000000000000000000000000000006' // Base
 // Aggregator & ListingManager — Deployed on Base Mainnet
 // Replace these with your deployed contract addresses
 // =============================================================
-export const aggregatorAddress = '0xBd5447Ff67852627c841bC695b99626BB60AcC8a'
-export const listingManagerAddress = '0x9B3A75E5bE3d6a546619C3EC1320a71d1E5C0BDf'
+export const aggregatorAddress = '0xca6Bc0aCe4E4B99A1741A2BA4E0C1b6742ff9686'
+export const listingManagerAddress = '0xE9a37e84a4024B4F00f712F2E3FBE46001e42D00'
 
 // =============================================================
 // ABIs
@@ -98,13 +98,13 @@ export const defaultSwapToken = {
 
 // =============================================================
 // Token list — Base Mainnet
-// Replace TEST address after deploying on Base
+// Replace NDESO address after deploying on Base
 // =============================================================
 export const swapTokenList = [
     {
-        address: '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067',
-        name: 'TESTV2',
-        symbol: 'TESTV2',
+        address: '0x37a42A15B04a573692c6b02f10fa12bd35041936',
+        name: 'NDESO',
+        symbol: 'NDESO',
         decimals: 18,
         logoURI: '/NdeFPL.png',
     },
@@ -144,7 +144,7 @@ export const swapAddresses = {
 // Staking Contract — Base Mainnet
 // Replace with your deployed staking contract on Base
 // =============================================================
-export const stakingAddress = '0xF505Ed90D77c496f60006f42871c32e02D7Ab708'
+export const stakingAddress = '0x3d5BF019D147d18156dAe5fd960E6DfC51C0eAB2'
 
 export const stakingAbi = [
     'function stake(uint256 amount) external',

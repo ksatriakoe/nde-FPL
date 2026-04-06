@@ -51,7 +51,7 @@ export default function Subscribe() {
 
     /* ── Derived ── */
     const dec = tokenDecimals ?? 18
-    const sym = tokenSymbol || 'TEST'
+    const sym = tokenSymbol || 'NDESO'
     const price = contractPrice ? formatUnits(contractPrice, dec) : '—'
     const balance = tokenBalance !== undefined ? Math.floor(Number(formatUnits(tokenBalance, dec))).toString() : '—'
     const canAfford = tokenBalance !== undefined && contractPrice !== undefined && tokenBalance >= contractPrice

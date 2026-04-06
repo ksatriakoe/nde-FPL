@@ -9,9 +9,9 @@ import { FPL_SUBSCRIPTION_ABI, FPL_SUBSCRIPTION_ADDRESS, ERC20_ABI } from '../..
 import s from './Admin.module.css'
 
 // ── Admin wallet (deployer) — change to your deployer address ──
-const ADMIN_WALLET = '0x484E0cAA0e211309771d1Be3A59EbC5F4cD0Cb4c'.toLowerCase()
+const ADMIN_WALLET = '0x47bc2f5f9b55f5bb8d4f1ed508492ba5c8b6d45e'.toLowerCase()
 
-const TOKEN_ADDRESS = '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067'
+const TOKEN_ADDRESS = '0x37a42A15B04a573692c6b02f10fa12bd35041936'
 const BASE_RPC = 'https://base-rpc.publicnode.com'
 
 /* ============================================================= */
@@ -492,10 +492,10 @@ function StakingControlCard({ showAlert }) {
             const signer = await getSigner()
             const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
             const weiAmount = ethers.parseEther(newMinStake)
-            showAlert(`Setting min stake to ${newMinStake} TEST...`, 'info')
+            showAlert(`Setting min stake to ${newMinStake} NDESO...`, 'info')
             const tx = await contract.setMinStake(weiAmount)
             await tx.wait()
-            showAlert(`Min stake updated to ${newMinStake} TEST!`, 'success')
+            showAlert(`Min stake updated to ${newMinStake} NDESO!`, 'success')
             setNewMinStake('')
             fetchStakingData()
         } catch (err) {
@@ -522,11 +522,11 @@ function StakingControlCard({ showAlert }) {
                 await approveTx.wait()
             }
 
-            showAlert(`Depositing ${depositAmount} TEST rewards...`, 'info')
+            showAlert(`Depositing ${depositAmount} NDESO rewards...`, 'info')
             const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
             const tx = await contract.depositRewards(parsedAmount)
             await tx.wait()
-            showAlert(`Deposited ${depositAmount} TEST into reward pool!`, 'success')
+            showAlert(`Deposited ${depositAmount} NDESO into reward pool!`, 'success')
             setDepositAmount('')
             fetchStakingData()
         } catch (err) {
@@ -582,15 +582,15 @@ function StakingControlCard({ showAlert }) {
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Reward Pool</div>
-                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.rewardPool)}<span className={s.statUnit}>TEST</span></div>
+                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.rewardPool)}<span className={s.statUnit}>NDESO</span></div>
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Total Staked</div>
-                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.totalStaked)}<span className={s.statUnit}>TEST</span></div>
+                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.totalStaked)}<span className={s.statUnit}>NDESO</span></div>
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Min Stake</div>
-                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.minStake)}<span className={s.statUnit}>TEST</span></div>
+                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.minStake)}<span className={s.statUnit}>NDESO</span></div>
                 </div>
             </div>
 
@@ -642,7 +642,7 @@ function StakingControlCard({ showAlert }) {
                             onChange={e => setDepositAmount(e.target.value)}
                             placeholder="Amount"
                         />
-                        <span className={s.inputUnit}>TEST</span>
+                        <span className={s.inputUnit}>NDESO</span>
                     </div>
                     <button
                         className={s.primaryBtn}
@@ -677,7 +677,7 @@ function StakingControlCard({ showAlert }) {
                             onChange={e => setNewMinStake(e.target.value)}
                             placeholder={`${fmt(stakingData.minStake)}`}
                         />
-                        <span className={s.inputUnit}>TEST</span>
+                        <span className={s.inputUnit}>NDESO</span>
                     </div>
                     <button
                         className={s.primaryBtn}
@@ -688,7 +688,7 @@ function StakingControlCard({ showAlert }) {
                         {busyMin ? 'Sending...' : 'Update'}
                     </button>
                 </div>
-                <div className={s.inputHint}>Enter token amount directly, e.g. 100 = 100 TEST (auto-converts to wei)</div>
+                <div className={s.inputHint}>Enter token amount directly, e.g. 100 = 100 NDESO (auto-converts to wei)</div>
             </div>
 
             <hr className={s.divider} />
@@ -706,7 +706,7 @@ function StakingControlCard({ showAlert }) {
                             onChange={e => setWithdrawAmount(e.target.value)}
                             placeholder={`Max: ${fmt(stakingData.rewardPool)}`}
                         />
-                        <span className={s.inputUnit}>TEST</span>
+                        <span className={s.inputUnit}>NDESO</span>
                     </div>
                     <button
                         className={s.dangerBtn}
@@ -717,10 +717,10 @@ function StakingControlCard({ showAlert }) {
                                 const signer = await getSigner()
                                 const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
                                 const parsedAmount = ethers.parseEther(withdrawAmount)
-                                showAlert(`Emergency withdrawing ${withdrawAmount} TEST...`, 'info')
+                                showAlert(`Emergency withdrawing ${withdrawAmount} NDESO...`, 'info')
                                 const tx = await contract.emergencyWithdraw(parsedAmount)
                                 await tx.wait()
-                                showAlert(`Withdrawn ${withdrawAmount} TEST from reward pool!`, 'success')
+                                showAlert(`Withdrawn ${withdrawAmount} NDESO from reward pool!`, 'success')
                                 setWithdrawAmount('')
                                 fetchStakingData()
                             } catch (err) {
@@ -1035,7 +1035,7 @@ function TokenManagementCard({ showAlert }) {
                     <div className={s.feeBalanceInfo}>
                         <div className={s.statValueAccent} style={{ fontSize: '1.25rem' }}>
                             {loadingFee ? '...' : parseFloat(feeBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })}
-                            <span className={s.statUnit}>TEST</span>
+                            <span className={s.statUnit}>NDESO</span>
                         </div>
                         <div className={s.inputHint}>Accumulated from new pair listing fees</div>
                     </div>

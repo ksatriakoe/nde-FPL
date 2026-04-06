@@ -97,8 +97,8 @@ export const ERC20_ABI = [
     },
 ]
 
-// TEST token on Base
-export const TOKEN_ADDRESS = '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067'
+// NDESO token on Base
+export const TOKEN_ADDRESS = '0x37a42A15B04a573692c6b02f10fa12bd35041936'
 
 // Replace with your deployed contract address after deploying
-export const FPL_SUBSCRIPTION_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || '0x6fB4931995931b5E4bf821088fe4C3e6bf092054'
+export const FPL_SUBSCRIPTION_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || '0x1B15C595D5faBefB821B982a542bBD7434f04c2b'

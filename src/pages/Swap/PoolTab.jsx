@@ -282,7 +282,7 @@ export default function PoolTab({ showAlert, slippage }) {
                     // Pair doesn't exist — need listing fee
                     if (listingManagerContract) {
                         const fee = await listingManagerContract.listingFee()
-                        const feeToken = swapTokenList.find(t => t.symbol === 'TEST')
+                        const feeToken = swapTokenList.find(t => t.symbol === 'NDESO')
                         setListingFee(ethers.formatUnits(fee, feeToken?.decimals || 18))
                         setShowListingFee(true)
                         return
@@ -304,14 +304,14 @@ export default function PoolTab({ showAlert, slippage }) {
         setIsPayingFee(true)
         try {
             const fee = await listingManagerContract.listingFee()
-            const feeToken = swapTokenList.find(t => t.symbol === 'TEST')
-            if (!feeToken) { showAlert('TEST token not found', 'error'); return }
+            const feeToken = swapTokenList.find(t => t.symbol === 'NDESO')
+            if (!feeToken) { showAlert('NDESO token not found', 'error'); return }
 
-            // Approve TEST to ListingManager
+            // Approve NDESO to ListingManager
             const testContract = new ethers.Contract(feeToken.address, erc20Abi, signer)
             const allowance = await testContract.allowance(userAddress, listingManagerAddress)
             if (allowance < fee) {
-                showAlert('Approving TEST for listing fee...', 'info')
+                showAlert('Approving NDESO for listing fee...', 'info')
                 const approveTx = await testContract.approve(listingManagerAddress, ethers.MaxUint256)
                 await approveTx.wait()
             }
@@ -534,7 +534,7 @@ export default function PoolTab({ showAlert, slippage }) {
                 {showListingFee && (
                     <ListingFeeModal
                         fee={listingFee}
-                        feeSymbol="TEST"
+                        feeSymbol="NDESO"
                         onPay={handlePayListingFee}
                         onClose={() => setShowListingFee(false)}
                         isPaying={isPayingFee}
