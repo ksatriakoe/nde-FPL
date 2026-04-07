@@ -1079,7 +1079,7 @@ library UniswapV2Library {
                         hex"ff",
                         factory,
                         keccak256(abi.encodePacked(token0, token1)),
-                        hex"0127aeb60448e9146b7642f005b852beec415578648d6d733b88d5f6a6661816" // init code hash
+                        hex"GANTI_DENGAN_INIT_CODE_PAIR_HASH_BARU" // ⚠️ call factory.INIT_CODE_PAIR_HASH() untuk mendapat hash baru
                     )
                 )
             )
@@ -1126,7 +1126,7 @@ library UniswapV2Library {
             reserveIn > 0 && reserveOut > 0,
             "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
         );
-        uint amountInWithFee = amountIn.mul(997);
+        uint amountInWithFee = amountIn.mul(995); // CHANGED: 997→995 for 0.5% fee
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
@@ -1144,7 +1144,7 @@ library UniswapV2Library {
             "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
         );
         uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(997);
+        uint denominator = reserveOut.sub(amountOut).mul(995); // CHANGED: 997→995 for 0.5% fee
         amountIn = (numerator / denominator).add(1);
     }
 

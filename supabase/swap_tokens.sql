@@ -24,7 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_swap_tokens_symbol ON swap_tokens (symbol);
 
 -- 3. Seed data awal (token-token yang sudah ada di swapConstants.js)
 INSERT INTO swap_tokens (address, name, symbol, decimals, logo_uri, sort_order) VALUES
-  ('0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C', 'NDESO', 'NDESO', 18, '/NdeFPL.png', 1),
+  ('0x48e72A7FEAeA5e7B6DADbc7D82ac706F93CEf96C', 'NDESO', 'NDESO', 18, '/Ndeso.jpg', 1),
   ('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 'USD Coin', 'USDC', 6, 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png', 2),
   ('0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', 'Dai Stablecoin', 'DAI', 18, 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png', 3),
   ('0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2', 'Tether USD', 'USDT', 6, 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png', 4)

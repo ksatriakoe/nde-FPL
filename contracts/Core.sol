@@ -1,7 +1,3 @@
-/**
- *Submitted for verification at Etherscan.io on 2020-05-04
- */
-
 pragma solidity =0.5.16;
 
 interface IUniswapV2Factory {
@@ -407,6 +403,15 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     );
     event Sync(uint112 reserve0, uint112 reserve1);
 
+    // ═══════════════════════════════════════════════════════════════
+    // CHANGED: New event for protocol fee tracking
+    // ═══════════════════════════════════════════════════════════════
+    event ProtocolFeeCollected(
+        address indexed token,
+        address indexed feeTo,
+        uint256 amount
+    );
+
     constructor() public {
         factory = msg.sender;
     }
@@ -446,26 +451,18 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         emit Sync(reserve0, reserve1);
     }
 
-    // if fee is on, mint liquidity equivalent to 1/6th of the growth in sqrt(k)
+    // ═══════════════════════════════════════════════════════════════
+    // CHANGED: _mintFee disabled — protocol fee now collected
+    //          directly in swap() instead of via LP token minting
+    // ═══════════════════════════════════════════════════════════════
     function _mintFee(
-        uint112 _reserve0,
-        uint112 _reserve1
+        uint112,
+        uint112
     ) private returns (bool feeOn) {
-        address feeTo = IUniswapV2Factory(factory).feeTo();
-        feeOn = feeTo != address(0);
-        uint _kLast = kLast; // gas savings
-        if (feeOn) {
-            if (_kLast != 0) {
-                uint rootK = Math.sqrt(uint(_reserve0).mul(_reserve1));
-                uint rootKLast = Math.sqrt(_kLast);
-                if (rootK > rootKLast) {
-                    uint numerator = totalSupply.mul(rootK.sub(rootKLast));
-                    uint denominator = rootK.mul(5).add(rootKLast);
-                    uint liquidity = numerator / denominator;
-                    if (liquidity > 0) _mint(feeTo, liquidity);
-                }
-            }
-        } else if (_kLast != 0) {
+        // Protocol fee disabled — we collect 0.15% directly in swap()
+        // Always return false so kLast stays 0
+        feeOn = false;
+        if (kLast != 0) {
             kLast = 0;
         }
     }
@@ -527,7 +524,11 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         emit Burn(msg.sender, amount0, amount1, to);
     }
 
-    // this low-level function should be called from a contract which performs important safety checks
+    // ═══════════════════════════════════════════════════════════════
+    // CHANGED: swap() — 0.5% total fee
+    //   • 0.35% stays in pool (for LP providers)
+    //   • 0.15% sent directly to feeTo wallet every swap
+    // ═══════════════════════════════════════════════════════════════
     function swap(
         uint amount0Out,
         uint amount1Out,
@@ -574,14 +575,47 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
             "UniswapV2: INSUFFICIENT_INPUT_AMOUNT"
         );
         {
-            // scope for reserve{0,1}Adjusted, avoids stack too deep errors
-            uint balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(3));
-            uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(3));
+            // ═══════════════════════════════════════════════════════
+            // CHANGED: K invariant check with 0.5% fee (was 0.3%)
+            //   Original: amount*In.mul(3)  → 0.3%
+            //   New:      amount*In.mul(5)  → 0.5%
+            // ═══════════════════════════════════════════════════════
+            uint balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(5));
+            uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(5));
             require(
                 balance0Adjusted.mul(balance1Adjusted) >=
                     uint(_reserve0).mul(_reserve1).mul(1000 ** 2),
                 "UniswapV2: K"
             );
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // CHANGED: Direct protocol fee — 0.15% of amountIn to feeTo
+        //   This runs AFTER K check passes.
+        //   0.35% remains in pool for LP providers.
+        //   0.15% is transferred directly to feeTo wallet.
+        // ═══════════════════════════════════════════════════════════
+        {
+            address _feeTo = IUniswapV2Factory(factory).feeTo();
+            if (_feeTo != address(0)) {
+                if (amount0In > 0) {
+                    uint256 fee0 = amount0In.mul(15) / 10000; // 0.15%
+                    if (fee0 > 0) {
+                        _safeTransfer(token0, _feeTo, fee0);
+                        emit ProtocolFeeCollected(token0, _feeTo, fee0);
+                    }
+                }
+                if (amount1In > 0) {
+                    uint256 fee1 = amount1In.mul(15) / 10000; // 0.15%
+                    if (fee1 > 0) {
+                        _safeTransfer(token1, _feeTo, fee1);
+                        emit ProtocolFeeCollected(token1, _feeTo, fee1);
+                    }
+                }
+                // Re-read balances after fee transfer
+                balance0 = IERC20(token0).balanceOf(address(this));
+                balance1 = IERC20(token1).balanceOf(address(this));
+            }
         }
 
         _update(balance0, balance1, _reserve0, _reserve1);
