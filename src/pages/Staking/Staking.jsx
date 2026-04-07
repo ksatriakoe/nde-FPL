@@ -12,7 +12,7 @@ const TOKEN_INFO = {
     name: 'NDESO Token',
     symbol: 'NDESO',
     decimals: 18,
-    logoURI: '/Ndeso.jpg',
+    logoURI: '/Ndeso.png',
 }
 
 function TokenIcon({ token, size }) {
