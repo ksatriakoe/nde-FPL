@@ -215,7 +215,7 @@ export default function Fixtures() {
                                     }
                                     return (
                                         <td key={gw}>
-                                            {isDGW && <span className={styles.dgwBadge}>DGW</span>}
+
                                             {matches.map((m, i) => (
                                                 <div
                                                     key={i}
