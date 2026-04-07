@@ -181,7 +181,7 @@ export default function Layout() {
                                                 <span>Premium Required</span>
                                             </div>
                                             <p className={styles.settingsDesc}>
-                                                Subscribe to Premium to access AI-powered features including Captain Picks, Match Predictions, GW Summary, and Transfer AI.
+                                                Subscribe to Premium to access AI-powered features including AI Captain Picks, Match Predictions, GW Summary, Differentials, and more!
                                             </p>
                                             <button
                                                 className={styles.settingsSubscribeBtn}

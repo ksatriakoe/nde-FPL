@@ -176,6 +176,8 @@ export default function Subscribe() {
                     <li>Injury & Suspension Alerts</li>
                     <li>Form × Fixture Matrix</li>
                     <li>Ownership & EO Data</li>
+                    <li>Consistency x Fixture</li>
+                    <li>Crypto Charts</li>
                 </ul>
 
                 <hr className={styles.divider} />
