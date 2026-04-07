@@ -755,8 +755,11 @@ function TokenManagementCard({ showAlert }) {
 
     // Listing fee withdraw state
     const [feeBalance, setFeeBalance] = useState('0')
+    const [currentListingFee, setCurrentListingFee] = useState('0')
+    const [newListingFee, setNewListingFee] = useState('')
     const [loadingFee, setLoadingFee] = useState(true)
     const [busyWithdraw, setBusyWithdraw] = useState(false)
+    const [busySetFee, setBusySetFee] = useState(false)
 
     const fetchTokens = useCallback(async () => {
         if (!supabase) { setLoading(false); return }
@@ -778,8 +781,13 @@ function TokenManagementCard({ showAlert }) {
             const rpcProvider = new ethers.JsonRpcProvider(BASE_RPC, { chainId: 8453, name: 'base' }, { staticNetwork: true })
             const testTokenAddr = TOKEN_ADDRESS
             const tokenContract = new ethers.Contract(testTokenAddr, erc20Abi, rpcProvider)
-            const balance = await tokenContract.balanceOf(listingManagerAddress)
+            const lmContract = new ethers.Contract(listingManagerAddress, listingManagerAbi, rpcProvider)
+            const [balance, feeRaw] = await Promise.all([
+                tokenContract.balanceOf(listingManagerAddress),
+                lmContract.listingFee(),
+            ])
             setFeeBalance(ethers.formatEther(balance))
+            setCurrentListingFee(ethers.formatEther(feeRaw))
         } catch (err) { console.error('Fee balance error:', err) }
         setLoadingFee(false)
     }, [])
@@ -807,6 +815,32 @@ function TokenManagementCard({ showAlert }) {
             }
         }
         setBusyWithdraw(false)
+    }
+
+    const handleSetListingFee = async () => {
+        const feeNum = parseFloat(newListingFee)
+        if (isNaN(feeNum) || feeNum < 0) return
+        setBusySetFee(true)
+        try {
+            if (!window.ethereum) throw new Error('No wallet detected')
+            const provider = new ethers.BrowserProvider(window.ethereum)
+            const signer = await provider.getSigner()
+            const lmContract = new ethers.Contract(listingManagerAddress, listingManagerAbi, signer)
+            const feeWei = ethers.parseEther(newListingFee)
+            showAlert(`Setting listing fee to ${newListingFee} NDESO...`, 'info')
+            const tx = await lmContract.setListingFee(feeWei)
+            await tx.wait()
+            showAlert(`Listing fee updated to ${newListingFee} NDESO!`, 'success')
+            setNewListingFee('')
+            fetchFeeBalance()
+        } catch (err) {
+            if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
+            else {
+                const msg = err?.reason || err?.shortMessage || err?.message || 'Transaction failed'
+                showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+            }
+        }
+        setBusySetFee(false)
     }
 
     const resetForm = () => {
@@ -1027,17 +1061,54 @@ function TokenManagementCard({ showAlert }) {
                 </div>
             </div>
 
-            {/* ===== LISTING FEE WITHDRAW ===== */}
+            {/* ===== LISTING FEE CONTROL ===== */}
             <hr className={s.divider} />
             <div className={s.formGroup}>
-                <label className={s.label}>Listing Fees (ListingManager)</label>
-                <div className={s.feeWithdrawRow}>
-                    <div className={s.feeBalanceInfo}>
-                        <div className={s.statValueAccent} style={{ fontSize: '1.25rem' }}>
+                <label className={s.label}>Listing Fee (ListingManager)</label>
+                <div className={s.statsGrid} style={{ marginBottom: '0.75rem' }}>
+                    <div className={s.statItem}>
+                        <div className={s.statLabel}>Current Fee</div>
+                        <div className={s.statValueAccent}>
+                            {loadingFee ? '...' : parseFloat(currentListingFee).toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                            <span className={s.statUnit}>NDESO</span>
+                        </div>
+                    </div>
+                    <div className={s.statItem}>
+                        <div className={s.statLabel}>Collected Fees</div>
+                        <div className={s.statValue}>
                             {loadingFee ? '...' : parseFloat(feeBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })}
                             <span className={s.statUnit}>NDESO</span>
                         </div>
-                        <div className={s.inputHint}>Accumulated from new pair listing fees</div>
+                    </div>
+                </div>
+
+                <div className={s.formRow}>
+                    <div className={s.inputWithUnit}>
+                        <input
+                            className={s.input}
+                            type="number"
+                            step="1"
+                            min="0"
+                            value={newListingFee}
+                            onChange={e => setNewListingFee(e.target.value)}
+                            placeholder={currentListingFee}
+                        />
+                        <span className={s.inputUnit}>NDESO</span>
+                    </div>
+                    <button
+                        className={s.primaryBtn}
+                        onClick={handleSetListingFee}
+                        disabled={busySetFee || !newListingFee || parseFloat(newListingFee) < 0}
+                        style={{ maxWidth: '140px' }}
+                    >
+                        {busySetFee ? 'Sending...' : 'Update Fee'}
+                    </button>
+                </div>
+                <div className={s.inputHint}>Fee charged when users create a new trading pair, e.g. 100 = 100 NDESO</div>
+
+                <div className={s.feeWithdrawRow} style={{ marginTop: '0.75rem' }}>
+                    <div className={s.feeBalanceInfo}>
+                        <div className={s.inputHint}>Withdraw accumulated listing fees to your wallet</div>
                     </div>
                     <button
                         className={s.primaryBtn}
