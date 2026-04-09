@@ -303,15 +303,14 @@ export default function PoolTab({ showAlert, slippage }) {
         setIsPayingFee(true)
         try {
             const fee = await listingManagerContract.listingFee()
-            const ndesoToken = swapTokenList.find(t => t.symbol === 'NDESO')
-            if (!ndesoToken) { showAlert('NDESO token not found', 'error'); return }
+            const feeTokenAddress = await listingManagerContract.feeToken()
 
-            // Approve NDESO to ListingManager
-            const testContract = new ethers.Contract(ndesoToken.address, erc20Abi, signer)
-            const allowance = await testContract.allowance(userAddress, listingManagerAddress)
+            // Approve fee token to ListingManager
+            const feeTokenContract = new ethers.Contract(feeTokenAddress, erc20Abi, signer)
+            const allowance = await feeTokenContract.allowance(userAddress, listingManagerAddress)
             if (allowance < fee) {
-                showAlert('Approving NDESO for listing fee...', 'info')
-                const approveTx = await testContract.approve(listingManagerAddress, ethers.MaxUint256)
+                showAlert('Approving token for listing fee...', 'info')
+                const approveTx = await feeTokenContract.approve(listingManagerAddress, ethers.MaxUint256)
                 await approveTx.wait()
             }
 

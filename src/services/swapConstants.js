@@ -80,6 +80,7 @@ export const listingManagerAbi = [
     'function listToken(address token, address pairedWith) external returns (address pair)',
     'function listTokenFree(address token, address pairedWith) external returns (address pair)',
     'function listingFee() external view returns (uint256)',
+    'function feeToken() external view returns (address)',
     'function pairExists(address tokenA, address tokenB) external view returns (bool)',
     'function setListingFee(uint256 _fee) external',
     'function withdrawFees(address to) external',
@@ -106,7 +107,7 @@ export const swapTokenList = [
         name: 'NDESO',
         symbol: 'NDESO',
         decimals: 18,
-        logoURI: '/Ndeso.png',
+        logoURI: '/NdeFPL.png',
     },
     {
         address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
