@@ -197,11 +197,13 @@ export default function Differentials() {
                                                 return fxs.length === 0 ? (
                                                     <span key={gw} className={styles.fdrCell} style={{ background: 'transparent', color: 'var(--text-muted)' }}>—</span>
                                                 ) : (
-                                                    fxs.map((f, j) => (
-                                                        <span key={`${gw}-${j}`} className={styles.fdrCell} style={{ background: getDifficultyColor(f.difficulty) }}>
-                                                            {f.opponent} ({f.isHome ? 'H' : 'A'})
-                                                        </span>
-                                                    ))
+                                                    <div key={gw} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                        {fxs.map((f, j) => (
+                                                            <span key={j} className={styles.fdrCell} style={{ background: getDifficultyColor(f.difficulty) }}>
+                                                                {f.opponent} ({f.isHome ? 'H' : 'A'})
+                                                            </span>
+                                                        ))}
+                                                    </div>
                                                 )
                                             })}
                                         </div>

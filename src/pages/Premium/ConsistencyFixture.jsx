@@ -339,7 +339,7 @@ export default function ConsistencyFixture() {
                                     {gwRange.map(gw => {
                                         const fxs = p.gwFixtures[gw] || []
                                         return (
-                                            <td key={gw} style={{ padding: '0.3rem' }}>
+                                            <td key={gw} style={{ padding: '0.3rem', textAlign: 'center' }}>
                                                 {fxs.length === 0 ? (
                                                     <span className={styles.textMuted}>—</span>
                                                 ) : (

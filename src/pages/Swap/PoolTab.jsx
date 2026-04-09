@@ -282,8 +282,7 @@ export default function PoolTab({ showAlert, slippage }) {
                     // Pair doesn't exist — need listing fee
                     if (listingManagerContract) {
                         const fee = await listingManagerContract.listingFee()
-                        const feeToken = swapTokenList.find(t => t.symbol === 'NDESO')
-                        setListingFee(ethers.formatUnits(fee, feeToken?.decimals || 18))
+                        setListingFee(ethers.formatEther(fee))
                         setShowListingFee(true)
                         return
                     } else {
@@ -304,11 +303,11 @@ export default function PoolTab({ showAlert, slippage }) {
         setIsPayingFee(true)
         try {
             const fee = await listingManagerContract.listingFee()
-            const feeToken = swapTokenList.find(t => t.symbol === 'NDESO')
-            if (!feeToken) { showAlert('NDESO token not found', 'error'); return }
+            const ndesoToken = swapTokenList.find(t => t.symbol === 'NDESO')
+            if (!ndesoToken) { showAlert('NDESO token not found', 'error'); return }
 
             // Approve NDESO to ListingManager
-            const testContract = new ethers.Contract(feeToken.address, erc20Abi, signer)
+            const testContract = new ethers.Contract(ndesoToken.address, erc20Abi, signer)
             const allowance = await testContract.allowance(userAddress, listingManagerAddress)
             if (allowance < fee) {
                 showAlert('Approving NDESO for listing fee...', 'info')

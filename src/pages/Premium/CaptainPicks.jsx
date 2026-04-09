@@ -39,11 +39,17 @@ export default function CaptainPicks() {
         return players
             .filter(p => p.status === 'a' && parseFloat(p.form) >= 4 && p.minutes > 300)
             .map(p => {
-                const match = fixtures.find(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
-                const isHome = match?.team_h === p.team
-                const fdr = match ? (isHome ? match.team_h_difficulty : match.team_a_difficulty) : 5
-                const opp = match ? teams.find(t => t.id === (isHome ? match.team_a : match.team_h))?.short_name : '—'
-                return { ...p, fdr, isHome, opponent: opp }
+                const gwMatches = fixtures.filter(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
+                const matches = gwMatches.map(m => {
+                    const isHome = m.team_h === p.team
+                    return {
+                        fdr: isHome ? m.team_h_difficulty : m.team_a_difficulty,
+                        isHome,
+                        opponent: teams.find(t => t.id === (isHome ? m.team_a : m.team_h))?.short_name || '—'
+                    }
+                })
+                const bestFdr = matches.length > 0 ? Math.min(...matches.map(m => m.fdr)) : 5
+                return { ...p, matches, fdr: bestFdr }
             })
             .sort((a, b) => {
                 const scoreA = parseFloat(a.form) * (5 - a.fdr + 1)
@@ -62,9 +68,10 @@ export default function CaptainPicks() {
         setAnalyzing(true)
         setResult('')
         try {
-            const playerInfo = topCandidates.map(p =>
-                `${p.web_name} (${getPositionShort(p.element_type)}, Form: ${p.form}, Pts: ${p.total_points}, vs ${p.opponent} ${p.isHome ? 'HOME' : 'AWAY'}, FDR: ${p.fdr}, Goals: ${p.goals_scored}, Assists: ${p.assists}, xG: ${p.expected_goals || 'N/A'}, xA: ${p.expected_assists || 'N/A'})`
-            ).join('\n')
+            const playerInfo = topCandidates.map(p => {
+                const matchStr = p.matches.map(m => `vs ${m.opponent} ${m.isHome ? 'HOME' : 'AWAY'} FDR:${m.fdr}`).join(' + ')
+                return `${p.web_name} (${getPositionShort(p.element_type)}, Form: ${p.form}, Pts: ${p.total_points}, ${matchStr || 'No fixture'}, Goals: ${p.goals_scored}, Assists: ${p.assists}, xG: ${p.expected_goals || 'N/A'}, xA: ${p.expected_assists || 'N/A'})`
+            }).join('\n')
 
             const prompt = `You are an FPL (Fantasy Premier League) expert analyst. Based on the following GW${targetGw.id} captain candidates, provide your top 3 captain picks with detailed reasoning.
 
@@ -155,14 +162,26 @@ Keep it concise but insightful. Focus on form, fixture, home/away advantage, and
                                         <td className={styles.formHigh}>{p.form}</td>
                                         <td style={{ fontWeight: 700 }}>{p.total_points}</td>
                                         <td>
-                                            <span className={styles.fdrCell} style={{ background: getDifficultyColor(p.fdr) }}>
-                                                {p.opponent} ({p.isHome ? 'H' : 'A'})
-                                            </span>
+                                            {p.matches.length === 0 ? (
+                                                <span style={{ color: 'var(--text-muted)' }}>—</span>
+                                            ) : (
+                                                p.matches.map((m, mi) => (
+                                                    <div key={mi} className={styles.fdrCell} style={{ background: getDifficultyColor(m.fdr), marginBottom: p.matches.length > 1 ? 2 : 0 }}>
+                                                        {m.opponent} ({m.isHome ? 'H' : 'A'})
+                                                    </div>
+                                                ))
+                                            )}
                                         </td>
                                         <td>
-                                            <span className={styles.fdrCell} style={{ background: getDifficultyColor(p.fdr) }}>
-                                                {p.fdr}
-                                            </span>
+                                            {p.matches.length === 0 ? (
+                                                <span style={{ color: 'var(--text-muted)' }}>—</span>
+                                            ) : (
+                                                p.matches.map((m, mi) => (
+                                                    <div key={mi} className={styles.fdrCell} style={{ background: getDifficultyColor(m.fdr), marginBottom: p.matches.length > 1 ? 2 : 0 }}>
+                                                        {m.fdr}
+                                                    </div>
+                                                ))
+                                            )}
                                         </td>
                                     </tr>
                                 )
