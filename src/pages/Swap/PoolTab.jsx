@@ -317,7 +317,7 @@ export default function PoolTab({ showAlert, slippage }) {
 
             // Pay fee and create pair
             showAlert('Paying listing fee & creating pair...', 'info')
-            const tx = await listingManagerContract.listToken(tokenA.address, tokenB.address)
+            const tx = await listingManagerContract.listToken(tokenA.address, tokenB.address, { gasLimit: 5000000n })
             await tx.wait()
             showAlert('Pair created! Now add liquidity.', 'success')
             setShowListingFee(false)
@@ -326,7 +326,7 @@ export default function PoolTab({ showAlert, slippage }) {
             await doAddLiquidity()
         } catch (err) {
             if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
-            else showAlert(`Listing failed: ${err.reason || err.shortMessage || 'Unknown error'}`, 'error')
+            else showAlert(`Listing failed: ${err.reason || err.shortMessage || err.data?.message || err.message || 'Unknown error'}`, 'error')
         } finally { setIsPayingFee(false) }
     }
 
