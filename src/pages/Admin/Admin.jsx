@@ -779,15 +779,16 @@ function TokenManagementCard({ showAlert }) {
         if (!listingManagerAddress) { setLoadingFee(false); return }
         try {
             const rpcProvider = new ethers.JsonRpcProvider(BASE_RPC, { chainId: 8453, name: 'base' }, { staticNetwork: true })
-            const testTokenAddr = TOKEN_ADDRESS
-            const tokenContract = new ethers.Contract(testTokenAddr, erc20Abi, rpcProvider)
             const lmContract = new ethers.Contract(listingManagerAddress, listingManagerAbi, rpcProvider)
-            const [balance, feeRaw] = await Promise.all([
+            const feeTokenAddr = await lmContract.feeToken()
+            const tokenContract = new ethers.Contract(feeTokenAddr, erc20Abi, rpcProvider)
+            const [balance, feeRaw, decimals] = await Promise.all([
                 tokenContract.balanceOf(listingManagerAddress),
                 lmContract.listingFee(),
+                tokenContract.decimals(),
             ])
-            setFeeBalance(ethers.formatEther(balance))
-            setCurrentListingFee(ethers.formatEther(feeRaw))
+            setFeeBalance(ethers.formatUnits(balance, decimals))
+            setCurrentListingFee(ethers.formatUnits(feeRaw, decimals))
         } catch (err) { console.error('Fee balance error:', err) }
         setLoadingFee(false)
     }, [])
@@ -826,7 +827,11 @@ function TokenManagementCard({ showAlert }) {
             const provider = new ethers.BrowserProvider(window.ethereum)
             const signer = await provider.getSigner()
             const lmContract = new ethers.Contract(listingManagerAddress, listingManagerAbi, signer)
-            const feeWei = ethers.parseEther(newListingFee)
+            // Read actual fee token decimals from contract
+            const feeTokenAddr = await lmContract.feeToken()
+            const tokenContract = new ethers.Contract(feeTokenAddr, erc20Abi, signer)
+            const decimals = await tokenContract.decimals()
+            const feeWei = ethers.parseUnits(newListingFee, decimals)
             showAlert(`Setting listing fee to ${newListingFee} NDESO...`, 'info')
             const tx = await lmContract.setListingFee(feeWei)
             await tx.wait()

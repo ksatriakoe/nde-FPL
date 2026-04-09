@@ -282,7 +282,10 @@ export default function PoolTab({ showAlert, slippage }) {
                     // Pair doesn't exist — need listing fee
                     if (listingManagerContract) {
                         const fee = await listingManagerContract.listingFee()
-                        setListingFee(ethers.formatEther(fee))
+                        const feeTokenAddr = await listingManagerContract.feeToken()
+                        const feeTokenC = new ethers.Contract(feeTokenAddr, erc20Abi, signer || customFactory.runner)
+                        const decimals = await feeTokenC.decimals()
+                        setListingFee(ethers.formatUnits(fee, decimals))
                         setShowListingFee(true)
                         return
                     } else {
@@ -305,11 +308,33 @@ export default function PoolTab({ showAlert, slippage }) {
             const fee = await listingManagerContract.listingFee()
             const feeTokenAddress = await listingManagerContract.feeToken()
 
-            // Approve fee token to ListingManager
+            // Pre-flight check 1: User has enough fee token balance
             const feeTokenContract = new ethers.Contract(feeTokenAddress, erc20Abi, signer)
+            const [balance, symbol, decimals] = await Promise.all([
+                feeTokenContract.balanceOf(userAddress),
+                feeTokenContract.symbol().catch(() => 'TOKEN'),
+                feeTokenContract.decimals(),
+            ])
+            if (balance < fee) {
+                const have = ethers.formatUnits(balance, decimals)
+                const need = ethers.formatUnits(fee, decimals)
+                showAlert(`Insufficient ${symbol} balance: you have ${have} but need ${need}`, 'error')
+                return
+            }
+
+            // Pre-flight check 2: Pair doesn't already exist
+            const customFactory = new ethers.Contract(customAddresses.factory, factoryAbi, signer)
+            const existingPair = await customFactory.getPair(tokenA.address, tokenB.address)
+            if (existingPair !== ethers.ZeroAddress) {
+                showAlert('Pair already exists! Close and try adding liquidity directly.', 'error')
+                setShowListingFee(false)
+                return
+            }
+
+            // Approve fee token to ListingManager
             const allowance = await feeTokenContract.allowance(userAddress, listingManagerAddress)
             if (allowance < fee) {
-                showAlert('Approving token for listing fee...', 'info')
+                showAlert(`Approving ${symbol} for listing fee...`, 'info')
                 const approveTx = await feeTokenContract.approve(listingManagerAddress, ethers.MaxUint256)
                 await approveTx.wait()
             }
@@ -324,6 +349,7 @@ export default function PoolTab({ showAlert, slippage }) {
             // Now add liquidity
             await doAddLiquidity()
         } catch (err) {
+            console.error('Listing fee error:', err)
             if (err.code === 4001 || err.code === 'ACTION_REJECTED') showAlert('User rejected', 'error')
             else showAlert(`Listing failed: ${err.reason || err.shortMessage || err.data?.message || err.message || 'Unknown error'}`, 'error')
         } finally { setIsPayingFee(false) }

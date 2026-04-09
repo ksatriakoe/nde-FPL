@@ -106,7 +106,7 @@ export const swapTokenList = [
         address: '0x37a42A15B04a573692c6b02f10fa12bd35041936',
         name: 'NDESO',
         symbol: 'NDESO',
-        decimals: 18,
+        decimals: 4,
         logoURI: '/NdeFPL.png',
     },
     {
