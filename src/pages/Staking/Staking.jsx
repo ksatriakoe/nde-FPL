@@ -6,13 +6,12 @@ import { formatSwapAmount } from '../../services/formatBalance'
 import { stakingAddress, stakingAbi, erc20Abi } from '../../services/swapConstants'
 import s from './Staking.module.css'
 
-const TOKEN_ADDRESS = '0xfd4b6c1507cE75Cc0562cD22F72a07965012a067' // NDESO on Base
-const TOKEN_INFO = {
-    address: TOKEN_ADDRESS,
-    name: 'NDESO Token',
-    symbol: 'NDESO',
+const DEFAULT_TOKEN_INFO = {
+    address: '',
+    name: 'Token',
+    symbol: 'TOKEN',
     decimals: 18,
-    logoURI: '/Ndeso.png',
+    logoURI: '/NdeFPL.png',
 }
 
 function TokenIcon({ token, size }) {
@@ -34,6 +33,7 @@ function useStakingContract(signer, provider, userAddress) {
         minStake: '0',
         apy: 0,
     })
+    const [tokenInfo, setTokenInfo] = useState(DEFAULT_TOKEN_INFO)
     const [loading, setLoading] = useState(true)
 
     const fetchData = useCallback(async () => {
@@ -50,14 +50,32 @@ function useStakingContract(signer, provider, userAddress) {
         }
         try {
             const contract = new ethers.Contract(stakingAddress, stakingAbi, readProvider)
+
+            // Read staking token address and its decimals/symbol dynamically
+            const stakingTokenAddr = await contract.stakingToken()
+            const tokenContract = new ethers.Contract(stakingTokenAddr, erc20Abi, readProvider)
+            const [decimals, symbol, tokenName] = await Promise.all([
+                tokenContract.decimals(),
+                tokenContract.symbol(),
+                tokenContract.name(),
+            ])
+            const dec = Number(decimals)
+            setTokenInfo({
+                address: stakingTokenAddr,
+                name: tokenName,
+                symbol: symbol,
+                decimals: dec,
+                logoURI: '/NdeFPL.png',
+            })
+
             if (userAddress) {
                 const info = await contract.getStakeInfo(userAddress)
                 setData({
-                    totalStaked: ethers.formatEther(info._totalStaked),
-                    userStaked: ethers.formatEther(info._userStaked),
-                    userRewards: ethers.formatEther(info._userRewards),
-                    rewardPool: ethers.formatEther(info._rewardPool),
-                    minStake: ethers.formatEther(info._minStake),
+                    totalStaked: ethers.formatUnits(info._totalStaked, dec),
+                    userStaked: ethers.formatUnits(info._userStaked, dec),
+                    userRewards: ethers.formatUnits(info._userRewards, dec),
+                    rewardPool: ethers.formatUnits(info._rewardPool, dec),
+                    minStake: ethers.formatUnits(info._minStake, dec),
                     apy: Number(info._apy) / 100, // basis points → percentage
                 })
             } else {
@@ -69,9 +87,9 @@ function useStakingContract(signer, provider, userAddress) {
                 ])
                 setData(prev => ({
                     ...prev,
-                    totalStaked: ethers.formatEther(totalStaked),
-                    minStake: ethers.formatEther(minStake),
-                    rewardPool: ethers.formatEther(rewardPoolVal),
+                    totalStaked: ethers.formatUnits(totalStaked, dec),
+                    minStake: ethers.formatUnits(minStake, dec),
+                    rewardPool: ethers.formatUnits(rewardPoolVal, dec),
                     apy: Number(apyBP) / 100,
                     userStaked: '0',
                     userRewards: '0',
@@ -89,13 +107,13 @@ function useStakingContract(signer, provider, userAddress) {
         return () => clearInterval(iv)
     }, [fetchData])
 
-    return { data, loading, refresh: fetchData }
+    return { data, loading, refresh: fetchData, tokenInfo }
 }
 
-function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, stakeData, onSuccess }) {
+function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, stakeData, onSuccess, tokenInfo }) {
     const [amount, setAmount] = useState('')
     const [busy, setBusy] = useState(false)
-    const { formattedBalance } = useTokenBalance(TOKEN_ADDRESS)
+    const { formattedBalance } = useTokenBalance(tokenInfo.address)
 
     const maxAmount = mode === 'stake' ? formattedBalance : stakeData.userStaked
 
@@ -103,17 +121,17 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
         if (!signer || !amount || parseFloat(amount) <= 0) return
         if (mode === 'stake') {
             if (parseFloat(amount) < parseFloat(stakeData.minStake)) {
-                showAlert(`Minimum stake is ${formatSwapAmount(stakeData.minStake)} NDESO`, 'error')
+                showAlert(`Minimum stake is ${formatSwapAmount(stakeData.minStake)} ${tokenInfo.symbol}`, 'error')
                 return
             }
         }
         setBusy(true)
         try {
             const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
-            const parsedAmount = ethers.parseEther(amount)
+            const parsedAmount = ethers.parseUnits(amount, tokenInfo.decimals)
 
             if (mode === 'stake') {
-                const tokenContract = new ethers.Contract(TOKEN_ADDRESS, erc20Abi, signer)
+                const tokenContract = new ethers.Contract(tokenInfo.address, erc20Abi, signer)
                 const allowance = await tokenContract.allowance(userAddress, stakingAddress)
                 if (allowance < parsedAmount) {
                     showAlert('Approving tokens...', 'info')
@@ -123,12 +141,12 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                 showAlert('Staking...', 'info')
                 const tx = await contract.stake(parsedAmount)
                 await tx.wait()
-                showAlert(`Staked ${amount} NDESO successfully!`, 'success')
+                showAlert(`Staked ${amount} ${tokenInfo.symbol} successfully!`, 'success')
             } else {
                 showAlert('Unstaking...', 'info')
                 const tx = await contract.unstake(parsedAmount)
                 await tx.wait()
-                showAlert(`Unstaked ${amount} NDESO successfully!`, 'success')
+                showAlert(`Unstaked ${amount} ${tokenInfo.symbol} successfully!`, 'success')
             }
             onSuccess()
             onClose()
@@ -150,7 +168,7 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                 <div className={s.modal}>
                     <div className={s.modalHeader}>
                         <span className={s.modalTitle}>
-                            {mode === 'stake' ? 'Stake' : 'Unstake'} NDESO
+                            {mode === 'stake' ? 'Stake' : 'Unstake'} {tokenInfo.symbol}
                         </span>
                         <button className={s.modalClose} onClick={onClose}>×</button>
                     </div>
@@ -168,8 +186,8 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                             </div>
                             <div className={s.inputRow}>
                                 <div className={s.inputTokenInfo}>
-                                    <TokenIcon token={TOKEN_INFO} />
-                                    <span>NDESO</span>
+                                    <TokenIcon token={tokenInfo} />
+                                    <span>{tokenInfo.symbol}</span>
                                 </div>
                                 <input
                                     className={s.amountInput}
@@ -181,7 +199,7 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                             </div>
                             <div className={s.inputBalance}>
                                 <img src="/wallet.svg" alt="" className={s.walletIcon} />
-                                {mode === 'stake' ? `Balance: ${formattedBalance}` : `Staked: ${formatSwapAmount(stakeData.userStaked)}`} NDESO
+                                {mode === 'stake' ? `Balance: ${formattedBalance}` : `Staked: ${formatSwapAmount(stakeData.userStaked)}`} {tokenInfo.symbol}
                             </div>
                         </div>
 
@@ -189,7 +207,7 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                             <div className={s.modalInfo}>
                                 <div className={s.modalInfoRow}>
                                     <span className={s.modalInfoLabel}>Min Stake</span>
-                                    <span className={s.modalInfoValue}>{formatSwapAmount(stakeData.minStake)} NDESO</span>
+                                    <span className={s.modalInfoValue}>{formatSwapAmount(stakeData.minStake)} {tokenInfo.symbol}</span>
                                 </div>
                                 <div className={s.modalInfoRow}>
                                     <span className={s.modalInfoLabel}>Current APY</span>
@@ -204,7 +222,7 @@ function StakeModal({ mode, onClose, showAlert, signer, provider, userAddress, s
                                 onClick={handleAction}
                                 disabled={!signer || !amount || parseFloat(amount) <= 0 || busy || belowMin}
                             >
-                                {busy ? 'Processing...' : !signer ? 'Connect Wallet' : belowMin ? `Min ${formatSwapAmount(stakeData.minStake)} NDESO` : 'Stake'}
+                                {busy ? 'Processing...' : !signer ? 'Connect Wallet' : belowMin ? `Min ${formatSwapAmount(stakeData.minStake)} ${tokenInfo.symbol}` : 'Stake'}
                             </button>
                         ) : (
                             <button
@@ -228,7 +246,7 @@ export default function Staking() {
     const [modalMode, setModalMode] = useState(null)
     const [claimBusy, setClaimBusy] = useState(false)
 
-    const { data: stakeData, loading, refresh } = useStakingContract(signer, provider, userAddress)
+    const { data: stakeData, loading, refresh, tokenInfo } = useStakingContract(signer, provider, userAddress)
 
     const showAlert = (message, type = 'info') => {
         const id = Date.now()
@@ -244,7 +262,7 @@ export default function Staking() {
             showAlert('Claiming rewards...', 'info')
             const tx = await contract.claimRewards()
             await tx.wait()
-            showAlert(`Claimed ${formatSwapAmount(stakeData.userRewards)} NDESO!`, 'success')
+            showAlert(`Claimed ${formatSwapAmount(stakeData.userRewards)} ${tokenInfo.symbol}!`, 'success')
             refresh()
         } catch (err) {
             console.error(err)
@@ -273,10 +291,10 @@ export default function Staking() {
                 {/* Header */}
                 <div className={s.header}>
                     <div className={s.headerLeft}>
-                        <TokenIcon token={TOKEN_INFO} size="lg" />
+                        <TokenIcon token={tokenInfo} size="lg" />
                         <div>
                             <h1 className={s.title}>Staking</h1>
-                            <div className={s.subtitle}>Stake NDESO to earn rewards</div>
+                            <div className={s.subtitle}>Stake {tokenInfo.symbol} to earn rewards</div>
                         </div>
                     </div>
                     <span className={s.aprText}>
@@ -298,26 +316,26 @@ export default function Staking() {
                             <div className={s.overviewItem}>
                                 <img src="/stats-staking.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Total Staked</div>
-                                <div className={s.overviewValue}>{loading ? '...' : Math.floor(parseFloat(stakeData.totalStaked)).toString()}</div>
-                                <div className={s.overviewUnit}>NDESO</div>
+                                <div className={s.overviewValue}>{loading ? '...' : formatSwapAmount(stakeData.totalStaked)}</div>
+                                <div className={s.overviewUnit}>{tokenInfo.symbol}</div>
                             </div>
                             <div className={s.overviewItem}>
                                 <img src="/money-staking.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Your Staked</div>
                                 <div className={s.overviewValue}>{loading ? '...' : formatSwapAmount(stakeData.userStaked)}</div>
-                                <div className={s.overviewUnit}>NDESO</div>
+                                <div className={s.overviewUnit}>{tokenInfo.symbol}</div>
                             </div>
                             <div className={s.overviewItem}>
                                 <img src="/box.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Your Rewards</div>
                                 <div className={s.overviewValueReward}>{loading ? '...' : formatSwapAmount(stakeData.userRewards)}</div>
-                                <div className={s.overviewUnit}>NDESO</div>
+                                <div className={s.overviewUnit}>{tokenInfo.symbol}</div>
                             </div>
                             <div className={s.overviewItem}>
                                 <img src="/bank.svg" alt="" className={s.overviewSvgIcon} />
                                 <div className={s.overviewLabel}>Reward Pool</div>
                                 <div className={s.overviewValuePool}>{loading ? '...' : formatSwapAmount(stakeData.rewardPool)}</div>
-                                <div className={s.overviewUnit}>NDESO</div>
+                                <div className={s.overviewUnit}>{tokenInfo.symbol}</div>
                             </div>
                         </div>
 
@@ -338,18 +356,18 @@ export default function Staking() {
                             </div>
                             <div className={s.detailRow}>
                                 <span className={s.detailLabel}>Min Stake</span>
-                                <span className={s.detailValue}>{formatSwapAmount(stakeData.minStake)} NDESO</span>
+                                <span className={s.detailValue}>{formatSwapAmount(stakeData.minStake)} {tokenInfo.symbol}</span>
                             </div>
                             <div className={s.detailRow}>
                                 <span className={s.detailLabel}>Reward Token</span>
-                                <span className={s.detailValue}>NDESO</span>
+                                <span className={s.detailValue}>{tokenInfo.symbol}</span>
                             </div>
                         </div>
 
                         {/* Action Buttons */}
                         <div className={s.actionBtns}>
                             <button className={s.stakeBtn} onClick={() => setModalMode('stake')}>
-                                Stake NDESO
+                                Stake {tokenInfo.symbol}
                             </button>
                             <button className={s.unstakeBtn} onClick={() => setModalMode('unstake')}>
                                 Unstake
@@ -363,7 +381,7 @@ export default function Staking() {
                                 onClick={handleClaim}
                                 disabled={claimBusy}
                             >
-                                {claimBusy ? 'Claiming...' : `Claim ${formatSwapAmount(stakeData.userRewards)} NDESO`}
+                                {claimBusy ? 'Claiming...' : `Claim ${formatSwapAmount(stakeData.userRewards)} ${tokenInfo.symbol}`}
                             </button>
                         )}
                     </>
@@ -380,6 +398,7 @@ export default function Staking() {
                     userAddress={userAddress}
                     stakeData={stakeData}
                     onSuccess={refresh}
+                    tokenInfo={tokenInfo}
                 />
             )}
         </div>
