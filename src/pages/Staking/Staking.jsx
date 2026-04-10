@@ -11,7 +11,7 @@ const DEFAULT_TOKEN_INFO = {
     name: 'Token',
     symbol: 'TOKEN',
     decimals: 18,
-    logoURI: '/NdeFPL.png',
+    logoURI: '/Ndeso.png',
 }
 
 function TokenIcon({ token, size }) {
@@ -65,7 +65,7 @@ function useStakingContract(signer, provider, userAddress) {
                 name: tokenName,
                 symbol: symbol,
                 decimals: dec,
-                logoURI: '/NdeFPL.png',
+                logoURI: '/Ndeso.png',
             })
 
             if (userAddress) {
