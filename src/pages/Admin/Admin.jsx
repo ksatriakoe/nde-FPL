@@ -417,6 +417,8 @@ function StakingControlCard({ showAlert }) {
         totalStaked: '0', rewardPool: '0',
         apy: 0, minStake: '0',
     })
+    const [tokenDecimals, setTokenDecimals] = useState(18)
+    const [tokenSymbol, setTokenSymbol] = useState('NDESO')
     const [loading, setLoading] = useState(true)
     const [newMinStake, setNewMinStake] = useState('')
     const [depositAmount, setDepositAmount] = useState('')
@@ -436,6 +438,18 @@ function StakingControlCard({ showAlert }) {
                 chainId: 8453, name: 'base',
             }, { staticNetwork: true })
             const contract = new ethers.Contract(stakingAddress, stakingAbi, rpcProvider)
+
+            // Read staking token address and its decimals/symbol dynamically
+            const stakingTokenAddr = await contract.stakingToken()
+            const tokenContract = new ethers.Contract(stakingTokenAddr, erc20Abi, rpcProvider)
+            const [decimals, symbol] = await Promise.all([
+                tokenContract.decimals(),
+                tokenContract.symbol(),
+            ])
+            const dec = Number(decimals)
+            setTokenDecimals(dec)
+            setTokenSymbol(symbol)
+
             const [totalStaked, minStake, rewardPoolVal, apyBP] = await Promise.all([
                 contract.totalStaked(),
                 contract.minStake(),
@@ -443,9 +457,9 @@ function StakingControlCard({ showAlert }) {
                 contract.getAPY(),
             ])
             setStakingData({
-                totalStaked: ethers.formatEther(totalStaked),
-                minStake: ethers.formatEther(minStake),
-                rewardPool: ethers.formatEther(rewardPoolVal),
+                totalStaked: ethers.formatUnits(totalStaked, dec),
+                minStake: ethers.formatUnits(minStake, dec),
+                rewardPool: ethers.formatUnits(rewardPoolVal, dec),
                 apy: Number(apyBP) / 100,
             })
         } catch (err) {
@@ -491,11 +505,11 @@ function StakingControlCard({ showAlert }) {
         try {
             const signer = await getSigner()
             const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
-            const weiAmount = ethers.parseEther(newMinStake)
-            showAlert(`Setting min stake to ${newMinStake} NDESO...`, 'info')
+            const weiAmount = ethers.parseUnits(newMinStake, tokenDecimals)
+            showAlert(`Setting min stake to ${newMinStake} ${tokenSymbol}...`, 'info')
             const tx = await contract.setMinStake(weiAmount)
             await tx.wait()
-            showAlert(`Min stake updated to ${newMinStake} NDESO!`, 'success')
+            showAlert(`Min stake updated to ${newMinStake} ${tokenSymbol}!`, 'success')
             setNewMinStake('')
             fetchStakingData()
         } catch (err) {
@@ -511,27 +525,60 @@ function StakingControlCard({ showAlert }) {
         try {
             const signer = await getSigner()
             const signerAddress = await signer.getAddress()
-            const tokenContract = new ethers.Contract(TOKEN_ADDRESS, erc20Abi, signer)
-            const parsedAmount = ethers.parseEther(depositAmount)
+            const stakingContract = new ethers.Contract(stakingAddress, stakingAbi, signer)
 
-            // Check and do approval
+            // Read the actual staking token from the contract
+            const stakingTokenAddr = await stakingContract.stakingToken()
+            const tokenContract = new ethers.Contract(stakingTokenAddr, erc20Abi, signer)
+            const decimals = await tokenContract.decimals()
+            const dec = Number(decimals)
+            const parsedAmount = ethers.parseUnits(depositAmount, dec)
+
+            // Check balance first
+            const balance = await tokenContract.balanceOf(signerAddress)
+            if (balance < parsedAmount) {
+                showAlert(`Insufficient balance. You have ${ethers.formatUnits(balance, dec)} ${tokenSymbol}`, 'error')
+                setBusyDeposit(false)
+                return
+            }
+
+            // Check and do approval — always re-approve if not enough
             const allowance = await tokenContract.allowance(signerAddress, stakingAddress)
             if (allowance < parsedAmount) {
                 showAlert('Approving tokens...', 'info')
+                // Reset allowance to 0 first (some tokens require this)
+                if (allowance > 0n) {
+                    const resetTx = await tokenContract.approve(stakingAddress, 0)
+                    await resetTx.wait(1)
+                }
                 const approveTx = await tokenContract.approve(stakingAddress, ethers.MaxUint256)
-                await approveTx.wait()
+                await approveTx.wait(1)
+                showAlert('Approval confirmed! Depositing...', 'info')
             }
 
-            showAlert(`Depositing ${depositAmount} NDESO rewards...`, 'info')
-            const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
-            const tx = await contract.depositRewards(parsedAmount)
-            await tx.wait()
-            showAlert(`Deposited ${depositAmount} NDESO into reward pool!`, 'success')
+            // Re-verify allowance after approval
+            const newAllowance = await tokenContract.allowance(signerAddress, stakingAddress)
+            if (newAllowance < parsedAmount) {
+                showAlert('Approval failed — allowance still insufficient', 'error')
+                setBusyDeposit(false)
+                return
+            }
+
+            showAlert(`Depositing ${depositAmount} ${tokenSymbol} rewards...`, 'info')
+            const tx = await stakingContract.depositRewards(parsedAmount)
+            await tx.wait(1)
+            showAlert(`Deposited ${depositAmount} ${tokenSymbol} into reward pool!`, 'success')
             setDepositAmount('')
             fetchStakingData()
         } catch (err) {
-            const msg = err?.reason || err?.message || 'Transaction failed'
-            showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+            if (err.code === 4001 || err.code === 'ACTION_REJECTED') {
+                showAlert('User rejected', 'error')
+            } else {
+                const reason = err?.reason || err?.shortMessage || ''
+                const msg = reason || err?.message || 'Transaction failed'
+                console.error('Deposit error:', err)
+                showAlert(msg.length > 80 ? msg.slice(0, 80) + '…' : msg, 'error')
+            }
         }
         setBusyDeposit(false)
     }
@@ -582,15 +629,15 @@ function StakingControlCard({ showAlert }) {
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Reward Pool</div>
-                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.rewardPool)}<span className={s.statUnit}>NDESO</span></div>
+                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.rewardPool)}<span className={s.statUnit}>{tokenSymbol}</span></div>
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Total Staked</div>
-                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.totalStaked)}<span className={s.statUnit}>NDESO</span></div>
+                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.totalStaked)}<span className={s.statUnit}>{tokenSymbol}</span></div>
                 </div>
                 <div className={s.statItem}>
                     <div className={s.statLabel}>Min Stake</div>
-                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.minStake)}<span className={s.statUnit}>NDESO</span></div>
+                    <div className={s.statValue}>{loading ? '...' : fmt(stakingData.minStake)}<span className={s.statUnit}>{tokenSymbol}</span></div>
                 </div>
             </div>
 
@@ -642,7 +689,7 @@ function StakingControlCard({ showAlert }) {
                             onChange={e => setDepositAmount(e.target.value)}
                             placeholder="Amount"
                         />
-                        <span className={s.inputUnit}>NDESO</span>
+                        <span className={s.inputUnit}>{tokenSymbol}</span>
                     </div>
                     <button
                         className={s.primaryBtn}
@@ -677,7 +724,7 @@ function StakingControlCard({ showAlert }) {
                             onChange={e => setNewMinStake(e.target.value)}
                             placeholder={`${fmt(stakingData.minStake)}`}
                         />
-                        <span className={s.inputUnit}>NDESO</span>
+                        <span className={s.inputUnit}>{tokenSymbol}</span>
                     </div>
                     <button
                         className={s.primaryBtn}
@@ -688,7 +735,7 @@ function StakingControlCard({ showAlert }) {
                         {busyMin ? 'Sending...' : 'Update'}
                     </button>
                 </div>
-                <div className={s.inputHint}>Enter token amount directly, e.g. 100 = 100 NDESO (auto-converts to wei)</div>
+                <div className={s.inputHint}>Enter token amount directly, e.g. 100 = 100 {tokenSymbol} (auto-converts to smallest unit)</div>
             </div>
 
             <hr className={s.divider} />
@@ -706,7 +753,7 @@ function StakingControlCard({ showAlert }) {
                             onChange={e => setWithdrawAmount(e.target.value)}
                             placeholder={`Max: ${fmt(stakingData.rewardPool)}`}
                         />
-                        <span className={s.inputUnit}>NDESO</span>
+                        <span className={s.inputUnit}>{tokenSymbol}</span>
                     </div>
                     <button
                         className={s.dangerBtn}
@@ -716,11 +763,11 @@ function StakingControlCard({ showAlert }) {
                             try {
                                 const signer = await getSigner()
                                 const contract = new ethers.Contract(stakingAddress, stakingAbi, signer)
-                                const parsedAmount = ethers.parseEther(withdrawAmount)
-                                showAlert(`Emergency withdrawing ${withdrawAmount} NDESO...`, 'info')
+                                const parsedAmount = ethers.parseUnits(withdrawAmount, tokenDecimals)
+                                showAlert(`Emergency withdrawing ${withdrawAmount} ${tokenSymbol}...`, 'info')
                                 const tx = await contract.emergencyWithdraw(parsedAmount)
                                 await tx.wait()
-                                showAlert(`Withdrawn ${withdrawAmount} NDESO from reward pool!`, 'success')
+                                showAlert(`Withdrawn ${withdrawAmount} ${tokenSymbol} from reward pool!`, 'success')
                                 setWithdrawAmount('')
                                 fetchStakingData()
                             } catch (err) {
