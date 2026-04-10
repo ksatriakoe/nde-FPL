@@ -536,6 +536,92 @@
     margin: 0.85rem 0;
 }
 
+/* ── NDESO Price Card ── */
+.priceHero {
+    text-align: center;
+    padding: 1rem 0 0.75rem;
+}
+
+.priceHeroLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.25rem;
+}
+
+.priceHeroValue {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #10b981;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.priceHeroSub {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 0.3rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.priceSrcBadge {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.refreshBtn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #9ca3af;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.refreshBtn:hover:not(:disabled) {
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.refreshBtn:disabled {
+    cursor: not-allowed;
+}
+
+.refreshBtnSpin {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.priceError {
+    text-align: center;
+    color: #ef4444;
+    font-size: 0.8rem;
+    padding: 1.5rem 0;
+}
+
 /* ── Alerts ── */
 .alertContainer {
     position: fixed;

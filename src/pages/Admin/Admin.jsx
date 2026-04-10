@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
 import { ethers } from 'ethers'
 import { supabase } from '../../services/supabase'
 import { useTokenList } from '../../hooks/useTokenList'
-import { stakingAddress, stakingAbi, erc20Abi, listingManagerAddress, listingManagerAbi } from '../../services/swapConstants'
+import { stakingAddress, stakingAbi, erc20Abi, listingManagerAddress, listingManagerAbi, factoryAbi, pairAbi, WETH_ADDRESS, customAddresses } from '../../services/swapConstants'
 import { FPL_SUBSCRIPTION_ABI, FPL_SUBSCRIPTION_ADDRESS, ERC20_ABI } from '../../services/contractConfig'
 import s from './Admin.module.css'
 
@@ -12,7 +12,10 @@ import s from './Admin.module.css'
 const ADMIN_WALLET = '0x47bc2f5f9b55f5bb8d4f1ed508492ba5c8b6d45e'.toLowerCase()
 
 const TOKEN_ADDRESS = '0x37a42A15B04a573692c6b02f10fa12bd35041936'
+const NDESO_DECIMALS = 4
+const ETH_DECIMALS = 18
 const BASE_RPC = 'https://base-rpc.publicnode.com'
+const PRICE_REFRESH_INTERVAL = 30_000 // 30 seconds
 
 /* ============================================================= */
 /*  Alert system                                                  */
@@ -27,6 +30,218 @@ function useAlerts() {
     }
     const dismiss = id => setAlerts(prev => prev.filter(a => a.id !== id))
     return { alerts, show, dismiss }
+}
+
+/* ============================================================= */
+/*  Helper — Fetch ETH price in IDR (Binance > CoinGecko)        */
+/* ============================================================= */
+async function fetchEthPriceIDR() {
+    // Primary: Binance ETHUSDT + USD/IDR exchange rate
+    try {
+        const [ethRes, fxRes] = await Promise.all([
+            fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'),
+            fetch('https://open.er-api.com/v6/latest/USD'),
+        ])
+        if (ethRes.ok) {
+            const ethData = await ethRes.json()
+            const ethUsd = parseFloat(ethData.price)
+            let usdIdr = 16500 // fallback rate
+            if (fxRes.ok) {
+                const fxData = await fxRes.json()
+                if (fxData.rates?.IDR) usdIdr = fxData.rates.IDR
+            }
+            return { ethUsd, ethIdr: ethUsd * usdIdr, usdIdr, source: 'Binance' }
+        }
+    } catch { /* Binance failed, try fallback */ }
+
+    // Fallback: CoinGecko
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=idr,usd')
+        if (res.ok) {
+            const data = await res.json()
+            const ethUsd = data.ethereum?.usd || 0
+            const ethIdr = data.ethereum?.idr || 0
+            return { ethUsd, ethIdr, usdIdr: ethUsd > 0 ? ethIdr / ethUsd : 16500, source: 'CoinGecko' }
+        }
+    } catch { /* CoinGecko also failed */ }
+
+    return null
+}
+
+/* ============================================================= */
+/*  Card 0 — NDESO Price Oracle                                  */
+/* ============================================================= */
+function NdesoPriceCard() {
+    const [priceData, setPriceData] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [lastUpdate, setLastUpdate] = useState(null)
+    const intervalRef = useRef(null)
+
+    const fetchPriceData = useCallback(async () => {
+        try {
+            const rpcProvider = new ethers.JsonRpcProvider(BASE_RPC, {
+                chainId: 8453, name: 'base',
+            }, { staticNetwork: true })
+
+            // 1. Get LP pair address from factory
+            const factory = new ethers.Contract(customAddresses.factory, factoryAbi, rpcProvider)
+            const pairAddress = await factory.getPair(TOKEN_ADDRESS, WETH_ADDRESS)
+
+            if (!pairAddress || pairAddress === ethers.ZeroAddress) {
+                setError('LP pair ETH/NDESO not found')
+                setLoading(false)
+                return
+            }
+
+            // 2. Read reserves & token order
+            const pair = new ethers.Contract(pairAddress, pairAbi, rpcProvider)
+            const [reserves, token0] = await Promise.all([
+                pair.getReserves(),
+                pair.token0(),
+            ])
+
+            const isToken0Ndeso = token0.toLowerCase() === TOKEN_ADDRESS.toLowerCase()
+            const reserveNdeso = isToken0Ndeso ? reserves[0] : reserves[1]
+            const reserveEth = isToken0Ndeso ? reserves[1] : reserves[0]
+
+            const ndesoAmount = Number(ethers.formatUnits(reserveNdeso, NDESO_DECIMALS))
+            const ethAmount = Number(ethers.formatUnits(reserveEth, ETH_DECIMALS))
+
+            // 3. Calculate NDESO/ETH price
+            const priceInEth = ndesoAmount > 0 ? ethAmount / ndesoAmount : 0
+
+            // 4. Fetch ETH/IDR from Binance (primary) or CoinGecko (fallback)
+            const ethPrice = await fetchEthPriceIDR()
+
+            const priceInIdr = ethPrice ? priceInEth * ethPrice.ethIdr : 0
+            const priceInUsd = ethPrice ? priceInEth * ethPrice.ethUsd : 0
+
+            setPriceData({
+                priceInEth,
+                priceInIdr,
+                priceInUsd,
+                ethPriceIdr: ethPrice?.ethIdr || 0,
+                ethPriceUsd: ethPrice?.ethUsd || 0,
+                reserveNdeso: ndesoAmount,
+                reserveEth: ethAmount,
+                pairAddress,
+                source: ethPrice?.source || 'unknown',
+            })
+            setError(null)
+            setLastUpdate(new Date())
+        } catch (err) {
+            console.error('NDESO price fetch error:', err)
+            setError('Failed to fetch price data')
+        }
+        setLoading(false)
+    }, [])
+
+    useEffect(() => {
+        fetchPriceData()
+        intervalRef.current = setInterval(fetchPriceData, PRICE_REFRESH_INTERVAL)
+        return () => clearInterval(intervalRef.current)
+    }, [fetchPriceData])
+
+    const fmtIDR = (v) => {
+        if (!v || isNaN(v)) return 'Rp 0'
+        if (v >= 1) return 'Rp ' + v.toLocaleString('id-ID', { maximumFractionDigits: 2 })
+        // For very small values, show more precision
+        return 'Rp ' + v.toLocaleString('id-ID', { maximumFractionDigits: 6 })
+    }
+
+    const fmtUSD = (v) => {
+        if (!v || isNaN(v)) return '$0'
+        if (v >= 1) return '$' + v.toLocaleString('en-US', { maximumFractionDigits: 2 })
+        return '$' + v.toLocaleString('en-US', { maximumFractionDigits: 8 })
+    }
+
+    const fmtETH = (v) => {
+        if (!v || isNaN(v)) return '0 ETH'
+        return v.toLocaleString('en-US', { maximumFractionDigits: 10 }) + ' ETH'
+    }
+
+    const fmtNum = (v, maxDec = 4) => {
+        if (!v || isNaN(v)) return '0'
+        return v.toLocaleString(undefined, { maximumFractionDigits: maxDec })
+    }
+
+    return (
+        <div className={s.card}>
+            <div className={s.cardHeader}>
+                <span className={s.cardTitle}>NDESO Price</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    {priceData?.source && (
+                        <span className={s.priceSrcBadge}>{priceData.source}</span>
+                    )}
+                    <button
+                        className={s.refreshBtn}
+                        onClick={() => { setLoading(true); fetchPriceData() }}
+                        disabled={loading}
+                        title="Refresh price"
+                    >
+                        <span className={loading ? s.refreshBtnSpin : ''}>↻</span>
+                    </button>
+                </div>
+            </div>
+
+            {error && !priceData ? (
+                <div className={s.priceError}>{error}</div>
+            ) : (
+                <>
+                    {/* Main price display */}
+                    <div className={s.priceHero}>
+                        <div className={s.priceHeroLabel}>1 NDESO</div>
+                        <div className={s.priceHeroValue}>
+                            {loading && !priceData ? '...' : fmtIDR(priceData?.priceInIdr)}
+                        </div>
+                        <div className={s.priceHeroSub}>
+                            {loading && !priceData ? '' : fmtUSD(priceData?.priceInUsd)}
+                            {priceData?.priceInEth ? ` · ${fmtETH(priceData.priceInEth)}` : ''}
+                        </div>
+                    </div>
+
+                    <hr className={s.divider} />
+
+                    {/* Stats grid */}
+                    <div className={s.statsGrid}>
+                        <div className={s.statItem}>
+                            <div className={s.statLabel}>ETH / IDR</div>
+                            <div className={s.statValue}>
+                                {loading && !priceData ? '...' : fmtIDR(priceData?.ethPriceIdr)}
+                            </div>
+                        </div>
+                        <div className={s.statItem}>
+                            <div className={s.statLabel}>ETH / USD</div>
+                            <div className={s.statValue}>
+                                {loading && !priceData ? '...' : fmtUSD(priceData?.ethPriceUsd)}
+                            </div>
+                        </div>
+                        <div className={s.statItem}>
+                            <div className={s.statLabel}>LP Reserve ETH</div>
+                            <div className={s.statValue}>
+                                {loading && !priceData ? '...' : fmtNum(priceData?.reserveEth, 6)}
+                                <span className={s.statUnit}>ETH</span>
+                            </div>
+                        </div>
+                        <div className={s.statItem}>
+                            <div className={s.statLabel}>LP Reserve NDESO</div>
+                            <div className={s.statValue}>
+                                {loading && !priceData ? '...' : fmtNum(priceData?.reserveNdeso, 4)}
+                                <span className={s.statUnit}>NDESO</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {lastUpdate && (
+                        <div className={s.inputHint} style={{ textAlign: 'center', marginTop: '0.35rem' }}>
+                            Last updated: {lastUpdate.toLocaleTimeString('id-ID')} · Auto-refresh 30s
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    )
 }
 
 /* ============================================================= */
@@ -1222,6 +1437,7 @@ export default function Admin() {
                         <span className={s.pageBadge}>OWNER</span>
                     </div>
 
+                    <NdesoPriceCard />
                     <ManualSubscriptionCard showAlert={showAlert} />
                     <SubscriptionPriceCard showAlert={showAlert} />
                     <StakingControlCard showAlert={showAlert} />
