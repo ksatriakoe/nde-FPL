@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { formatUnits } from 'viem'
@@ -19,6 +19,7 @@ export default function Subscribe() {
     const [success, setSuccess] = useState('')
     const [step, setStep] = useState('idle')
     const [copied, setCopied] = useState(false)
+    const payTxHashRef = useRef(null)
 
     const isContractReady = FPL_SUBSCRIPTION_ADDRESS !== '0x0000000000000000000000000000000000000000'
 
@@ -82,17 +83,21 @@ export default function Subscribe() {
         if (approveConfirmed && step === 'approving') refetchAllowance().then(() => pay())
     }, [approveConfirmed])
 
+    /* Keep ref in sync so saveSubscription always sees latest hash */
+    useEffect(() => { payTxHashRef.current = payTxHash }, [payTxHash])
+
     useEffect(() => {
         if (payConfirmed && step === 'paying') saveSubscription()
     }, [payConfirmed])
 
     const saveSubscription = async () => {
+        const txHash = payTxHashRef.current
         if (!address || !supabase) { setError('Database not configured'); setStep('idle'); return }
         const base = (expiry && expiry > new Date()) ? new Date(expiry) : new Date()
         base.setDate(base.getDate() + SUBSCRIPTION_DAYS)
         const { error: dbErr } = await supabase.from('subscriptions').upsert({
             wallet_address: address.toLowerCase(),
-            tx_hash: payTxHash,
+            tx_hash: txHash,
             plan: 'premium_monthly',
             expires_at: base.toISOString(),
             created_at: new Date().toISOString(),
