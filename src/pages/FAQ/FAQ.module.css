@@ -1,0 +1,331 @@
+/* ── Page ── */
+.page {
+    padding: 0;
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 1.75rem;
+}
+
+.headerTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.headerIcon {
+    width: 28px;
+    height: 28px;
+    opacity: 0.85;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: -0.75rem 0 0;
+    line-height: 1.5;
+}
+
+/* ── FAQ List ── */
+.faqList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ── FAQ Card ── */
+.faqCard {
+    background: rgba(15, 22, 38, 0.6);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    transition: border-color 0.25s ease;
+}
+
+.faqCardOpen {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Question Button ── */
+.faqQuestion {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.15rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+}
+
+.questionText {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── Chevron ── */
+.chevron {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.chevronIcon {
+    width: 13px;
+    height: 13px;
+    opacity: 0.4;
+    filter: brightness(0) invert(0.7);
+}
+
+/* ── Answer Panel ── */
+.faqAnswer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faqAnswerOpen {
+    grid-template-rows: 1fr;
+}
+
+.faqAnswerInner {
+    overflow: hidden;
+}
+
+.answerContent {
+    padding: 0 1.15rem 1.15rem;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 0.85rem;
+}
+
+.answerContent p {
+    margin: 0 0 0.6rem;
+}
+
+.answerContent ul {
+    margin: 0.3rem 0 0.5rem 1rem;
+    padding: 0;
+}
+
+.answerContent ul li {
+    margin-bottom: 0.2rem;
+}
+
+.answerContent strong {
+    color: var(--text-primary);
+}
+
+/* ── Step List ── */
+.stepList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0.6rem 0;
+}
+
+.step {
+    padding: 0.65rem 0.85rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.step > strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    margin-bottom: 0.15rem;
+}
+
+.step p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+
+/* ── Feature Grid ── */
+.featureGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+    margin: 0.6rem 0;
+}
+
+@media (max-width: 600px) {
+    .featureGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.featureItem {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.65rem 0.8rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    align-items: flex-start;
+}
+
+.featureIcon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+.featureItem div {
+    flex: 1;
+    min-width: 0;
+}
+
+.featureItem div > strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    margin-bottom: 0.1rem;
+}
+
+.featureItem p {
+    margin: 0 !important;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+/* ── Info Grid ── */
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+    margin: 0.6rem 0;
+}
+
+@media (max-width: 600px) {
+    .infoGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.infoItem {
+    padding: 0.65rem 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    text-align: center;
+}
+
+.infoItem strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.78rem;
+    margin-bottom: 0.15rem;
+}
+
+.infoItem p {
+    margin: 0 !important;
+    font-size: 0.73rem;
+    line-height: 1.45;
+}
+
+/* ── Tip & Warning Boxes ── */
+.tipBox {
+    padding: 0.65rem 0.85rem;
+    background: rgba(16, 185, 129, 0.04);
+    border-left: 2px solid rgba(16, 185, 129, 0.3);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    margin-top: 0.6rem;
+    color: var(--text-secondary);
+}
+
+.tipBox strong {
+    color: var(--green) !important;
+}
+
+.warnBox {
+    padding: 0.65rem 0.85rem;
+    background: rgba(245, 158, 11, 0.04);
+    border-left: 2px solid rgba(245, 158, 11, 0.3);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    margin-top: 0.6rem;
+    color: var(--text-secondary);
+}
+
+.warnBox strong {
+    color: #F59E0B !important;
+}
+
+/* ── Contact Card ── */
+.contactCard {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.9rem 1.15rem;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    margin-top: 1rem;
+}
+
+.contactIconImg {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.contactText {
+    flex: 1;
+    min-width: 0;
+}
+
+.contactText strong {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-bottom: 0.1rem;
+}
+
+.contactText p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.telegramLink {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+.telegramIcon {
+    width: 28px;
+    height: 28px;
+}
