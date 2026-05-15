@@ -5,9 +5,9 @@ import { COINS, formatPrice, formatLargeNumber, formatPercent, timeAgo } from '.
 import styles from './CryptoCharts.module.css'
 
 const TIMEFRAMES = [
-    { label: '1D', value: 1 },
-    { label: '7D', value: 7 },
-    { label: '30D', value: 30 },
+    { label: '1H', value: 1 },
+    { label: '6H', value: 7 },
+    { label: '1D', value: 30 },
 ]
 
 /* ── Error Boundary ── */
@@ -414,7 +414,7 @@ export default function CryptoCharts() {
                                 <span className={styles.chartDot} style={{ background: coinMeta.color }} />
                                 Price Chart
                             </div>
-                            <span className={styles.chartTimeframe}>{days}D</span>
+                            <span className={styles.chartTimeframe}>{TIMEFRAMES.find(tf => tf.value === days)?.label || '1D'}</span>
                         </div>
                         <ChartErrorBoundary>
                             <PriceChart data={priceData} volumeData={volumeData} color={coinMeta.color} />
