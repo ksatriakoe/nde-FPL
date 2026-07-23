@@ -117,8 +117,8 @@ export default function Layout() {
                             </div>
                         )}
                         {gwLabel && <span className={styles.gwBadge}>{gwLabel}</span>}
-                        <span className={styles.seasonFull}>Fantasy Premier League 2025/26</span>
-                        <span className={styles.seasonMobile}>FPL 25/26</span>
+                        <span className={styles.seasonFull}>Fantasy Premier League 2026/27</span>
+                        <span className={styles.seasonMobile}>FPL 26/27</span>
                     </div>
                     <div className={styles.headerRight}>
                         {!loading && currentGw && !currentGw.finished && (
