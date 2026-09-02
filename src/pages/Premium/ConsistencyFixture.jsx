@@ -147,8 +147,11 @@ export default function ConsistencyFixture() {
     // Filtered for display (instant — no API calls)
     const displayFiltered = useMemo(() => {
         if (!players.length || !fixtures.length || !targetGw) return []
+        const completedGWs = currentGw ? (currentGw.finished ? currentGw.id : currentGw.id - 1) : 0
+        const minMinutes = completedGWs <= 1 ? 45 : Math.min(200, completedGWs * 50)
+
         return players.filter(p => {
-            if (p.minutes < 200) return false
+            if (p.minutes < minMinutes) return false
             if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
             if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
             if (search) {
@@ -157,7 +160,7 @@ export default function ConsistencyFixture() {
             }
             return true
         })
-    }, [players, fixtures, targetGw, posFilter, teamFilter, search])
+    }, [players, fixtures, currentGw, targetGw, posFilter, teamFilter, search])
 
     // Build final data with consistency + fixture
     const matrixData = useMemo(() => {

@@ -5,7 +5,7 @@ import { getTeamBadgeUrl, getPositionShort, getDifficultyColor, normalizeText, g
 import styles from './Premium.module.css'
 
 export default function Differentials() {
-    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, currentGw, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const [posFilter, setPosFilter] = useState('ALL')
     const [teamFilter, setTeamFilter] = useState('ALL')
@@ -40,11 +40,14 @@ export default function Differentials() {
     const differentials = useMemo(() => {
         if (!players.length || !fixtures.length || !targetGw) return []
 
+        const completedGWs = currentGw ? (currentGw.finished ? currentGw.id : currentGw.id - 1) : 0
+        const minMinutes = completedGWs <= 1 ? 45 : Math.min(200, completedGWs * 50)
+
         return players
             .filter(p => {
                 if (parseFloat(p.selected_by_percent) >= maxOwnership) return false
                 if (parseFloat(p.form) < 4.0) return false
-                if (p.minutes < 200) return false
+                if (p.minutes < minMinutes) return false
                 if (posFilter !== 'ALL' && getPositionShort(p.element_type) !== posFilter) return false
                 if (teamFilter !== 'ALL' && p.team !== Number(teamFilter)) return false
                 if (search) {
@@ -74,7 +77,7 @@ export default function Differentials() {
                 return { ...p, gwFixtures, avgFDR }
             })
             .sort((a, b) => a.avgFDR - b.avgFDR || parseFloat(b.form) - parseFloat(a.form))
-    }, [players, fixtures, teams, targetGw, posFilter, teamFilter, maxOwnership, search, gwRange])
+    }, [players, fixtures, teams, currentGw, targetGw, posFilter, teamFilter, maxOwnership, search, gwRange])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }
