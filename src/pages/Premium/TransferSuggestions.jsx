@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function TransferSuggestions() {
-    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, currentGw, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
@@ -40,8 +40,11 @@ export default function TransferSuggestions() {
 
     const valuePicks = useMemo(() => {
         if (!players.length || !fixtures.length || !targetGw) return []
+        const completedGWs = currentGw ? (currentGw.finished ? currentGw.id : currentGw.id - 1) : 0
+        const minMinutes = completedGWs <= 1 ? 45 : Math.min(200, completedGWs * 50)
+
         return players
-            .filter(p => p.status === 'a' && parseFloat(p.form) >= 3.5 && p.minutes > 200)
+            .filter(p => p.status === 'a' && parseFloat(p.form) >= 3.5 && p.minutes >= minMinutes)
             .map(p => {
                 const price = p.now_cost / 10
                 const form = parseFloat(p.form)
@@ -64,7 +67,7 @@ export default function TransferSuggestions() {
             })
             .sort((a, b) => b.valueScore - a.valueScore)
             .slice(0, 15)
-    }, [players, fixtures, teams, targetGw, gwRange])
+    }, [players, fixtures, teams, currentGw, targetGw, gwRange])
 
     // Players to sell: bad form + hard fixtures
     const sellCandidates = useMemo(() => {

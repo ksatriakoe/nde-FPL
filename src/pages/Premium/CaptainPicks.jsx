@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import styles from './Premium.module.css'
 
 export default function CaptainPicks() {
-    const { players, fixtures, teams, targetGw, loading, getTeam } = useFpl()
+    const { players, fixtures, teams, currentGw, targetGw, loading, getTeam } = useFpl()
     const navigate = useNavigate()
     const { openSettings } = useSettings()
     const { wallet } = useAuth()
@@ -36,8 +36,11 @@ export default function CaptainPicks() {
     const topCandidates = useMemo(() => {
         if (!players.length || !fixtures.length || !targetGw) return []
         const gw = targetGw.id
+        const completedGWs = currentGw ? (currentGw.finished ? currentGw.id : currentGw.id - 1) : 0
+        const minMinutes = completedGWs <= 1 ? 45 : Math.min(300, completedGWs * 60)
+
         return players
-            .filter(p => p.status === 'a' && parseFloat(p.form) >= 4 && p.minutes > 300)
+            .filter(p => p.status === 'a' && parseFloat(p.form) >= 4 && p.minutes >= minMinutes)
             .map(p => {
                 const gwMatches = fixtures.filter(f => f.event === gw && (f.team_h === p.team || f.team_a === p.team))
                 const matches = gwMatches.map(m => {
@@ -56,7 +59,7 @@ export default function CaptainPicks() {
                 const scoreB = parseFloat(b.form) * (5 - b.fdr + 1)
                 return scoreB - scoreA
             })
-    }, [players, fixtures, teams, targetGw])
+    }, [players, fixtures, teams, currentGw, targetGw])
 
     const posClass = (t) => {
         const map = { 1: styles.posGKP, 2: styles.posDEF, 3: styles.posMID, 4: styles.posFWD }
